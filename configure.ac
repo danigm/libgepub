@@ -18,6 +18,9 @@ PKG_CHECK_MODULES(GEPUB,
                   cairo
                   libarchive)
 
+AC_SUBST(GEPUB_CFLAGS)
+AC_SUBST(GEPUB_LIBS)
+
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([
     Makefile

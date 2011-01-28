@@ -1,6 +1,6 @@
 #ifndef _GEPUB__H_
 #define _GEPUB__H_
 
-int gepub ();
+#include "gepub-archive.h"
 
 #endif

@@ -7,7 +7,7 @@ test_gepub_CPPFLAGS = \
 	$(AM_CPPFLAGS)
 
 test_gepub_CFLAGS = \
-	$(GTK_CFLAGS) \
+	$(GEPUB_CFLAGS) \
 	$(WARN_CFLAGS) \
 	$(AM_CFLAGS)
 
