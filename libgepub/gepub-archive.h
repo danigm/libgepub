@@ -22,7 +22,9 @@
 
 #include <glib-object.h>
 #include <gio/gio.h>
+#include <glib.h>
 #include <archive.h>
+#include <archive_entry.h>
 
 G_BEGIN_DECLS
 
@@ -39,7 +41,12 @@ typedef struct _GEPUBArchiveClass GEPUBArchiveClass;
 GType             gepub_archive_get_type       (void) G_GNUC_CONST;
 
 GEPUBArchive     *gepub_archive_new            (const gchar  *path);
-void              gepub_archive_list_files     (GEPUBArchive *archive);
+GList            *gepub_archive_list_files     (GEPUBArchive *archive);
+void              gepub_archive_read_entry     (GEPUBArchive *archive,
+                                                const gchar *path,
+                                                guchar **buffer,
+                                                gsize *bufsize);
+gchar            *gepub_archive_get_root_file  (GEPUBArchive *archive);
 
 G_END_DECLS
 

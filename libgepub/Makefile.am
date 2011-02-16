@@ -1,7 +1,9 @@
 lib_LTLIBRARIES = libgepub.la
 
 NOINST_H_FILES = \
-	gepub-arvhice.h
+	gepub-arvhice.h		\
+	gepub-utils.h		\
+	gepub-doc.h
 
 INST_H_FILES = \
 	gepub.h
@@ -11,6 +13,8 @@ libgepubinclude_HEADERS = $(INST_H_FILES)
 
 libgepub_la_SOURCES = \
 	gepub-archive.c			\
+	gepub-doc.c			\
+	gepub-utils.c			\
 	$(NOINST_H_FILES)		\
 	$(INST_H_FILES)
 

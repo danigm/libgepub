@@ -16,6 +16,8 @@ PKG_CHECK_MODULES(GEPUB,
                   gobject-2.0
                   gio-2.0
                   cairo
+                  webkit-1.0
+                  libxml-2.0
                   libarchive)
 
 AC_SUBST(GEPUB_CFLAGS)
