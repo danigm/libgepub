@@ -42,6 +42,9 @@ gchar            *gepub_doc_get_content    (GEPUBDoc *doc);
 gchar            *gepub_doc_get_metadata   (GEPUBDoc *doc, gchar *mdata);
 guchar           *gepub_doc_get_resource   (GEPUBDoc *doc, gchar *id);
 GList            *gepub_doc_get_spine      (GEPUBDoc *doc);
+guchar           *gepub_doc_get_current    (GEPUBDoc *doc);
+void              gepub_doc_go_next        (GEPUBDoc *doc);
+void              gepub_doc_go_prev        (GEPUBDoc *doc);
 
 G_END_DECLS
 

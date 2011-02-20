@@ -16,7 +16,24 @@ gchar *tmpbuf;
                     g_free (tmpbuf)
 #define PTEST PTEST2
 
-#define TEST(f,arg) PTEST ("\n### TESTING " #f " ###\n\n"); f (arg); PTEST ("\n\n");
+#define TEST(f,arg...) PTEST ("\n### TESTING " #f " ###\n\n"); f (arg); PTEST ("\n\n");
+
+void
+button_pressed (GtkButton *button, gpointer data[])
+{
+    WebKitWebView *wview = data[0];
+    GEPUBDoc *doc = data[1];
+
+    if (!strcmp (gtk_button_get_label (button), "prev")) {
+        gepub_doc_go_prev (doc);
+    } else {
+        gepub_doc_go_next (doc);
+    }
+
+    guchar *f = gepub_doc_get_current (doc);
+    webkit_web_view_load_string (wview, f, NULL, NULL, "");
+    g_free (f);
+}
 
 void
 test_open (const char *path)
@@ -87,8 +104,13 @@ test_root_file (const char *path)
 }
 
 void
-test_webkit ()
+test_webkit (GEPUBDoc *doc, WebKitWebView *wview)
 {
+    guchar *f = gepub_doc_get_current (doc);
+
+    webkit_web_view_load_string (wview, f, NULL, NULL, "");
+    PTEST ("%s\n", f);
+    g_free (f);
 }
 
 void
@@ -165,7 +187,15 @@ main (int argc, char **argv)
     GtkWidget *wview;
     GtkWidget *scrolled;
 
+    GtkWidget *vbox;
+    GtkWidget *hbox;
+    GtkWidget *b_next;
+    GtkWidget *b_prev;
+
     GtkTextBuffer *buffer;
+
+    gpointer data[2] = {0, 0};
+    GEPUBDoc *doc;
 
     if (argc < 2) {
         printf ("you should provide an .epub file\n");
@@ -182,7 +212,21 @@ main (int argc, char **argv)
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     gtk_container_add (GTK_CONTAINER (scrolled), wview);
     gtk_widget_set_size_request (wview, 500, 300);
-    gtk_paned_add1 (GTK_PANED (vpaned), scrolled);
+
+    vbox = gtk_vbox_new (FALSE, 5);
+    hbox = gtk_hbox_new (TRUE, 5);
+    b_prev = gtk_button_new_with_label ("prev");
+    doc = gepub_doc_new (argv[1]);
+    data[0] = wview;
+    data[1] = doc;
+    g_signal_connect (b_prev, "clicked", button_pressed, data);
+    b_next = gtk_button_new_with_label ("next");
+    g_signal_connect (b_next, "clicked", button_pressed, data);
+    gtk_container_add (GTK_CONTAINER (hbox), b_prev);
+    gtk_container_add (GTK_CONTAINER (hbox), b_next);
+    gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 5);
+    gtk_box_pack_start (GTK_BOX (vbox), scrolled, TRUE, TRUE, 5);
+    gtk_paned_add1 (GTK_PANED (vpaned), vbox);
 
     textview = gtk_text_view_new ();
     scrolled = gtk_scrolled_window_new (NULL, NULL);
@@ -192,15 +236,17 @@ main (int argc, char **argv)
 
     gtk_widget_show_all (window);
 
-    webkit_web_view_open (WEBKIT_WEB_VIEW (wview), "http://google.es");
 
+    // Testing all
     TEST(test_open, argv[1])
     TEST(test_read, argv[1])
     TEST(test_root_file, argv[1])
     TEST(test_doc_name, argv[1])
     TEST(test_doc_resources, argv[1])
     TEST(test_doc_spine, argv[1])
+    TEST(test_webkit, doc, WEBKIT_WEB_VIEW (wview))
 
+    // Freeing the mallocs :P
     if (buf2) {
         buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview));
         gtk_text_buffer_set_text (buffer, buf2, strlen (buf2));

@@ -258,3 +258,21 @@ gepub_doc_get_spine (GEPUBDoc *doc)
 {
     return doc->spine;
 }
+
+guchar *
+gepub_doc_get_current (GEPUBDoc *doc)
+{
+    return gepub_doc_get_resource (doc, doc->spine->data);
+}
+
+void gepub_doc_go_next (GEPUBDoc *doc)
+{
+    if (doc->spine->next)
+        doc->spine = doc->spine->next;
+}
+
+void gepub_doc_go_prev (GEPUBDoc *doc)
+{
+    if (doc->spine->prev)
+        doc->spine = doc->spine->prev;
+}
