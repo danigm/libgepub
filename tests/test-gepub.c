@@ -123,6 +123,24 @@ test_doc_resources (const char *path)
     g_object_unref (doc);
 }
 
+void
+p (gchar *value, gpointer data)
+{
+    static int id = 0;
+    printf ("%d: %s\n", id++, value);
+}
+
+void
+test_doc_spine (const char *path)
+{
+    GEPUBDoc *doc = gepub_doc_new (path);
+
+    GList *spine = gepub_doc_get_spine (doc);
+    g_list_foreach (spine, (GFunc)p, NULL);
+
+    g_object_unref (doc);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -149,6 +167,7 @@ main (int argc, char **argv)
     TEST(test_root_file, argv[1])
     TEST(test_doc_name, argv[1])
     TEST(test_doc_resources, argv[1])
+    TEST(test_doc_spine, argv[1])
 
     gtk_main ();
 

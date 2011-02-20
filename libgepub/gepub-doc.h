@@ -41,6 +41,7 @@ GEPUBDoc         *gepub_doc_new            (const gchar *path);
 gchar            *gepub_doc_get_content    (GEPUBDoc *doc);
 gchar            *gepub_doc_get_metadata   (GEPUBDoc *doc, gchar *mdata);
 guchar           *gepub_doc_get_resource   (GEPUBDoc *doc, gchar *id);
+GList            *gepub_doc_get_spine      (GEPUBDoc *doc);
 
 G_END_DECLS
 

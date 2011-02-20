@@ -26,6 +26,7 @@
 #include "gepub-archive.h"
 
 static void g_epub_doc_fill_resources (GEPUBDoc *doc);
+static void g_epub_doc_fill_spine (GEPUBDoc *doc);
 static gboolean equal_strs (gchar *one, gchar *two);
 
 struct _GEPUBDoc {
@@ -35,6 +36,7 @@ struct _GEPUBDoc {
     guchar *content;
     gchar *content_base;
     GHashTable *resources;
+    GList *spine;
 };
 
 struct _GEPUBDocClass {
@@ -62,6 +64,12 @@ gepub_doc_finalize (GObject *object)
     if (doc->resources) {
         g_hash_table_destroy (doc->resources);
         doc->resources = NULL;
+    }
+
+    if (doc->spine) {
+        g_list_foreach (doc->spine, (GFunc)g_free, NULL);
+        g_list_free (doc->spine);
+        doc->spine = NULL;
     }
 
     G_OBJECT_CLASS (gepub_doc_parent_class)->finalize (object);
@@ -106,6 +114,8 @@ gepub_doc_new (const gchar *path)
                                             (GDestroyNotify)g_free,
                                             (GDestroyNotify)g_free);
     g_epub_doc_fill_resources (doc);
+    doc->spine = NULL;
+    g_epub_doc_fill_spine (doc);
 
     if (file)
         g_free (file);
@@ -149,6 +159,38 @@ g_epub_doc_fill_resources (GEPUBDoc *doc)
         g_free (tmpuri);
 
         g_hash_table_insert (doc->resources, id, uri);
+        item = item->next;
+    }
+
+    xmlFreeDoc (xdoc);
+    xmlCleanupParser ();
+}
+
+static void
+g_epub_doc_fill_spine (GEPUBDoc *doc)
+{
+    xmlDoc *xdoc = NULL;
+    xmlNode *root_element = NULL;
+    xmlNode *snode = NULL;
+    xmlNode *item = NULL;
+    gchar *id;
+
+    LIBXML_TEST_VERSION
+
+    xdoc = xmlRecoverDoc (doc->content);
+    root_element = xmlDocGetRootElement (xdoc);
+    snode = gepub_utils_get_element_by_tag (root_element, "spine");
+
+    item = snode->children;
+    while (item) {
+        if (item->type != XML_ELEMENT_NODE ) {
+            item = item->next;
+            continue;
+        }
+
+        id = xmlGetProp (item, "idref");
+
+        doc->spine = g_list_append (doc->spine, id);
         item = item->next;
     }
 
@@ -209,4 +251,10 @@ gepub_doc_get_resource (GEPUBDoc *doc, gchar *id)
     gepub_archive_read_entry (doc->archive, g_hash_table_lookup (doc->resources, id), &res, &bufsize);
 
     return res;
+}
+
+GList *
+gepub_doc_get_spine (GEPUBDoc *doc)
+{
+    return doc->spine;
 }
