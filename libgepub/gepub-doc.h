@@ -40,6 +40,7 @@ GType             gepub_doc_get_type       (void) G_GNUC_CONST;
 GEPUBDoc         *gepub_doc_new            (const gchar *path);
 gchar            *gepub_doc_get_content    (GEPUBDoc *doc);
 gchar            *gepub_doc_get_metadata   (GEPUBDoc *doc, gchar *mdata);
+guchar           *gepub_doc_get_resource   (GEPUBDoc *doc, gchar *id);
 
 G_END_DECLS
 

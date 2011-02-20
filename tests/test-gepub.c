@@ -102,6 +102,27 @@ test_doc_name (const char *path)
     g_object_unref (doc);
 }
 
+void
+pk (gchar *key, gchar *value, gpointer data)
+{
+    printf ("%s: %s\n", key, value);
+}
+
+void
+test_doc_resources (const char *path)
+{
+    GEPUBDoc *doc = gepub_doc_new (path);
+    GHashTable *ht = gepub_doc_get_resources (doc);
+    g_hash_table_foreach (ht, pk, NULL);
+    guchar *ncx;
+
+    ncx = gepub_doc_get_resource (doc, "ncx");
+    printf ("ncx:\n%s\n", ncx);
+    g_free (ncx);
+
+    g_object_unref (doc);
+}
+
 int
 main (int argc, char **argv)
 {
@@ -127,6 +148,7 @@ main (int argc, char **argv)
     TEST(test_read, argv[1])
     TEST(test_root_file, argv[1])
     TEST(test_doc_name, argv[1])
+    TEST(test_doc_resources, argv[1])
 
     gtk_main ();
 

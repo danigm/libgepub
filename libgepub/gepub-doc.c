@@ -19,16 +19,22 @@
 
 #include <config.h>
 #include <libxml/tree.h>
+#include <string.h>
 
 #include "gepub-utils.h"
 #include "gepub-doc.h"
 #include "gepub-archive.h"
+
+static void g_epub_doc_fill_resources (GEPUBDoc *doc);
+static gboolean equal_strs (gchar *one, gchar *two);
 
 struct _GEPUBDoc {
     GObject parent;
 
     GEPUBArchive *archive;
     guchar *content;
+    gchar *content_base;
+    GHashTable *resources;
 };
 
 struct _GEPUBDocClass {
@@ -49,6 +55,13 @@ gepub_doc_finalize (GObject *object)
     if (doc->content) {
         g_free (doc->content);
         doc->content = NULL;
+    }
+    if (doc->content_base)
+        g_free (doc->content_base);
+
+    if (doc->resources) {
+        g_hash_table_destroy (doc->resources);
+        doc->resources = NULL;
     }
 
     G_OBJECT_CLASS (gepub_doc_parent_class)->finalize (object);
@@ -74,6 +87,7 @@ gepub_doc_new (const gchar *path)
 
     gchar *file;
     gint bufsize;
+    gint i = 0, len;
 
     doc = GEPUB_DOC (g_object_new (GEPUB_TYPE_DOC, NULL));
     doc->archive = gepub_archive_new (path);
@@ -81,10 +95,65 @@ gepub_doc_new (const gchar *path)
     file = gepub_archive_get_root_file (doc->archive);
     gepub_archive_read_entry (doc->archive, file, &(doc->content), &bufsize);
 
+    len = strlen (file);
+    while (file[i++] != '/' && i < len);
+    doc->content_base = g_strndup (file, i);
+
+    // doc resources hashtable:
+    // id : path
+    doc->resources = g_hash_table_new_full (g_str_hash,
+                                            (GEqualFunc)equal_strs,
+                                            (GDestroyNotify)g_free,
+                                            (GDestroyNotify)g_free);
+    g_epub_doc_fill_resources (doc);
+
     if (file)
         g_free (file);
 
     return doc;
+}
+
+static gboolean
+equal_strs (gchar *one, gchar *two)
+{
+    if (strcmp (one, two))
+        return FALSE;
+    return TRUE;
+}
+
+static void
+g_epub_doc_fill_resources (GEPUBDoc *doc)
+{
+    xmlDoc *xdoc = NULL;
+    xmlNode *root_element = NULL;
+    xmlNode *mnode = NULL;
+    xmlNode *item = NULL;
+    gchar *id, *tmpuri, *uri;
+
+    LIBXML_TEST_VERSION
+
+    xdoc = xmlRecoverDoc (doc->content);
+    root_element = xmlDocGetRootElement (xdoc);
+    mnode = gepub_utils_get_element_by_tag (root_element, "manifest");
+
+    item = mnode->children;
+    while (item) {
+        if (item->type != XML_ELEMENT_NODE ) {
+            item = item->next;
+            continue;
+        }
+
+        id = xmlGetProp (item, "id");
+        tmpuri = xmlGetProp (item, "href");
+        uri = g_strdup_printf ("%s%s", doc->content_base, tmpuri);
+        g_free (tmpuri);
+
+        g_hash_table_insert (doc->resources, id, uri);
+        item = item->next;
+    }
+
+    xmlFreeDoc (xdoc);
+    xmlCleanupParser ();
 }
 
 gchar *
@@ -118,4 +187,26 @@ gepub_doc_get_metadata (GEPUBDoc *doc, gchar *mdata)
     xmlCleanupParser ();
 
     return ret;
+}
+
+GHashTable *
+gepub_doc_get_resources (GEPUBDoc *doc)
+{
+    return doc->resources;
+}
+
+guchar *
+gepub_doc_get_resource (GEPUBDoc *doc, gchar *id)
+{
+    guchar *res = NULL;
+    gchar *path = NULL;
+    gint bufsize = 0;
+    path = g_hash_table_lookup (doc->resources, id);
+    if (!path) {
+        // not found
+        return NULL;
+    }
+    gepub_archive_read_entry (doc->archive, g_hash_table_lookup (doc->resources, id), &res, &bufsize);
+
+    return res;
 }
