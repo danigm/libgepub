@@ -35,12 +35,21 @@ G_BEGIN_DECLS
 typedef struct _GEPUBDoc      GEPUBDoc;
 typedef struct _GEPUBDocClass GEPUBDocClass;
 
+struct _GEPUBResource {
+    gchar *mime;
+    gchar *uri;
+};
+
+typedef struct _GEPUBResource GEPUBResource;
+
 GType             gepub_doc_get_type       (void) G_GNUC_CONST;
 
 GEPUBDoc         *gepub_doc_new            (const gchar *path);
 gchar            *gepub_doc_get_content    (GEPUBDoc *doc);
 gchar            *gepub_doc_get_metadata   (GEPUBDoc *doc, gchar *mdata);
 guchar           *gepub_doc_get_resource   (GEPUBDoc *doc, gchar *id);
+guchar           *gepub_doc_get_resource_v (GEPUBDoc *doc, gchar *v, gint *bufsize);
+guchar           *gepub_doc_get_resource_mime (GEPUBDoc *doc, gchar *v);
 GList            *gepub_doc_get_spine      (GEPUBDoc *doc);
 guchar           *gepub_doc_get_current    (GEPUBDoc *doc);
 void              gepub_doc_go_next        (GEPUBDoc *doc);

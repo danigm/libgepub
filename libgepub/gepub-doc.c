@@ -29,6 +29,13 @@ static void g_epub_doc_fill_resources (GEPUBDoc *doc);
 static void g_epub_doc_fill_spine (GEPUBDoc *doc);
 static gboolean equal_strs (gchar *one, gchar *two);
 
+void g_epub_resource_free (GEPUBResource *res)
+{
+    g_free (res->mime);
+    g_free (res->uri);
+    g_free (res);
+}
+
 struct _GEPUBDoc {
     GObject parent;
 
@@ -108,11 +115,11 @@ gepub_doc_new (const gchar *path)
     doc->content_base = g_strndup (file, i);
 
     // doc resources hashtable:
-    // id : path
+    // id : (mime, path)
     doc->resources = g_hash_table_new_full (g_str_hash,
                                             (GEqualFunc)equal_strs,
                                             (GDestroyNotify)g_free,
-                                            (GDestroyNotify)g_free);
+                                            (GDestroyNotify)g_epub_resource_free);
     g_epub_doc_fill_resources (doc);
     doc->spine = NULL;
     g_epub_doc_fill_spine (doc);
@@ -139,6 +146,7 @@ g_epub_doc_fill_resources (GEPUBDoc *doc)
     xmlNode *mnode = NULL;
     xmlNode *item = NULL;
     gchar *id, *tmpuri, *uri;
+    GEPUBResource *res;
 
     LIBXML_TEST_VERSION
 
@@ -158,7 +166,10 @@ g_epub_doc_fill_resources (GEPUBDoc *doc)
         uri = g_strdup_printf ("%s%s", doc->content_base, tmpuri);
         g_free (tmpuri);
 
-        g_hash_table_insert (doc->resources, id, uri);
+        res = g_malloc (sizeof (GEPUBResource));
+        res->mime = xmlGetProp (item, "media-type");
+        res->uri = uri;
+        g_hash_table_insert (doc->resources, id, res);
         item = item->next;
     }
 
@@ -241,16 +252,52 @@ guchar *
 gepub_doc_get_resource (GEPUBDoc *doc, gchar *id)
 {
     guchar *res = NULL;
-    gchar *path = NULL;
     gint bufsize = 0;
-    path = g_hash_table_lookup (doc->resources, id);
-    if (!path) {
+    GEPUBResource *gres = g_hash_table_lookup (doc->resources, id);
+    if (!gres) {
         // not found
         return NULL;
     }
-    gepub_archive_read_entry (doc->archive, g_hash_table_lookup (doc->resources, id), &res, &bufsize);
+    gepub_archive_read_entry (doc->archive, gres->uri, &res, &bufsize);
 
     return res;
+}
+
+guchar *
+gepub_doc_get_resource_v (GEPUBDoc *doc, gchar *v, gint *bufsize)
+{
+    guchar *res = NULL;
+    gchar *path = NULL;
+
+    path = g_strdup_printf ("%s%s", doc->content_base, v);
+    gepub_archive_read_entry (doc->archive, path, &res, bufsize);
+    g_free (path);
+
+    return res;
+}
+
+guchar *
+gepub_doc_get_resource_mime (GEPUBDoc *doc, gchar *v)
+{
+    guchar *res = NULL;
+    gchar *path = NULL;
+    GEPUBResource *gres;
+    gint bufsize = 0;
+    GList *keys = g_hash_table_get_keys (doc->resources);
+
+    path = g_strdup_printf ("%s%s", doc->content_base, v);
+
+    while (keys) {
+        gres = ((GEPUBResource*)g_hash_table_lookup (doc->resources, keys->data));
+        if (!strcmp (gres->uri, path))
+            break;
+        keys = keys->next;
+    }
+
+    if (keys)
+        return gres->mime;
+    else
+        return NULL;
 }
 
 GList *

@@ -13,4 +13,5 @@ test_gepub_CFLAGS = \
 
 test_gepub_LDADD = \
 	$(top_builddir)/libgepub/libgepub.la \
+	$(GEPUB_LIBS) \
 	$(GTK_LIBS)

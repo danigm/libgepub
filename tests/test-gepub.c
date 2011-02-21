@@ -104,11 +104,47 @@ test_root_file (const char *path)
 }
 
 void
+replace_resource (WebKitWebView *wview, GEPUBDoc *doc, gchar *tag, gchar *attr)
+{
+    GError *error = NULL;
+    WebKitDOMDocument* document = webkit_web_view_get_dom_document (wview);
+
+    WebKitDOMNode *node = NULL, *node2 = NULL;
+    WebKitDOMNodeList* list = NULL;
+    WebKitDOMNamedNodeMap *attrs = NULL;
+    gchar *data, *data2, *mime;
+    gint i, len = 0, size = 0;
+
+    list = webkit_dom_document_get_elements_by_tag_name (document, tag);
+    len = webkit_dom_node_list_get_length (list);
+    for (i=0; i < len; i++) {
+        node = webkit_dom_node_list_item (list, i);
+        attrs = webkit_dom_node_get_attributes (node);
+        node2 = webkit_dom_named_node_map_get_named_item (attrs, attr);
+        data = gepub_doc_get_resource_v (doc, webkit_dom_node_get_node_value (node2), &size);
+        mime = gepub_doc_get_resource_mime (doc, webkit_dom_node_get_node_value (node2));
+        data2 = g_strdup_printf ("data:%s;base64,%s", mime, g_base64_encode (data, size));
+        webkit_dom_node_set_node_value (node2, data2, &error);
+    }
+}
+
+void
+load_finished (WebKitWebView *wview, WebKitWebFrame *frame, GEPUBDoc *doc)
+{
+    // css
+    replace_resource (wview, doc, "link", "href");
+    // images
+    replace_resource (wview, doc, "img", "src");
+}
+
+void
 test_webkit (GEPUBDoc *doc, WebKitWebView *wview)
 {
     guchar *f = gepub_doc_get_current (doc);
 
     webkit_web_view_load_string (wview, f, NULL, NULL, "");
+    g_signal_connect (wview, "document-load-finished", load_finished, doc);
+
     PTEST ("%s\n", f);
     g_free (f);
 }
@@ -138,9 +174,9 @@ test_doc_name (const char *path)
 }
 
 void
-pk (gchar *key, gchar *value, gpointer data)
+pk (gchar *key, GEPUBResource *value, gpointer data)
 {
-    PTEST ("%s: %s\n", key, value);
+    PTEST ("%s: %s, %s\n", key, value->mime, value->uri);
 }
 
 void
