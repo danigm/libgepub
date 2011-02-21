@@ -135,6 +135,8 @@ load_finished (WebKitWebView *wview, WebKitWebFrame *frame, GEPUBDoc *doc)
     replace_resource (wview, doc, "link", "href");
     // images
     replace_resource (wview, doc, "img", "src");
+    // svg images
+    replace_resource (wview, doc, "image", "xlink:href");
 }
 
 void
