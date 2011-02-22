@@ -2,7 +2,6 @@
 #include <stdio.h>
 #include <gtk/gtk.h>
 #include <libgepub/gepub.h>
-#include <webkit/webkit.h>
 
 gchar *buf = NULL;
 gchar *buf2 = NULL;
@@ -19,20 +18,13 @@ gchar *tmpbuf;
 #define TEST(f,arg...) PTEST ("\n### TESTING " #f " ###\n\n"); f (arg); PTEST ("\n\n");
 
 void
-button_pressed (GtkButton *button, gpointer data[])
+button_pressed (GtkButton *button, GEPUBDoc *doc)
 {
-    WebKitWebView *wview = data[0];
-    GEPUBDoc *doc = data[1];
-
     if (!strcmp (gtk_button_get_label (button), "prev")) {
         gepub_doc_go_prev (doc);
     } else {
         gepub_doc_go_next (doc);
     }
-
-    guchar *f = gepub_doc_get_current (doc);
-    webkit_web_view_load_string (wview, f, NULL, NULL, "");
-    g_free (f);
 }
 
 void
@@ -104,54 +96,6 @@ test_root_file (const char *path)
 }
 
 void
-replace_resource (WebKitWebView *wview, GEPUBDoc *doc, gchar *tag, gchar *attr)
-{
-    GError *error = NULL;
-    WebKitDOMDocument* document = webkit_web_view_get_dom_document (wview);
-
-    WebKitDOMNode *node = NULL, *node2 = NULL;
-    WebKitDOMNodeList* list = NULL;
-    WebKitDOMNamedNodeMap *attrs = NULL;
-    gchar *data, *data2, *mime;
-    gint i, len = 0, size = 0;
-
-    list = webkit_dom_document_get_elements_by_tag_name (document, tag);
-    len = webkit_dom_node_list_get_length (list);
-    for (i=0; i < len; i++) {
-        node = webkit_dom_node_list_item (list, i);
-        attrs = webkit_dom_node_get_attributes (node);
-        node2 = webkit_dom_named_node_map_get_named_item (attrs, attr);
-        data = gepub_doc_get_resource_v (doc, webkit_dom_node_get_node_value (node2), &size);
-        mime = gepub_doc_get_resource_mime (doc, webkit_dom_node_get_node_value (node2));
-        data2 = g_strdup_printf ("data:%s;base64,%s", mime, g_base64_encode (data, size));
-        webkit_dom_node_set_node_value (node2, data2, &error);
-    }
-}
-
-void
-load_finished (WebKitWebView *wview, WebKitWebFrame *frame, GEPUBDoc *doc)
-{
-    // css
-    replace_resource (wview, doc, "link", "href");
-    // images
-    replace_resource (wview, doc, "img", "src");
-    // svg images
-    replace_resource (wview, doc, "image", "xlink:href");
-}
-
-void
-test_webkit (GEPUBDoc *doc, WebKitWebView *wview)
-{
-    guchar *f = gepub_doc_get_current (doc);
-
-    webkit_web_view_load_string (wview, f, NULL, NULL, "");
-    g_signal_connect (wview, "document-load-finished", load_finished, doc);
-
-    PTEST ("%s\n", f);
-    g_free (f);
-}
-
-void
 test_doc_name (const char *path)
 {
     GEPUBDoc *doc = gepub_doc_new (path);
@@ -172,7 +116,7 @@ test_doc_name (const char *path)
     g_free (id);
     g_free (author);
     g_free (description);
-    g_object_unref (doc);
+    gtk_widget_destroy (GTK_WIDGET (doc));
 }
 
 void
@@ -193,7 +137,7 @@ test_doc_resources (const char *path)
     PTEST ("ncx:\n%s\n", ncx);
     g_free (ncx);
 
-    g_object_unref (doc);
+    gtk_widget_destroy (GTK_WIDGET (doc));
 }
 
 void
@@ -211,7 +155,7 @@ test_doc_spine (const char *path)
     GList *spine = gepub_doc_get_spine (doc);
     g_list_foreach (spine, (GFunc)p, NULL);
 
-    g_object_unref (doc);
+    gtk_widget_destroy (GTK_WIDGET (doc));
 }
 
 int
@@ -222,7 +166,6 @@ main (int argc, char **argv)
     GtkWidget *window;
     GtkWidget *vpaned;
     GtkWidget *textview;
-    GtkWidget *wview;
     GtkWidget *scrolled;
 
     GtkWidget *vbox;
@@ -232,7 +175,6 @@ main (int argc, char **argv)
 
     GtkTextBuffer *buffer;
 
-    gpointer data[2] = {0, 0};
     GEPUBDoc *doc;
 
     if (argc < 2) {
@@ -245,21 +187,19 @@ main (int argc, char **argv)
     vpaned = gtk_hpaned_new ();
     gtk_container_add (GTK_CONTAINER (window), vpaned);
 
-    wview = webkit_web_view_new ();
+    doc = gepub_doc_new (argv[1]);
+
     scrolled = gtk_scrolled_window_new (NULL, NULL);
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-    gtk_container_add (GTK_CONTAINER (scrolled), wview);
-    gtk_widget_set_size_request (wview, 500, 300);
+    gtk_container_add (GTK_CONTAINER (scrolled), GTK_WIDGET (doc));
+    gtk_widget_set_size_request (GTK_WIDGET (doc), 500, 300);
 
     vbox = gtk_vbox_new (FALSE, 5);
     hbox = gtk_hbox_new (TRUE, 5);
     b_prev = gtk_button_new_with_label ("prev");
-    doc = gepub_doc_new (argv[1]);
-    data[0] = wview;
-    data[1] = doc;
-    g_signal_connect (b_prev, "clicked", button_pressed, data);
+    g_signal_connect (b_prev, "clicked", (GCallback)button_pressed, doc);
     b_next = gtk_button_new_with_label ("next");
-    g_signal_connect (b_next, "clicked", button_pressed, data);
+    g_signal_connect (b_next, "clicked", (GCallback)button_pressed, doc);
     gtk_container_add (GTK_CONTAINER (hbox), b_prev);
     gtk_container_add (GTK_CONTAINER (hbox), b_next);
     gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 5);
@@ -282,7 +222,6 @@ main (int argc, char **argv)
     TEST(test_doc_name, argv[1])
     TEST(test_doc_resources, argv[1])
     TEST(test_doc_spine, argv[1])
-    TEST(test_webkit, doc, WEBKIT_WEB_VIEW (wview))
 
     // Freeing the mallocs :P
     if (buf2) {

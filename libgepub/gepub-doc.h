@@ -23,6 +23,8 @@
 #include <glib-object.h>
 #include <glib.h>
 
+#include <webkit/webkit.h>
+
 G_BEGIN_DECLS
 
 #define GEPUB_TYPE_DOC           (gepub_doc_get_type ())
