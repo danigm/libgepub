@@ -111,7 +111,10 @@ gepub_doc_new (const gchar *path)
     doc->archive = gepub_archive_new (path);
 
     file = gepub_archive_get_root_file (doc->archive);
-    gepub_archive_read_entry (doc->archive, file, &(doc->content), &bufsize);
+    if (!file)
+        return NULL;
+    if (!gepub_archive_read_entry (doc->archive, file, &(doc->content), &bufsize))
+        return NULL;
 
     len = strlen (file);
     while (file[i++] != '/' && i < len);
@@ -265,7 +268,8 @@ gepub_doc_get_resource (GEPUBDoc *doc, gchar *id)
         // not found
         return NULL;
     }
-    gepub_archive_read_entry (doc->archive, gres->uri, &res, &bufsize);
+    if (!gepub_archive_read_entry (doc->archive, gres->uri, &res, &bufsize))
+        return NULL;
 
     return res;
 }
@@ -277,7 +281,10 @@ gepub_doc_get_resource_v (GEPUBDoc *doc, gchar *v, gint *bufsize)
     gchar *path = NULL;
 
     path = g_strdup_printf ("%s%s", doc->content_base, v);
-    gepub_archive_read_entry (doc->archive, path, &res, bufsize);
+    if (!gepub_archive_read_entry (doc->archive, path, &res, bufsize)) {
+        g_free (path);
+        return NULL;
+    }
     g_free (path);
 
     return res;

@@ -37,6 +37,12 @@ test_open (const char *path)
 
     a = gepub_archive_new (path);
     list_files = gepub_archive_list_files (a);
+    if (!list_files) {
+        PTEST ("ERROR: BAD epub file");
+        g_object_unref (a);
+        return;
+    }
+
     size = g_list_length (list_files);
     PTEST ("%d\n", size);
     for (i = 0; i < size; i++) {
@@ -62,6 +68,12 @@ test_read (const char *path)
 
     a = gepub_archive_new (path);
     list_files = gepub_archive_list_files (a);
+    if (!list_files) {
+        PTEST ("ERROR: BAD epub file");
+        g_object_unref (a);
+        return;
+    }
+
     size = g_list_length (list_files);
     if (!size)
         return;
@@ -188,6 +200,10 @@ main (int argc, char **argv)
     gtk_container_add (GTK_CONTAINER (window), vpaned);
 
     doc = gepub_doc_new (argv[1]);
+    if (!doc) {
+        perror ("BAD epub FILE");
+        return -1;
+    }
 
     scrolled = gtk_scrolled_window_new (NULL, NULL);
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);

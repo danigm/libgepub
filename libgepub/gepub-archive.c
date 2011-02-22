@@ -52,6 +52,8 @@ gepub_archive_open (GEPUBArchive *archive)
         archive_read_finish (archive->archive);
         return FALSE;
     }
+
+    return TRUE;
 }
 
 static void
@@ -110,7 +112,8 @@ gepub_archive_list_files (GEPUBArchive *archive)
     struct archive_entry *entry;
     GList *file_list = NULL;
 
-    gepub_archive_open (archive);
+    if (!gepub_archive_open (archive))
+        return NULL;
     while (archive_read_next_header (archive->archive, &entry) == ARCHIVE_OK) {
         file_list = g_list_prepend (file_list, g_strdup (archive_entry_pathname (entry)));
         archive_read_data_skip (archive->archive);
@@ -120,7 +123,7 @@ gepub_archive_list_files (GEPUBArchive *archive)
     return file_list;
 }
 
-void
+gboolean
 gepub_archive_read_entry (GEPUBArchive *archive,
                           const gchar *path,
                           guchar **buffer,
@@ -129,7 +132,9 @@ gepub_archive_read_entry (GEPUBArchive *archive,
     struct archive_entry *entry;
     gint size;
 
-    gepub_archive_open (archive);
+    if (!gepub_archive_open (archive))
+        return FALSE;
+
     while (archive_read_next_header (archive->archive, &entry) == ARCHIVE_OK) {
         if (g_ascii_strcasecmp (path, archive_entry_pathname (entry)) == 0)
             break;
@@ -143,6 +148,7 @@ gepub_archive_read_entry (GEPUBArchive *archive,
     (*buffer)[size] = '\0';
 
     gepub_archive_close (archive);
+    return TRUE;
 }
 
 gchar *
@@ -158,7 +164,8 @@ gepub_archive_get_root_file (GEPUBArchive *archive)
     LIBXML_TEST_VERSION
 
     // root file is in META-INF/container.xml
-    gepub_archive_read_entry (archive, "META-INF/container.xml", &buffer, &bufsize);
+    if (!gepub_archive_read_entry (archive, "META-INF/container.xml", &buffer, &bufsize))
+        return NULL;
 
     doc = xmlRecoverDoc (buffer);
     root_element = xmlDocGetRootElement (doc);

@@ -42,7 +42,7 @@ GType             gepub_archive_get_type       (void) G_GNUC_CONST;
 
 GEPUBArchive     *gepub_archive_new            (const gchar  *path);
 GList            *gepub_archive_list_files     (GEPUBArchive *archive);
-void              gepub_archive_read_entry     (GEPUBArchive *archive,
+gboolean          gepub_archive_read_entry     (GEPUBArchive *archive,
                                                 const gchar *path,
                                                 guchar **buffer,
                                                 gsize *bufsize);
