@@ -15,8 +15,7 @@ PKG_CHECK_MODULES(GEPUB,
                   glib-2.0
                   gobject-2.0
                   gio-2.0
-                  cairo
-                  webkit-1.0
+                  webkit-1.0 >= 1.3.0
                   libxml-2.0
                   libarchive)
 
