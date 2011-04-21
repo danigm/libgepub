@@ -14,8 +14,9 @@ AC_PROG_LIBTOOL
 PKG_CHECK_MODULES(GEPUB,
                   glib-2.0
                   gobject-2.0
+                  gtk+-3.0
                   gio-2.0
-                  webkit-1.0 >= 1.3.0
+                  webkitgtk-3.0 >= 1.3.0
                   libxml-2.0
                   libarchive)
 

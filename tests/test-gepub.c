@@ -195,7 +195,7 @@ main (int argc, char **argv)
     }
 
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    g_signal_connect (window, "destroy", (GCallback)gtk_exit, NULL);
+    g_signal_connect (window, "destroy", (GCallback)gtk_main_quit, NULL);
     vpaned = gtk_hpaned_new ();
     gtk_container_add (GTK_CONTAINER (window), vpaned);
 
