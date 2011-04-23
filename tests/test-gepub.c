@@ -196,6 +196,7 @@ main (int argc, char **argv)
 
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     g_signal_connect (window, "destroy", (GCallback)gtk_main_quit, NULL);
+    gtk_widget_set_size_request (GTK_WIDGET (window), 800, 500);
     vpaned = gtk_hpaned_new ();
     gtk_container_add (GTK_CONTAINER (window), vpaned);
 
@@ -220,6 +221,8 @@ main (int argc, char **argv)
     gtk_container_add (GTK_CONTAINER (hbox), b_next);
     gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 5);
     gtk_box_pack_start (GTK_BOX (vbox), scrolled, TRUE, TRUE, 5);
+
+    gtk_widget_set_size_request (GTK_WIDGET (vbox), 400, 500);
     gtk_paned_add1 (GTK_PANED (vpaned), vbox);
 
     textview = gtk_text_view_new ();
