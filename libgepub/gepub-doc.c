@@ -29,7 +29,6 @@
 static void g_epub_doc_fill_resources (GEPUBDoc *doc);
 static void g_epub_doc_fill_spine (GEPUBDoc *doc);
 static gboolean equal_strs (gchar *one, gchar *two);
-static void gepub_doc_render_page (GEPUBDoc *doc);
 
 void g_epub_resource_free (GEPUBResource *res)
 {
@@ -130,9 +129,6 @@ gepub_doc_new (const gchar *path)
     g_epub_doc_fill_resources (doc);
     doc->spine = NULL;
     g_epub_doc_fill_spine (doc);
-
-
-    gepub_doc_render_page (doc);
 
     if (file)
         g_free (file);
@@ -325,23 +321,6 @@ gepub_doc_get_current (GEPUBDoc *doc)
     return gepub_doc_get_resource (doc, doc->spine->data);
 }
 
-static void
-gepub_doc_render_page (GEPUBDoc *doc)
-{
-    guchar *f = gepub_doc_get_current (doc);
-    GList *l = gepub_doc_get_text (doc);
-
-    for (; l; l = l->next) {
-        GEPUBTextChunk *chunk = GEPUB_TEXT_CHUNK (l->data);
-        printf ("LINE :%s: %s\n", gepub_text_chunk_type_str (chunk), chunk->text);
-    }
-
-
-    g_list_free_full (l, (GDestroyNotify)g_object_unref);
-
-    g_free (f);
-}
-
 GList *
 gepub_doc_get_text (GEPUBDoc *doc)
 {
@@ -363,16 +342,20 @@ gepub_doc_get_text (GEPUBDoc *doc)
     return texts;
 }
 
+void
+gepub_doc_free_text (GList *tlist)
+{
+    g_list_free_full (tlist, (GDestroyNotify)g_object_unref);
+}
+
 void gepub_doc_go_next (GEPUBDoc *doc)
 {
     if (doc->spine->next)
         doc->spine = doc->spine->next;
-    gepub_doc_render_page (doc);
 }
 
 void gepub_doc_go_prev (GEPUBDoc *doc)
 {
     if (doc->spine->prev)
         doc->spine = doc->spine->prev;
-    gepub_doc_render_page (doc);
 }

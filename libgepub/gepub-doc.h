@@ -53,6 +53,7 @@ GHashTable       *gepub_doc_get_resources  (GEPUBDoc *doc);
 guchar           *gepub_doc_get_resource_mime (GEPUBDoc *doc, gchar *v);
 GList            *gepub_doc_get_spine      (GEPUBDoc *doc);
 GList            *gepub_doc_get_text       (GEPUBDoc *doc);
+void              gepub_doc_free_text      (GList *tlist);
 guchar           *gepub_doc_get_current    (GEPUBDoc *doc);
 void              gepub_doc_go_next        (GEPUBDoc *doc);
 void              gepub_doc_go_prev        (GEPUBDoc *doc);

@@ -7,6 +7,8 @@ gchar *buf = NULL;
 gchar *buf2 = NULL;
 gchar *tmpbuf;
 
+GtkTextBuffer *page_buffer;
+
 #define PTEST1(...) printf (__VA_ARGS__)
 #define PTEST2(...) buf = g_strdup_printf (__VA_ARGS__);\
                     tmpbuf = buf2;\
@@ -18,6 +20,39 @@ gchar *tmpbuf;
 #define TEST(f,arg...) PTEST ("\n### TESTING " #f " ###\n\n"); f (arg); PTEST ("\n\n");
 
 void
+update_text (GEPUBDoc *doc)
+{
+    GList *l, *chunks;
+    GtkTextIter start, end;
+
+    gtk_text_buffer_get_start_iter (page_buffer, &start);
+    gtk_text_buffer_get_end_iter (page_buffer, &end);
+    gtk_text_buffer_delete (page_buffer, &start, &end);
+
+    chunks = gepub_doc_get_text (doc);
+
+    for (l=chunks; l; l = l->next) {
+        GEPUBTextChunk *chunk = GEPUB_TEXT_CHUNK (l->data);
+        if (chunk->type == GEPUBTextHeader) {
+            gtk_text_buffer_insert_at_cursor (page_buffer, "\n", -1);
+            gtk_text_buffer_get_end_iter (page_buffer, &end);
+            gtk_text_buffer_insert_with_tags_by_name (page_buffer, &end, chunk->text, -1, "head",  NULL);
+            gtk_text_buffer_insert_at_cursor (page_buffer, "\n", -1);
+        } else if (chunk->type == GEPUBTextNormal) {
+            gtk_text_buffer_insert_at_cursor (page_buffer, "\n", -1);
+            gtk_text_buffer_insert_at_cursor (page_buffer, chunk->text, -1);
+            gtk_text_buffer_insert_at_cursor (page_buffer, "\n", -1);
+        } else if (chunk->type == GEPUBTextItalic) {
+            gtk_text_buffer_get_end_iter (page_buffer, &end);
+            gtk_text_buffer_insert_with_tags_by_name (page_buffer, &end, chunk->text, -1, "italic",  NULL);
+        } else if (chunk->type == GEPUBTextBold) {
+            gtk_text_buffer_get_end_iter (page_buffer, &end);
+            gtk_text_buffer_insert_with_tags_by_name (page_buffer, &end, chunk->text, -1, "bold",  NULL);
+        }
+    }
+}
+
+void
 button_pressed (GtkButton *button, GEPUBDoc *doc)
 {
     if (!strcmp (gtk_button_get_label (button), "prev")) {
@@ -25,6 +60,7 @@ button_pressed (GtkButton *button, GEPUBDoc *doc)
     } else {
         gepub_doc_go_next (doc);
     }
+    update_text (doc);
 }
 
 void
@@ -128,7 +164,6 @@ test_doc_name (const char *path)
     g_free (id);
     g_free (author);
     g_free (description);
-    //gtk_widget_destroy (GTK_WIDGET (doc));
     g_object_unref (G_OBJECT (doc));
 }
 
@@ -150,7 +185,6 @@ test_doc_resources (const char *path)
     PTEST ("ncx:\n%s\n", ncx);
     g_free (ncx);
 
-    //gtk_widget_destroy (GTK_WIDGET (doc));
     g_object_unref (G_OBJECT (doc));
 }
 
@@ -169,7 +203,6 @@ test_doc_spine (const char *path)
     GList *spine = gepub_doc_get_spine (doc);
     g_list_foreach (spine, (GFunc)p, NULL);
 
-    //gtk_widget_destroy (GTK_WIDGET (doc));
     g_object_unref (G_OBJECT (doc));
 }
 
@@ -191,6 +224,7 @@ main (int argc, char **argv)
     GtkTextBuffer *buffer;
 
     GEPUBDoc *doc;
+    GtkWidget *textview2;
 
     if (argc < 2) {
         printf ("you should provide an .epub file\n");
@@ -211,8 +245,15 @@ main (int argc, char **argv)
 
     scrolled = gtk_scrolled_window_new (NULL, NULL);
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-    //gtk_container_add (GTK_CONTAINER (scrolled), GTK_WIDGET (doc));
-    //gtk_widget_set_size_request (GTK_WIDGET (doc), 500, 300);
+    textview2 = gtk_text_view_new ();
+    gtk_text_view_set_wrap_mode (GTK_TEXT_VIEW (textview2), GTK_WRAP_WORD_CHAR);
+    page_buffer = gtk_text_view_get_buffer (GTK_TEXT_VIEW (textview2));
+    gtk_text_buffer_create_tag (page_buffer, "bold", "weight", PANGO_WEIGHT_BOLD, "foreground", "#ff0000", NULL);
+    gtk_text_buffer_create_tag (page_buffer, "italic", "style", PANGO_STYLE_ITALIC, "foreground", "#005500", NULL);
+    gtk_text_buffer_create_tag (page_buffer, "head", "size-points", 20.0, NULL);
+    update_text (doc);
+    gtk_container_add (GTK_CONTAINER (scrolled), GTK_WIDGET (textview2));
+    gtk_widget_set_size_request (GTK_WIDGET (textview2), 500, 300);
 
     vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
     hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
