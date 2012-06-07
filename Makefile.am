@@ -1,4 +1,4 @@
-SUBDIRS = libgepub
+SUBDIRS = libgepub tests
 
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libgepub.pc

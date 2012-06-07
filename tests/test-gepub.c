@@ -64,7 +64,7 @@ test_read (const char *path)
     gint size;
     guchar *buffer;
     gchar *file;
-    int bufsize;
+    gsize bufsize;
 
     a = gepub_archive_new (path);
     list_files = gepub_archive_list_files (a);
@@ -128,7 +128,8 @@ test_doc_name (const char *path)
     g_free (id);
     g_free (author);
     g_free (description);
-    gtk_widget_destroy (GTK_WIDGET (doc));
+    //gtk_widget_destroy (GTK_WIDGET (doc));
+    g_object_unref (G_OBJECT (doc));
 }
 
 void
@@ -149,7 +150,8 @@ test_doc_resources (const char *path)
     PTEST ("ncx:\n%s\n", ncx);
     g_free (ncx);
 
-    gtk_widget_destroy (GTK_WIDGET (doc));
+    //gtk_widget_destroy (GTK_WIDGET (doc));
+    g_object_unref (G_OBJECT (doc));
 }
 
 void
@@ -167,7 +169,8 @@ test_doc_spine (const char *path)
     GList *spine = gepub_doc_get_spine (doc);
     g_list_foreach (spine, (GFunc)p, NULL);
 
-    gtk_widget_destroy (GTK_WIDGET (doc));
+    //gtk_widget_destroy (GTK_WIDGET (doc));
+    g_object_unref (G_OBJECT (doc));
 }
 
 int
@@ -197,7 +200,7 @@ main (int argc, char **argv)
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     g_signal_connect (window, "destroy", (GCallback)gtk_main_quit, NULL);
     gtk_widget_set_size_request (GTK_WIDGET (window), 800, 500);
-    vpaned = gtk_hpaned_new ();
+    vpaned = gtk_paned_new (GTK_ORIENTATION_HORIZONTAL);
     gtk_container_add (GTK_CONTAINER (window), vpaned);
 
     doc = gepub_doc_new (argv[1]);
@@ -208,11 +211,11 @@ main (int argc, char **argv)
 
     scrolled = gtk_scrolled_window_new (NULL, NULL);
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-    gtk_container_add (GTK_CONTAINER (scrolled), GTK_WIDGET (doc));
-    gtk_widget_set_size_request (GTK_WIDGET (doc), 500, 300);
+    //gtk_container_add (GTK_CONTAINER (scrolled), GTK_WIDGET (doc));
+    //gtk_widget_set_size_request (GTK_WIDGET (doc), 500, 300);
 
-    vbox = gtk_vbox_new (FALSE, 5);
-    hbox = gtk_hbox_new (TRUE, 5);
+    vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
+    hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
     b_prev = gtk_button_new_with_label ("prev");
     g_signal_connect (b_prev, "clicked", (GCallback)button_pressed, doc);
     b_next = gtk_button_new_with_label ("next");

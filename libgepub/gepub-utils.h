@@ -23,5 +23,6 @@
 #include <libxml/tree.h>
 
 xmlNode * gepub_utils_get_element_by_tag (xmlNode *node, gchar *name);
+GList *   gepub_utils_get_text_elements  (xmlNode *node);
 
 #endif

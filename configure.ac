@@ -5,6 +5,10 @@ AM_INIT_AUTOMAKE([1.10 -Wall -Werror dist-bzip2])
 
 GNOME_COMMON_INIT
 
+# automake 1.12 seems to require this, but automake 1.11 doesn't recognize it
+m4_pattern_allow([AM_PROG_AR])
+AM_PROG_AR
+
 AC_PROG_CC
 # Compiling sources with per-target flags requires AM_PROG_CC_C_O
 AM_PROG_CC_C_O
@@ -16,7 +20,6 @@ PKG_CHECK_MODULES(GEPUB,
                   gobject-2.0
                   gtk+-3.0
                   gio-2.0
-                  webkitgtk-3.0 >= 1.3.0
                   libxml-2.0
                   libarchive)
 

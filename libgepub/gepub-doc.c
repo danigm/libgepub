@@ -24,13 +24,12 @@
 #include "gepub-utils.h"
 #include "gepub-doc.h"
 #include "gepub-archive.h"
+#include "gepub-text-chunk.h"
 
 static void g_epub_doc_fill_resources (GEPUBDoc *doc);
 static void g_epub_doc_fill_spine (GEPUBDoc *doc);
 static gboolean equal_strs (gchar *one, gchar *two);
 static void gepub_doc_render_page (GEPUBDoc *doc);
-static void gepub_doc_load_finished (WebKitWebView *wview, WebKitWebFrame *frame, gpointer data);
-static void gepub_doc_replace_resource (GEPUBDoc *doc, gchar *tag, gchar *attr);
 
 void g_epub_resource_free (GEPUBResource *res)
 {
@@ -40,7 +39,7 @@ void g_epub_resource_free (GEPUBResource *res)
 }
 
 struct _GEPUBDoc {
-    WebKitWebView parent;
+    GObject parent;
 
     GEPUBArchive *archive;
     guchar *content;
@@ -50,10 +49,10 @@ struct _GEPUBDoc {
 };
 
 struct _GEPUBDocClass {
-    WebKitWebViewClass parent_class;
+    GObjectClass parent_class;
 };
 
-G_DEFINE_TYPE (GEPUBDoc, gepub_doc, WEBKIT_TYPE_WEB_VIEW)
+G_DEFINE_TYPE (GEPUBDoc, gepub_doc, G_TYPE_OBJECT)
 
 static void
 gepub_doc_finalize (GObject *object)
@@ -82,6 +81,8 @@ gepub_doc_finalize (GObject *object)
         doc->spine = NULL;
     }
 
+    xmlCleanupParser ();
+
     G_OBJECT_CLASS (gepub_doc_parent_class)->finalize (object);
 }
 
@@ -104,7 +105,7 @@ gepub_doc_new (const gchar *path)
     GEPUBDoc *doc;
 
     gchar *file;
-    gint bufsize;
+    gsize bufsize;
     gint i = 0, len;
 
     doc = GEPUB_DOC (g_object_new (GEPUB_TYPE_DOC, NULL));
@@ -131,7 +132,6 @@ gepub_doc_new (const gchar *path)
     g_epub_doc_fill_spine (doc);
 
 
-    g_signal_connect (WEBKIT_WEB_VIEW (doc), "document-load-finished", (GCallback)gepub_doc_load_finished, NULL);
     gepub_doc_render_page (doc);
 
     if (file)
@@ -184,7 +184,6 @@ g_epub_doc_fill_resources (GEPUBDoc *doc)
     }
 
     xmlFreeDoc (xdoc);
-    xmlCleanupParser ();
 }
 
 static void
@@ -262,7 +261,7 @@ guchar *
 gepub_doc_get_resource (GEPUBDoc *doc, gchar *id)
 {
     guchar *res = NULL;
-    gint bufsize = 0;
+    gsize bufsize = 0;
     GEPUBResource *gres = g_hash_table_lookup (doc->resources, id);
     if (!gres) {
         // not found
@@ -275,7 +274,7 @@ gepub_doc_get_resource (GEPUBDoc *doc, gchar *id)
 }
 
 guchar *
-gepub_doc_get_resource_v (GEPUBDoc *doc, gchar *v, gint *bufsize)
+gepub_doc_get_resource_v (GEPUBDoc *doc, gchar *v, gsize *bufsize)
 {
     guchar *res = NULL;
     gchar *path = NULL;
@@ -330,8 +329,38 @@ static void
 gepub_doc_render_page (GEPUBDoc *doc)
 {
     guchar *f = gepub_doc_get_current (doc);
-    webkit_web_view_load_string (WEBKIT_WEB_VIEW (doc), f, NULL, NULL, "");
+    GList *l = gepub_doc_get_text (doc);
+
+    for (; l; l = l->next) {
+        GEPUBTextChunk *chunk = GEPUB_TEXT_CHUNK (l->data);
+        printf ("LINE :%s: %s\n", gepub_text_chunk_type_str (chunk), chunk->text);
+    }
+
+
+    g_list_free_full (l, (GDestroyNotify)g_object_unref);
+
     g_free (f);
+}
+
+GList *
+gepub_doc_get_text (GEPUBDoc *doc)
+{
+    xmlDoc *xdoc = NULL;
+    xmlNode *root_element = NULL;
+    xmlNode *item = NULL;
+    gchar *id;
+
+    GList *texts = NULL;
+
+    LIBXML_TEST_VERSION
+
+    xdoc = xmlRecoverDoc (gepub_doc_get_current (doc));
+    root_element = xmlDocGetRootElement (xdoc);
+    texts = gepub_utils_get_text_elements (root_element);
+
+    xmlFreeDoc (xdoc);
+
+    return texts;
 }
 
 void gepub_doc_go_next (GEPUBDoc *doc)
@@ -346,44 +375,4 @@ void gepub_doc_go_prev (GEPUBDoc *doc)
     if (doc->spine->prev)
         doc->spine = doc->spine->prev;
     gepub_doc_render_page (doc);
-}
-
-static void
-gepub_doc_replace_resource (GEPUBDoc *doc,
-                            gchar *tag,
-                            gchar *attr)
-{
-    GError *error = NULL;
-    WebKitWebView *wview = WEBKIT_WEB_VIEW (doc);
-    WebKitDOMDocument* document = webkit_web_view_get_dom_document (wview);
-
-    WebKitDOMNode *node = NULL, *node2 = NULL;
-    WebKitDOMNodeList* list = NULL;
-    WebKitDOMNamedNodeMap *attrs = NULL;
-    gchar *data, *data2, *mime;
-    gint i, len = 0, size = 0;
-
-    list = webkit_dom_document_get_elements_by_tag_name (document, tag);
-    len = webkit_dom_node_list_get_length (list);
-    for (i=0; i < len; i++) {
-        node = webkit_dom_node_list_item (list, i);
-        attrs = webkit_dom_node_get_attributes (node);
-        node2 = webkit_dom_named_node_map_get_named_item (attrs, attr);
-        data = gepub_doc_get_resource_v (doc, webkit_dom_node_get_node_value (node2), &size);
-        mime = gepub_doc_get_resource_mime (doc, webkit_dom_node_get_node_value (node2));
-        data2 = g_strdup_printf ("data:%s;base64,%s", mime, g_base64_encode (data, size));
-        webkit_dom_node_set_node_value (node2, data2, &error);
-    }
-}
-
-static void
-gepub_doc_load_finished (WebKitWebView *wview, WebKitWebFrame *frame, gpointer data)
-{
-    GEPUBDoc *doc = GEPUB_DOC (wview);
-    // css
-    gepub_doc_replace_resource (doc, "link", "href");
-    // images
-    gepub_doc_replace_resource (doc, "img", "src");
-    // svg images
-    gepub_doc_replace_resource (doc, "image", "xlink:href");
 }

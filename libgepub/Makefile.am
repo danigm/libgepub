@@ -1,11 +1,12 @@
 lib_LTLIBRARIES = libgepub.la
 
 NOINST_H_FILES = \
-	gepub-arvhice.h		\
-	gepub-utils.h		\
-	gepub-doc.h
+	gepub-utils.h
 
 INST_H_FILES = \
+	gepub-archive.h		\
+	gepub-text-chunk.h	\
+	gepub-doc.h		\
 	gepub.h
 
 libgepubincludedir = $(includedir)/libgepub
@@ -13,14 +14,15 @@ libgepubinclude_HEADERS = $(INST_H_FILES)
 
 libgepub_la_SOURCES = \
 	gepub-archive.c			\
-	gepub-doc.c			\
+	gepub-text-chunk.c		\
+	gepub-doc.c				\
 	gepub-utils.c			\
 	$(NOINST_H_FILES)		\
 	$(INST_H_FILES)
 
 libgepub_la_CPPFLAGS = \
 	-I$(top_builddir)	\
-	-I$(srcdir)		\
+	-I$(srcdir)			\
 	-I$(top_srcdir)		\
 	$(AM_CPPFLAGS)
 

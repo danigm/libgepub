@@ -158,7 +158,7 @@ gepub_archive_get_root_file (GEPUBArchive *archive)
     xmlNode *root_element = NULL;
     xmlNode *root_node = NULL;
     guchar *buffer;
-    gint bufsize;
+    gsize bufsize;
     gchar *root_file = NULL;
 
     LIBXML_TEST_VERSION
