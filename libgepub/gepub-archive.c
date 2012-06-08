@@ -1,4 +1,4 @@
-/* GEPUBArchive
+/* GepubArchive
  *
  * Copyright (C) 2011 Daniel Garcia <danigm@wadobo.com>
  *
@@ -26,21 +26,21 @@
 
 #define BUFZISE 1024
 
-struct _GEPUBArchive {
+struct _GepubArchive {
     GObject parent;
 
     struct archive *archive;
     gchar *path;
 };
 
-struct _GEPUBArchiveClass {
+struct _GepubArchiveClass {
     GObjectClass parent_class;
 };
 
-G_DEFINE_TYPE (GEPUBArchive, gepub_archive, G_TYPE_OBJECT)
+G_DEFINE_TYPE (GepubArchive, gepub_archive, G_TYPE_OBJECT)
 
 static gboolean
-gepub_archive_open (GEPUBArchive *archive)
+gepub_archive_open (GepubArchive *archive)
 {
     archive->archive = archive_read_new ();
     archive_read_support_format_zip (archive->archive);
@@ -57,7 +57,7 @@ gepub_archive_open (GEPUBArchive *archive)
 }
 
 static void
-gepub_archive_close (GEPUBArchive *archive)
+gepub_archive_close (GepubArchive *archive)
 {
     if (!archive->archive)
         return;
@@ -69,7 +69,7 @@ gepub_archive_close (GEPUBArchive *archive)
 static void
 gepub_archive_finalize (GObject *object)
 {
-    GEPUBArchive *archive = GEPUB_ARCHIVE (object);
+    GepubArchive *archive = GEPUB_ARCHIVE (object);
 
     if (archive->path) {
         g_free (archive->path);
@@ -82,22 +82,22 @@ gepub_archive_finalize (GObject *object)
 }
 
 static void
-gepub_archive_init (GEPUBArchive *archive)
+gepub_archive_init (GepubArchive *archive)
 {
 }
 
 static void
-gepub_archive_class_init (GEPUBArchiveClass *klass)
+gepub_archive_class_init (GepubArchiveClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
     object_class->finalize = gepub_archive_finalize;
 }
 
-GEPUBArchive *
+GepubArchive *
 gepub_archive_new (const gchar *path)
 {
-    GEPUBArchive *archive;
+    GepubArchive *archive;
 
     archive = GEPUB_ARCHIVE (g_object_new (GEPUB_TYPE_ARCHIVE, NULL));
     archive->path = g_strdup (path);
@@ -107,7 +107,7 @@ gepub_archive_new (const gchar *path)
 }
 
 GList *
-gepub_archive_list_files (GEPUBArchive *archive)
+gepub_archive_list_files (GepubArchive *archive)
 {
     struct archive_entry *entry;
     GList *file_list = NULL;
@@ -124,7 +124,7 @@ gepub_archive_list_files (GEPUBArchive *archive)
 }
 
 gboolean
-gepub_archive_read_entry (GEPUBArchive *archive,
+gepub_archive_read_entry (GepubArchive *archive,
                           const gchar *path,
                           guchar **buffer,
                           gsize *bufsize)
@@ -152,7 +152,7 @@ gepub_archive_read_entry (GEPUBArchive *archive,
 }
 
 gchar *
-gepub_archive_get_root_file (GEPUBArchive *archive)
+gepub_archive_get_root_file (GepubArchive *archive)
 {
     xmlDoc *doc = NULL;
     xmlNode *root_element = NULL;

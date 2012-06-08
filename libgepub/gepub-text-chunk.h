@@ -1,4 +1,4 @@
-/* GEPUBTextChunk
+/* GepubTextChunk
  *
  * Copyright (C) 2011  Daniel Garcia <danigm@wadobo.com>
  *
@@ -26,38 +26,38 @@
 G_BEGIN_DECLS
 
 #define GEPUB_TYPE_TEXT_CHUNK           (gepub_text_chunk_get_type ())
-#define GEPUB_TEXT_CHUNK(obj)           (G_TYPE_CHECK_INSTANCE_CAST (obj, GEPUB_TYPE_TEXT_CHUNK, GEPUBTextChunk))
-#define GEPUB_TEXT_CHUNK_CLASS(cls)     (G_TYPE_CHECK_CLASS_CAST (cls, GEPUB_TYPE_TEXT_CHUNK, GEPUBTextChunkClass))
+#define GEPUB_TEXT_CHUNK(obj)           (G_TYPE_CHECK_INSTANCE_CAST (obj, GEPUB_TYPE_TEXT_CHUNK, GepubTextChunk))
+#define GEPUB_TEXT_CHUNK_CLASS(cls)     (G_TYPE_CHECK_CLASS_CAST (cls, GEPUB_TYPE_TEXT_CHUNK, GepubTextChunkClass))
 #define GEPUB_IS_TEXT_CHUNK(obj)        (G_TYPE_CHECK_INSTANCE_TYPE (obj, GEPUB_TYPE_TEXT_CHUNK))
 #define GEPUB_IS_TEXT_CHUNK_CLASS(obj)  (G_TYPE_CHECK_CLASS_TYPE (obj, GEPUB_TYPE_TEXT_CHUNK))
-#define GEPUB_TEXT_CHUNK_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), GEPUB_TYPE_TEXT_CHUNK, GEPUBTextChunkClass))
+#define GEPUB_TEXT_CHUNK_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), GEPUB_TYPE_TEXT_CHUNK, GepubTextChunkClass))
 
-enum _GEPUBTextChunkType {
+enum _GepubTextChunkType {
     GEPUBTextHeader,
     GEPUBTextBold,
     GEPUBTextItalic,
     GEPUBTextNormal
 };
 
-typedef enum _GEPUBTextChunkType     GEPUBTextChunkType;
+typedef enum _GepubTextChunkType     GepubTextChunkType;
 
-struct _GEPUBTextChunk {
+struct _GepubTextChunk {
     GObject parent;
 
-    GEPUBTextChunkType type;
+    GepubTextChunkType type;
     guchar *text;
 };
 
-struct _GEPUBTextChunkClass {
+struct _GepubTextChunkClass {
     GObjectClass parent_class;
 };
 
-typedef struct _GEPUBTextChunk      GEPUBTextChunk;
-typedef struct _GEPUBTextChunkClass GEPUBTextChunkClass;
+typedef struct _GepubTextChunk      GepubTextChunk;
+typedef struct _GepubTextChunkClass GepubTextChunkClass;
 
 GType             gepub_text_chunk_get_type     (void) G_GNUC_CONST;
-GEPUBTextChunk   *gepub_text_chunk_new          (GEPUBTextChunkType type, const guchar *path);
-gchar            *gepub_text_chunk_type_str     (GEPUBTextChunk *chunk);
+GepubTextChunk   *gepub_text_chunk_new          (GepubTextChunkType type, const guchar *path);
+gchar            *gepub_text_chunk_type_str     (GepubTextChunk *chunk);
 
 G_END_DECLS
 

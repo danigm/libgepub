@@ -1,4 +1,4 @@
-/* GEPUBArchive
+/* GepubArchive
  *
  * Copyright (C) 2011  Daniel Garcia <danigm@wadobo.com>
  *
@@ -29,24 +29,24 @@
 G_BEGIN_DECLS
 
 #define GEPUB_TYPE_ARCHIVE           (gepub_archive_get_type ())
-#define GEPUB_ARCHIVE(obj)           (G_TYPE_CHECK_INSTANCE_CAST (obj, GEPUB_TYPE_ARCHIVE, GEPUBArchive))
-#define GEPUB_ARCHIVE_CLASS(cls)     (G_TYPE_CHECK_CLASS_CAST (cls, GEPUB_TYPE_ARCHIVE, GEPUBArchiveClass))
+#define GEPUB_ARCHIVE(obj)           (G_TYPE_CHECK_INSTANCE_CAST (obj, GEPUB_TYPE_ARCHIVE, GepubArchive))
+#define GEPUB_ARCHIVE_CLASS(cls)     (G_TYPE_CHECK_CLASS_CAST (cls, GEPUB_TYPE_ARCHIVE, GepubArchiveClass))
 #define GEPUB_IS_ARCHIVE(obj)        (G_TYPE_CHECK_INSTANCE_TYPE (obj, GEPUB_TYPE_ARCHIVE))
 #define GEPUB_IS_ARCHIVE_CLASS(obj)  (G_TYPE_CHECK_CLASS_TYPE (obj, GEPUB_TYPE_ARCHIVE))
-#define GEPUB_ARCHIVE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), GEPUB_TYPE_ARCHIVE, GEPUBArchiveClass))
+#define GEPUB_ARCHIVE_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), GEPUB_TYPE_ARCHIVE, GepubArchiveClass))
 
-typedef struct _GEPUBArchive      GEPUBArchive;
-typedef struct _GEPUBArchiveClass GEPUBArchiveClass;
+typedef struct _GepubArchive      GepubArchive;
+typedef struct _GepubArchiveClass GepubArchiveClass;
 
 GType             gepub_archive_get_type       (void) G_GNUC_CONST;
 
-GEPUBArchive     *gepub_archive_new            (const gchar  *path);
-GList            *gepub_archive_list_files     (GEPUBArchive *archive);
-gboolean          gepub_archive_read_entry     (GEPUBArchive *archive,
+GepubArchive     *gepub_archive_new            (const gchar  *path);
+GList            *gepub_archive_list_files     (GepubArchive *archive);
+gboolean          gepub_archive_read_entry     (GepubArchive *archive,
                                                 const gchar *path,
                                                 guchar **buffer,
                                                 gsize *bufsize);
-gchar            *gepub_archive_get_root_file  (GEPUBArchive *archive);
+gchar            *gepub_archive_get_root_file  (GepubArchive *archive);
 
 G_END_DECLS
 

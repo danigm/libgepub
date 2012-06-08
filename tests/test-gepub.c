@@ -20,7 +20,7 @@ GtkTextBuffer *page_buffer;
 #define TEST(f,arg...) PTEST ("\n### TESTING " #f " ###\n\n"); f (arg); PTEST ("\n\n");
 
 void
-update_text (GEPUBDoc *doc)
+update_text (GepubDoc *doc)
 {
     GList *l, *chunks;
     GtkTextIter start, end;
@@ -32,7 +32,7 @@ update_text (GEPUBDoc *doc)
     chunks = gepub_doc_get_text (doc);
 
     for (l=chunks; l; l = l->next) {
-        GEPUBTextChunk *chunk = GEPUB_TEXT_CHUNK (l->data);
+        GepubTextChunk *chunk = GEPUB_TEXT_CHUNK (l->data);
         if (chunk->type == GEPUBTextHeader) {
             gtk_text_buffer_insert_at_cursor (page_buffer, "\n", -1);
             gtk_text_buffer_get_end_iter (page_buffer, &end);
@@ -53,7 +53,7 @@ update_text (GEPUBDoc *doc)
 }
 
 void
-button_pressed (GtkButton *button, GEPUBDoc *doc)
+button_pressed (GtkButton *button, GepubDoc *doc)
 {
     if (!strcmp (gtk_button_get_label (button), "prev")) {
         gepub_doc_go_prev (doc);
@@ -66,7 +66,7 @@ button_pressed (GtkButton *button, GEPUBDoc *doc)
 void
 test_open (const char *path)
 {
-    GEPUBArchive *a;
+    GepubArchive *a;
     GList *list_files;
     gint i;
     gint size;
@@ -94,7 +94,7 @@ test_open (const char *path)
 void
 test_read (const char *path)
 {
-    GEPUBArchive *a;
+    GepubArchive *a;
     GList *list_files;
     gint i;
     gint size;
@@ -130,7 +130,7 @@ test_read (const char *path)
 void
 test_root_file (const char *path)
 {
-    GEPUBArchive *a;
+    GepubArchive *a;
     gchar *root_file = NULL;
 
     a = gepub_archive_new (path);
@@ -146,12 +146,12 @@ test_root_file (const char *path)
 void
 test_doc_name (const char *path)
 {
-    GEPUBDoc *doc = gepub_doc_new (path);
-    gchar *title = gepub_doc_get_metadata (doc, META_TITLE);
-    gchar *lang = gepub_doc_get_metadata (doc, META_LANG);
-    gchar *id = gepub_doc_get_metadata (doc, META_ID);
-    gchar *author = gepub_doc_get_metadata (doc, META_AUTHOR);
-    gchar *description = gepub_doc_get_metadata (doc, META_DESC);
+    GepubDoc *doc = gepub_doc_new (path);
+    gchar *title = gepub_doc_get_metadata (doc, GEPUB_META_TITLE);
+    gchar *lang = gepub_doc_get_metadata (doc, GEPUB_META_LANG);
+    gchar *id = gepub_doc_get_metadata (doc, GEPUB_META_ID);
+    gchar *author = gepub_doc_get_metadata (doc, GEPUB_META_AUTHOR);
+    gchar *description = gepub_doc_get_metadata (doc, GEPUB_META_DESC);
 
     PTEST ("title: %s\n", title);
     PTEST ("author: %s\n", author);
@@ -168,7 +168,7 @@ test_doc_name (const char *path)
 }
 
 void
-pk (gchar *key, GEPUBResource *value, gpointer data)
+pk (gchar *key, GepubResource *value, gpointer data)
 {
     PTEST ("%s: %s, %s\n", key, value->mime, value->uri);
 }
@@ -176,7 +176,7 @@ pk (gchar *key, GEPUBResource *value, gpointer data)
 void
 test_doc_resources (const char *path)
 {
-    GEPUBDoc *doc = gepub_doc_new (path);
+    GepubDoc *doc = gepub_doc_new (path);
     GHashTable *ht = (GHashTable*)gepub_doc_get_resources (doc);
     g_hash_table_foreach (ht, (GHFunc)pk, NULL);
     guchar *ncx;
@@ -198,7 +198,7 @@ p (gchar *value, gpointer data)
 void
 test_doc_spine (const char *path)
 {
-    GEPUBDoc *doc = gepub_doc_new (path);
+    GepubDoc *doc = gepub_doc_new (path);
 
     GList *spine = gepub_doc_get_spine (doc);
     g_list_foreach (spine, (GFunc)p, NULL);
@@ -223,7 +223,7 @@ main (int argc, char **argv)
 
     GtkTextBuffer *buffer;
 
-    GEPUBDoc *doc;
+    GepubDoc *doc;
     GtkWidget *textview2;
 
     if (argc < 2) {

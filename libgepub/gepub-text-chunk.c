@@ -1,4 +1,4 @@
-/* GEPUBTextChunk
+/* GepubTextChunk
  *
  * Copyright (C) 2011 Daniel Garcia <danigm@wadobo.com>
  *
@@ -21,13 +21,13 @@
 #include "gepub-text-chunk.h"
 
 
-G_DEFINE_TYPE (GEPUBTextChunk, gepub_text_chunk, G_TYPE_OBJECT)
+G_DEFINE_TYPE (GepubTextChunk, gepub_text_chunk, G_TYPE_OBJECT)
 
 
 static void
 gepub_text_chunk_finalize (GObject *object)
 {
-    GEPUBTextChunk *t = GEPUB_TEXT_CHUNK (object);
+    GepubTextChunk *t = GEPUB_TEXT_CHUNK (object);
 
     if (t->text) {
         g_free (t->text);
@@ -38,21 +38,21 @@ gepub_text_chunk_finalize (GObject *object)
 }
 
 static void
-gepub_text_chunk_init (GEPUBTextChunk *t)
+gepub_text_chunk_init (GepubTextChunk *t)
 {
 }
 
 static void
-gepub_text_chunk_class_init (GEPUBTextChunkClass *klass)
+gepub_text_chunk_class_init (GepubTextChunkClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS (klass);
     object_class->finalize = gepub_text_chunk_finalize;
 }
 
-GEPUBTextChunk *
-gepub_text_chunk_new (GEPUBTextChunkType type, const guchar *text)
+GepubTextChunk *
+gepub_text_chunk_new (GepubTextChunkType type, const guchar *text)
 {
-    GEPUBTextChunk *t;
+    GepubTextChunk *t;
 
     t = GEPUB_TEXT_CHUNK (g_object_new (GEPUB_TYPE_TEXT_CHUNK, NULL));
     t->type = type;
@@ -62,7 +62,7 @@ gepub_text_chunk_new (GEPUBTextChunkType type, const guchar *text)
 }
 
 gchar *
-gepub_text_chunk_type_str (GEPUBTextChunk *chunk)
+gepub_text_chunk_type_str (GepubTextChunk *chunk)
 {
     switch (chunk->type) {
         case GEPUBTextBold:

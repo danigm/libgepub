@@ -1,5 +1,5 @@
 AC_PREREQ(2.60)
-AC_INIT([libgxps],[0.0.1],[danigm@wadobo.com])
+AC_INIT([libgepub],[0.0.1],[danigm@wadobo.com])
 AC_CONFIG_AUX_DIR([build])
 AM_INIT_AUTOMAKE([1.10 -Wall -Werror dist-bzip2])
 
@@ -33,5 +33,8 @@ AC_CONFIG_FILES([
     libgepub/Makefile
     tests/Makefile
 ])
+
+# introspection
+GOBJECT_INTROSPECTION_CHECK([1.30.0])
 
 AC_OUTPUT

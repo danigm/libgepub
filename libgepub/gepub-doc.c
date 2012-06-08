@@ -1,4 +1,4 @@
-/* GEPUBDoc
+/* GepubDoc
  *
  * Copyright (C) 2011 Daniel Garcia <danigm@wadobo.com>
  *
@@ -26,37 +26,37 @@
 #include "gepub-archive.h"
 #include "gepub-text-chunk.h"
 
-static void g_epub_doc_fill_resources (GEPUBDoc *doc);
-static void g_epub_doc_fill_spine (GEPUBDoc *doc);
+static void g_epub_doc_fill_resources (GepubDoc *doc);
+static void g_epub_doc_fill_spine (GepubDoc *doc);
 static gboolean equal_strs (gchar *one, gchar *two);
 
-void g_epub_resource_free (GEPUBResource *res)
+void g_epub_resource_free (GepubResource *res)
 {
     g_free (res->mime);
     g_free (res->uri);
     g_free (res);
 }
 
-struct _GEPUBDoc {
+struct _GepubDoc {
     GObject parent;
 
-    GEPUBArchive *archive;
+    GepubArchive *archive;
     guchar *content;
     gchar *content_base;
     GHashTable *resources;
     GList *spine;
 };
 
-struct _GEPUBDocClass {
+struct _GepubDocClass {
     GObjectClass parent_class;
 };
 
-G_DEFINE_TYPE (GEPUBDoc, gepub_doc, G_TYPE_OBJECT)
+G_DEFINE_TYPE (GepubDoc, gepub_doc, G_TYPE_OBJECT)
 
 static void
 gepub_doc_finalize (GObject *object)
 {
-    GEPUBDoc *doc = GEPUB_DOC (object);
+    GepubDoc *doc = GEPUB_DOC (object);
 
     if (doc->archive) {
         g_object_unref (doc->archive);
@@ -86,22 +86,28 @@ gepub_doc_finalize (GObject *object)
 }
 
 static void
-gepub_doc_init (GEPUBDoc *doc)
+gepub_doc_init (GepubDoc *doc)
 {
 }
 
 static void
-gepub_doc_class_init (GEPUBDocClass *klass)
+gepub_doc_class_init (GepubDocClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
     object_class->finalize = gepub_doc_finalize;
 }
 
-GEPUBDoc *
+/**
+ * gepub_doc_new:
+ * @path: the epub doc path
+ *
+ * Returns: (transfer full): the new GepubDoc created
+ */
+GepubDoc *
 gepub_doc_new (const gchar *path)
 {
-    GEPUBDoc *doc;
+    GepubDoc *doc;
 
     gchar *file;
     gsize bufsize;
@@ -145,14 +151,14 @@ equal_strs (gchar *one, gchar *two)
 }
 
 static void
-g_epub_doc_fill_resources (GEPUBDoc *doc)
+g_epub_doc_fill_resources (GepubDoc *doc)
 {
     xmlDoc *xdoc = NULL;
     xmlNode *root_element = NULL;
     xmlNode *mnode = NULL;
     xmlNode *item = NULL;
     gchar *id, *tmpuri, *uri;
-    GEPUBResource *res;
+    GepubResource *res;
 
     LIBXML_TEST_VERSION
 
@@ -172,7 +178,7 @@ g_epub_doc_fill_resources (GEPUBDoc *doc)
         uri = g_strdup_printf ("%s%s", doc->content_base, tmpuri);
         g_free (tmpuri);
 
-        res = g_malloc (sizeof (GEPUBResource));
+        res = g_malloc (sizeof (GepubResource));
         res->mime = xmlGetProp (item, "media-type");
         res->uri = uri;
         g_hash_table_insert (doc->resources, id, res);
@@ -183,7 +189,7 @@ g_epub_doc_fill_resources (GEPUBDoc *doc)
 }
 
 static void
-g_epub_doc_fill_spine (GEPUBDoc *doc)
+g_epub_doc_fill_spine (GepubDoc *doc)
 {
     xmlDoc *xdoc = NULL;
     xmlNode *root_element = NULL;
@@ -214,14 +220,27 @@ g_epub_doc_fill_spine (GEPUBDoc *doc)
     xmlCleanupParser ();
 }
 
+/**
+ * gepub_doc_get_content:
+ * @doc: a #GepubDoc
+ *
+ * Returns: (transfer none): the document content
+ */
 gchar *
-gepub_doc_get_content (GEPUBDoc *doc)
+gepub_doc_get_content (GepubDoc *doc)
 {
     return doc->content;
 }
 
+/**
+ * gepub_doc_get_metadata:
+ * @doc: a #GepubDoc
+ * @mdata: a metadata name string, GEPUB_META_TILE for example
+ *
+ * Returns: (transfer full): metadata string
+ */
 gchar *
-gepub_doc_get_metadata (GEPUBDoc *doc, gchar *mdata)
+gepub_doc_get_metadata (GepubDoc *doc, gchar *mdata)
 {
     xmlDoc *xdoc = NULL;
     xmlNode *root_element = NULL;
@@ -247,18 +266,31 @@ gepub_doc_get_metadata (GEPUBDoc *doc, gchar *mdata)
     return ret;
 }
 
+/**
+ * gepub_doc_get_resources:
+ * @doc: a #GepubDoc
+ *
+ * Returns: (element-type utf8 Gepub.Resource) (transfer none): doc resource table
+ */
 GHashTable *
-gepub_doc_get_resources (GEPUBDoc *doc)
+gepub_doc_get_resources (GepubDoc *doc)
 {
     return doc->resources;
 }
 
+/**
+ * gepub_doc_get_resource:
+ * @doc: a #GepubDoc
+ * @id: the resource id
+ *
+ * Returns: (transfer full): the resource content
+ */
 guchar *
-gepub_doc_get_resource (GEPUBDoc *doc, gchar *id)
+gepub_doc_get_resource (GepubDoc *doc, gchar *id)
 {
     guchar *res = NULL;
     gsize bufsize = 0;
-    GEPUBResource *gres = g_hash_table_lookup (doc->resources, id);
+    GepubResource *gres = g_hash_table_lookup (doc->resources, id);
     if (!gres) {
         // not found
         return NULL;
@@ -269,8 +301,16 @@ gepub_doc_get_resource (GEPUBDoc *doc, gchar *id)
     return res;
 }
 
+/**
+ * gepub_doc_get_resource_v:
+ * @doc: a #GepubDoc
+ * @v: the resource path
+ * @bufsize: (out): location to store length in bytes of the contents
+ *
+ * Returns: (transfer full): the resource content
+ */
 guchar *
-gepub_doc_get_resource_v (GEPUBDoc *doc, gchar *v, gsize *bufsize)
+gepub_doc_get_resource_v (GepubDoc *doc, gchar *v, gsize *bufsize)
 {
     guchar *res = NULL;
     gchar *path = NULL;
@@ -285,19 +325,26 @@ gepub_doc_get_resource_v (GEPUBDoc *doc, gchar *v, gsize *bufsize)
     return res;
 }
 
+/**
+ * gepub_doc_get_resource_mime:
+ * @doc: a #GepubDoc
+ * @v: the resource path
+ *
+ * Returns: (transfer none): the resource mime
+ */
 guchar *
-gepub_doc_get_resource_mime (GEPUBDoc *doc, gchar *v)
+gepub_doc_get_resource_mime (GepubDoc *doc, gchar *v)
 {
     guchar *res = NULL;
     gchar *path = NULL;
-    GEPUBResource *gres;
+    GepubResource *gres;
     gint bufsize = 0;
     GList *keys = g_hash_table_get_keys (doc->resources);
 
     path = g_strdup_printf ("%s%s", doc->content_base, v);
 
     while (keys) {
-        gres = ((GEPUBResource*)g_hash_table_lookup (doc->resources, keys->data));
+        gres = ((GepubResource*)g_hash_table_lookup (doc->resources, keys->data));
         if (!strcmp (gres->uri, path))
             break;
         keys = keys->next;
@@ -309,20 +356,38 @@ gepub_doc_get_resource_mime (GEPUBDoc *doc, gchar *v)
         return NULL;
 }
 
+/**
+ * gepub_doc_get_spine:
+ * @doc: a #GepubDoc
+ *
+ * Returns: (element-type utf8) (transfer none): the document spine
+ */
 GList *
-gepub_doc_get_spine (GEPUBDoc *doc)
+gepub_doc_get_spine (GepubDoc *doc)
 {
     return doc->spine;
 }
 
+/**
+ * gepub_doc_get_current:
+ * @doc: a #GepubDoc
+ *
+ * Returns: (transfer full): the current chapter data
+ */
 guchar *
-gepub_doc_get_current (GEPUBDoc *doc)
+gepub_doc_get_current (GepubDoc *doc)
 {
     return gepub_doc_get_resource (doc, doc->spine->data);
 }
 
+/**
+ * gepub_doc_get_text:
+ * @doc: a #GepubDoc
+ *
+ * Returns: (element-type Gepub.TextChunk) (transfer full): the list of text in the current chapter, Free with gepub_doc_free_text().
+ */
 GList *
-gepub_doc_get_text (GEPUBDoc *doc)
+gepub_doc_get_text (GepubDoc *doc)
 {
     xmlDoc *xdoc = NULL;
     xmlNode *root_element = NULL;
@@ -342,19 +407,31 @@ gepub_doc_get_text (GEPUBDoc *doc)
     return texts;
 }
 
+/**
+ * gepub_doc_free_text:
+ * @doc: a #GList
+ */
 void
 gepub_doc_free_text (GList *tlist)
 {
     g_list_free_full (tlist, (GDestroyNotify)g_object_unref);
 }
 
-void gepub_doc_go_next (GEPUBDoc *doc)
+/**
+ * gepub_doc_go_next:
+ * @doc: a #GepubDoc
+ */
+void gepub_doc_go_next (GepubDoc *doc)
 {
     if (doc->spine->next)
         doc->spine = doc->spine->next;
 }
 
-void gepub_doc_go_prev (GEPUBDoc *doc)
+/**
+ * gepub_doc_go_next:
+ * @doc: a #GepubDoc
+ */
+void gepub_doc_go_prev (GepubDoc *doc)
 {
     if (doc->spine->prev)
         doc->spine = doc->spine->prev;

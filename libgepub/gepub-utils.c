@@ -87,7 +87,7 @@ gepub_utils_get_text_elements (xmlNode *node)
 
     for (cur_node = node; cur_node; cur_node = cur_node->next) {
         if (cur_node->type == XML_TEXT_NODE) {
-            GEPUBTextChunk *text_chunk = NULL;
+            GepubTextChunk *text_chunk = NULL;
 
             if (gepub_utils_has_parent_tag (cur_node, "b", "strong", NULL)) {
                 text_chunk = gepub_text_chunk_new (GEPUBTextBold, cur_node->content);

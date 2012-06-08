@@ -38,3 +38,27 @@ libgepub_la_LDFLAGS = \
 
 libgepub_la_LIBADD = \
 	$(GEPUB_LIBS)
+
+-include $(INTROSPECTION_MAKEFILE)
+INTROSPECTION_GIRS =
+INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir)
+INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)
+
+if HAVE_INTROSPECTION
+introspection_sources = $(libgepub_la_SOURCES)
+
+Gepub-0.0.1.gir: libgepub.la
+Gepub_0_0_1_gir_INCLUDES = GObject-2.0 libxml2-2.0
+Gepub_0_0_1_gir_CFLAGS = $(INCLUDES)
+Gepub_0_0_1_gir_LIBS = libgepub.la
+Gepub_0_0_1_gir_FILES = $(introspection_sources)
+INTROSPECTION_GIRS += Gepub-0.0.1.gir
+
+girdir = $(datadir)/gir-1.0
+gir_DATA = $(INTROSPECTION_GIRS)
+
+typelibdir = $(libdir)/girepository-1.0
+typelib_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
+
+CLEANFILES = $(gir_DATA) $(typelib_DATA)
+endif
