@@ -49,6 +49,13 @@ gepub_text_chunk_class_init (GepubTextChunkClass *klass)
     object_class->finalize = gepub_text_chunk_finalize;
 }
 
+/**
+ * gepub_text_chunk_new:
+ * @type: a #GepubTextChunkType, the chunk type
+ * @text: the chunk text
+ *
+ * Returns: (transfer none): the chunk text
+ */
 GepubTextChunk *
 gepub_text_chunk_new (GepubTextChunkType type, const guchar *text)
 {
@@ -61,6 +68,12 @@ gepub_text_chunk_new (GepubTextChunkType type, const guchar *text)
     return t;
 }
 
+/**
+ * gepub_text_chunk_type_str:
+ * @chunk: a #GepubTextChunk
+ *
+ * Returns: (transfer none): the chunk text
+ */
 gchar *
 gepub_text_chunk_type_str (GepubTextChunk *chunk)
 {
@@ -74,4 +87,28 @@ gepub_text_chunk_type_str (GepubTextChunk *chunk)
         default:
             return "normal";
     }
+}
+
+/**
+ * gepub_text_chunk_text:
+ * @chunk: a #GepubTextChunk
+ *
+ * Returns: (transfer none): the chunk text
+ */
+gchar *
+gepub_text_chunk_text (GepubTextChunk *chunk)
+{
+    return chunk->text;
+}
+
+/**
+ * gepub_text_chunk_type:
+ * @chunk: a #GepubTextChunk
+ *
+ * Returns: (transfer none): the chunk type
+ */
+GepubTextChunkType
+gepub_text_chunk_type (GepubTextChunk *chunk)
+{
+    return chunk->type;
 }

@@ -32,14 +32,12 @@ G_BEGIN_DECLS
 #define GEPUB_IS_TEXT_CHUNK_CLASS(obj)  (G_TYPE_CHECK_CLASS_TYPE (obj, GEPUB_TYPE_TEXT_CHUNK))
 #define GEPUB_TEXT_CHUNK_GET_CLASS(obj) (G_TYPE_INSTANCE_GET_CLASS ((obj), GEPUB_TYPE_TEXT_CHUNK, GepubTextChunkClass))
 
-enum _GepubTextChunkType {
+typedef enum {
     GEPUBTextHeader,
     GEPUBTextBold,
     GEPUBTextItalic,
     GEPUBTextNormal
-};
-
-typedef enum _GepubTextChunkType     GepubTextChunkType;
+} GepubTextChunkType;
 
 struct _GepubTextChunk {
     GObject parent;
@@ -55,9 +53,11 @@ struct _GepubTextChunkClass {
 typedef struct _GepubTextChunk      GepubTextChunk;
 typedef struct _GepubTextChunkClass GepubTextChunkClass;
 
-GType             gepub_text_chunk_get_type     (void) G_GNUC_CONST;
-GepubTextChunk   *gepub_text_chunk_new          (GepubTextChunkType type, const guchar *path);
-gchar            *gepub_text_chunk_type_str     (GepubTextChunk *chunk);
+GType               gepub_text_chunk_get_type     (void) G_GNUC_CONST;
+GepubTextChunk     *gepub_text_chunk_new          (GepubTextChunkType type, const guchar *path);
+gchar              *gepub_text_chunk_type_str     (GepubTextChunk *chunk);
+gchar              *gepub_text_chunk_text         (GepubTextChunk *chunk);
+GepubTextChunkType  gepub_text_chunk_type         (GepubTextChunk *chunk);
 
 G_END_DECLS
 
