@@ -1,5 +1,5 @@
 AC_PREREQ(2.60)
-AC_INIT([libgepub],[0.0.1],[danigm@wadobo.com])
+AC_INIT([libgepub],[0.1],[danigm@wadobo.com])
 AC_CONFIG_AUX_DIR([build])
 AM_INIT_AUTOMAKE([1.10 -Wall -Werror dist-bzip2])
 
