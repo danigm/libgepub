@@ -19,6 +19,7 @@
 
 #include <config.h>
 #include <libxml/tree.h>
+#include <libxml/HTMLparser.h>
 #include <string.h>
 
 #include "gepub-utils.h"
@@ -398,7 +399,9 @@ gepub_doc_get_text (GepubDoc *doc)
 
     LIBXML_TEST_VERSION
 
-    xdoc = xmlRecoverDoc (gepub_doc_get_current (doc));
+    xdoc = htmlReadDoc (gepub_doc_get_current (doc),
+                        "", NULL,
+                        HTML_PARSE_NOWARNING | HTML_PARSE_NOERROR);
     root_element = xmlDocGetRootElement (xdoc);
     texts = gepub_utils_get_text_elements (root_element);
 
