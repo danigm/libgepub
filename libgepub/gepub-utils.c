@@ -103,6 +103,18 @@ gepub_utils_get_text_elements (xmlNode *node)
                 text_list = g_list_append (text_list, text_chunk);
         }
 
+        if (cur_node->type == XML_ELEMENT_NODE) {
+            GepubTextChunk *text_chunk = NULL;
+            gchar *nodetag = g_ascii_strup (cur_node->name, strlen (cur_node->name));
+            if (text_list && (!strcmp (nodetag, "P") || !strcmp (nodetag, "BR"))) {
+                gchar *old_text;
+                text_chunk = (GepubTextChunk*)(g_list_last (text_list)->data);
+                old_text = text_chunk->text;
+                text_chunk->text = g_strdup_printf ("%s\n", old_text);
+                g_free (old_text);
+            }
+        }
+
         // TODO add images to this list of objects
 
         sub_texts = gepub_utils_get_text_elements (cur_node->children);
