@@ -92,6 +92,15 @@ test_open (const char *path)
 }
 
 void
+find_xhtml (gchar *key, GepubResource *value, gpointer data)
+{
+    guchar **d = (guchar **)data;
+    if (g_strcmp0 (value->mime, "application/xhtml+xml") == 0) {
+        *d = value->uri;
+    }
+}
+
+void
 test_read (const char *path)
 {
     GepubArchive *a;
@@ -99,22 +108,15 @@ test_read (const char *path)
     gint i;
     gint size;
     guchar *buffer;
-    gchar *file;
+    guchar *file = NULL;
     gsize bufsize;
 
     a = gepub_archive_new (path);
-    list_files = gepub_archive_list_files (a);
-    if (!list_files) {
-        PTEST ("ERROR: BAD epub file");
-        g_object_unref (a);
-        return;
-    }
 
-    size = g_list_length (list_files);
-    if (!size)
-        return;
+    GepubDoc *doc = gepub_doc_new (path);
+    GHashTable *ht = (GHashTable*)gepub_doc_get_resources (doc);
+    g_hash_table_foreach (ht, (GHFunc)find_xhtml, &file);
 
-    file = g_list_nth_data (list_files, 0);
     gepub_archive_read_entry (a, file, &buffer, &bufsize);
     if (bufsize)
         PTEST ("doc:%s\n----\n%s\n-----\n", file, buffer);
