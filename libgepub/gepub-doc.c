@@ -327,14 +327,14 @@ gepub_doc_get_resource_v (GepubDoc *doc, gchar *v, gsize *bufsize)
 }
 
 /**
- * gepub_doc_get_resource_mime_id:
+ * gepub_doc_get_resource_mime_by_id:
  * @doc: a #GepubDoc
  * @id: the resource id
  *
  * Returns: (transfer full): the resource content
  */
 guchar *
-gepub_doc_get_resource_mime_id (GepubDoc *doc, gchar *id)
+gepub_doc_get_resource_mime_by_id (GepubDoc *doc, gchar *id)
 {
     GepubResource *gres = g_hash_table_lookup (doc->resources, id);
     if (!gres) {
@@ -526,4 +526,22 @@ gepub_doc_get_cover (GepubDoc *doc)
     xmlCleanupParser ();
 
     return ret;
+}
+
+/**
+ * gepub_doc_get_resource_path:
+ * @doc: a #GepubDoc
+ * @id: the resource id
+ *
+ * Returns: (transfer full): the resource path
+ */
+gchar *gepub_doc_get_resource_path (GepubDoc *doc, gchar *id)
+{
+    GepubResource *gres = g_hash_table_lookup (doc->resources, id);
+    if (!gres) {
+        // not found
+        return NULL;
+    }
+
+    return gres->uri;
 }

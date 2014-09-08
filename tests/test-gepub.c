@@ -155,7 +155,7 @@ test_doc_name (const char *path)
     gchar *author = gepub_doc_get_metadata (doc, GEPUB_META_AUTHOR);
     gchar *description = gepub_doc_get_metadata (doc, GEPUB_META_DESC);
     gchar *cover = gepub_doc_get_cover (doc);
-    gchar *cover_mime = gepub_doc_get_resource_mime_id (doc, cover);
+    gchar *cover_mime = gepub_doc_get_resource_mime_by_id (doc, cover);
 
     PTEST ("title: %s\n", title);
     PTEST ("author: %s\n", author);
