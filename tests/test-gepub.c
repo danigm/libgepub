@@ -187,8 +187,9 @@ test_doc_resources (const char *path)
     GHashTable *ht = (GHashTable*)gepub_doc_get_resources (doc);
     g_hash_table_foreach (ht, (GHFunc)pk, NULL);
     guchar *ncx;
+    gsize size;
 
-    ncx = gepub_doc_get_resource (doc, "ncx");
+    ncx = gepub_doc_get_resource (doc, "ncx", &size);
     PTEST ("ncx:\n%s\n", ncx);
     g_free (ncx);
 

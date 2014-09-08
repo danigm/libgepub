@@ -111,7 +111,7 @@ gepub_doc_new (const gchar *path)
     GepubDoc *doc;
 
     gchar *file;
-    gsize bufsize;
+    gsize bufsize = 0;
     gint i = 0, len;
 
     doc = GEPUB_DOC (g_object_new (GEPUB_TYPE_DOC, NULL));
@@ -283,20 +283,20 @@ gepub_doc_get_resources (GepubDoc *doc)
  * gepub_doc_get_resource:
  * @doc: a #GepubDoc
  * @id: the resource id
+ * @bufsize: (out): location to store the length in bytes of the contents
  *
  * Returns: (transfer full): the resource content
  */
 guchar *
-gepub_doc_get_resource (GepubDoc *doc, gchar *id)
+gepub_doc_get_resource (GepubDoc *doc, gchar *id, gsize *bufsize)
 {
     guchar *res = NULL;
-    gsize bufsize = 0;
     GepubResource *gres = g_hash_table_lookup (doc->resources, id);
     if (!gres) {
         // not found
         return NULL;
     }
-    if (!gepub_archive_read_entry (doc->archive, gres->uri, &res, &bufsize))
+    if (!gepub_archive_read_entry (doc->archive, gres->uri, &res, bufsize))
         return NULL;
 
     return res;
@@ -355,10 +355,8 @@ gepub_doc_get_resource_mime_id (GepubDoc *doc, gchar *id)
 guchar *
 gepub_doc_get_resource_mime (GepubDoc *doc, gchar *v)
 {
-    guchar *res = NULL;
     gchar *path = NULL;
     GepubResource *gres;
-    gint bufsize = 0;
     GList *keys = g_hash_table_get_keys (doc->resources);
 
     path = g_strdup_printf ("%s%s", doc->content_base, v);
@@ -391,13 +389,14 @@ gepub_doc_get_spine (GepubDoc *doc)
 /**
  * gepub_doc_get_current:
  * @doc: a #GepubDoc
+ * @bufsize: (out): location to store the length in bytes of the contents
  *
  * Returns: (transfer full): the current chapter data
  */
 guchar *
-gepub_doc_get_current (GepubDoc *doc)
+gepub_doc_get_current (GepubDoc *doc, gsize *bufsize)
 {
-    return gepub_doc_get_resource (doc, doc->spine->data);
+    return gepub_doc_get_resource (doc, doc->spine->data, bufsize);
 }
 
 /**
@@ -411,19 +410,56 @@ gepub_doc_get_text (GepubDoc *doc)
 {
     xmlDoc *xdoc = NULL;
     xmlNode *root_element = NULL;
-    xmlNode *item = NULL;
-    gchar *id;
+    guchar *res = NULL;
+    gsize size = 0;
 
     GList *texts = NULL;
 
     LIBXML_TEST_VERSION
 
-    xdoc = htmlReadDoc (gepub_doc_get_current (doc),
-                        "", NULL,
-                        HTML_PARSE_NOWARNING | HTML_PARSE_NOERROR);
+    res = gepub_doc_get_current (doc, &size);
+    if (!res) {
+        return NULL;
+    }
+    xdoc = htmlReadDoc (res, "", NULL, HTML_PARSE_NOWARNING | HTML_PARSE_NOERROR);
     root_element = xmlDocGetRootElement (xdoc);
     texts = gepub_utils_get_text_elements (root_element);
 
+    g_free (res);
+    xmlFreeDoc (xdoc);
+
+    return texts;
+}
+
+/**
+ * gepub_doc_get_text_by_id:
+ * @doc: a #GepubDoc
+ * @id: the resource id
+ *
+ * Returns: (element-type Gepub.TextChunk) (transfer full): the list of text in the current chapter, Free with gepub_doc_free_text().
+ */
+GList *
+gepub_doc_get_text_by_id (GepubDoc *doc, gchar *id)
+{
+    xmlDoc *xdoc = NULL;
+    xmlNode *root_element = NULL;
+    gsize size = 0;
+    guchar *res = NULL;
+
+    GList *texts = NULL;
+
+    LIBXML_TEST_VERSION
+
+    res = gepub_doc_get_resource (doc, id, &size);
+    if (!res) {
+        return NULL;
+    }
+
+    xdoc = htmlReadDoc (res, "", NULL, HTML_PARSE_NOWARNING | HTML_PARSE_NOERROR);
+    root_element = xmlDocGetRootElement (xdoc);
+    texts = gepub_utils_get_text_elements (root_element);
+
+    g_free (res);
     xmlFreeDoc (xdoc);
 
     return texts;
