@@ -333,7 +333,7 @@ gepub_doc_get_resource_v (GepubDoc *doc, gchar *v, gsize *bufsize)
  *
  * Returns: (transfer full): the resource content
  */
-guchar *
+gchar *
 gepub_doc_get_resource_mime_by_id (GepubDoc *doc, gchar *id)
 {
     GepubResource *gres = g_hash_table_lookup (doc->resources, id);

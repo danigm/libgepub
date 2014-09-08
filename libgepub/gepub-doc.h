@@ -51,7 +51,7 @@ guchar           *gepub_doc_get_resource   (GepubDoc *doc, gchar *id, gsize *buf
 guchar           *gepub_doc_get_resource_v (GepubDoc *doc, gchar *v, gsize *bufsize);
 GHashTable       *gepub_doc_get_resources  (GepubDoc *doc);
 guchar           *gepub_doc_get_resource_mime (GepubDoc *doc, gchar *v);
-guchar           *gepub_doc_get_resource_mime_by_id (GepubDoc *doc, gchar *id);
+gchar            *gepub_doc_get_resource_mime_by_id (GepubDoc *doc, gchar *id);
 GList            *gepub_doc_get_spine      (GepubDoc *doc);
 GList            *gepub_doc_get_text       (GepubDoc *doc);
 GList            *gepub_doc_get_text_by_id (GepubDoc *doc, gchar *id);
