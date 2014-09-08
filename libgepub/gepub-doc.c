@@ -236,7 +236,7 @@ gepub_doc_get_content (GepubDoc *doc)
 /**
  * gepub_doc_get_metadata:
  * @doc: a #GepubDoc
- * @mdata: a metadata name string, GEPUB_META_TILE for example
+ * @mdata: a metadata name string, GEPUB_META_TITLE for example
  *
  * Returns: (transfer full): metadata string
  */
@@ -324,6 +324,25 @@ gepub_doc_get_resource_v (GepubDoc *doc, gchar *v, gsize *bufsize)
     g_free (path);
 
     return res;
+}
+
+/**
+ * gepub_doc_get_resource_mime_id:
+ * @doc: a #GepubDoc
+ * @id: the resource id
+ *
+ * Returns: (transfer full): the resource content
+ */
+guchar *
+gepub_doc_get_resource_mime_id (GepubDoc *doc, gchar *id)
+{
+    GepubResource *gres = g_hash_table_lookup (doc->resources, id);
+    if (!gres) {
+        // not found
+        return NULL;
+    }
+
+    return gres->mime;
 }
 
 /**
@@ -438,4 +457,37 @@ void gepub_doc_go_prev (GepubDoc *doc)
 {
     if (doc->spine->prev)
         doc->spine = doc->spine->prev;
+}
+
+
+/**
+ * gepub_doc_get_cover:
+ * @doc: a #GepubDoc
+ *
+ * Returns: (transfer full): cover file path to retrieve with
+ * gepub_doc_get_resource
+ */
+gchar *
+gepub_doc_get_cover (GepubDoc *doc)
+{
+    xmlDoc *xdoc = NULL;
+    xmlNode *root_element = NULL;
+    xmlNode *mnode = NULL;
+    gchar *ret;
+    xmlChar *text;
+
+    LIBXML_TEST_VERSION
+
+    xdoc = xmlRecoverDoc (doc->content);
+    root_element = xmlDocGetRootElement (xdoc);
+    mnode = gepub_utils_get_element_by_attr (root_element, "name", "cover");
+    text = xmlGetProp(mnode, "content");
+
+    ret = g_strdup (text);
+    xmlFree (text);
+
+    xmlFreeDoc (xdoc);
+    xmlCleanupParser ();
+
+    return ret;
 }

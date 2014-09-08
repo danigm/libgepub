@@ -76,6 +76,34 @@ gepub_utils_get_element_by_tag (xmlNode *node, gchar *name)
     return ret;
 }
 
+xmlNode *
+gepub_utils_get_element_by_attr (xmlNode *node, gchar *attr, gchar *value)
+{
+    xmlNode *cur_node = NULL;
+    xmlNode *ret = NULL;
+    xmlChar *text = NULL;
+
+    for (cur_node = node; cur_node; cur_node = cur_node->next) {
+        if (cur_node->type == XML_ELEMENT_NODE ) {
+            text = xmlGetProp (cur_node, attr);
+            if (text && !strcmp (text, value)) {
+                return cur_node;
+            }
+            if (text) {
+                xmlFree (text);
+                text = NULL;
+            }
+        }
+
+        if (cur_node->children)
+            ret = gepub_utils_get_element_by_attr (cur_node->children, attr, value);
+
+        if (ret)
+            return ret;
+    }
+    return ret;
+}
+
 GList *
 gepub_utils_get_text_elements (xmlNode *node)
 {

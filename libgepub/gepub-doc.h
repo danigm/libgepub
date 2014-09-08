@@ -57,6 +57,7 @@ void              gepub_doc_free_text      (GList *tlist);
 guchar           *gepub_doc_get_current    (GepubDoc *doc);
 void              gepub_doc_go_next        (GepubDoc *doc);
 void              gepub_doc_go_prev        (GepubDoc *doc);
+gchar            *gepub_doc_get_cover      (GepubDoc *doc);
 
 G_END_DECLS
 

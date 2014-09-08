@@ -154,18 +154,23 @@ test_doc_name (const char *path)
     gchar *id = gepub_doc_get_metadata (doc, GEPUB_META_ID);
     gchar *author = gepub_doc_get_metadata (doc, GEPUB_META_AUTHOR);
     gchar *description = gepub_doc_get_metadata (doc, GEPUB_META_DESC);
+    gchar *cover = gepub_doc_get_cover (doc);
+    gchar *cover_mime = gepub_doc_get_resource_mime_id (doc, cover);
 
     PTEST ("title: %s\n", title);
     PTEST ("author: %s\n", author);
     PTEST ("id: %s\n", id);
     PTEST ("lang: %s\n", lang);
     PTEST ("desc: %s\n", description);
+    PTEST ("cover: %s\n", cover);
+    PTEST ("cover mime: %s\n", cover_mime);
 
     g_free (title);
     g_free (lang);
     g_free (id);
     g_free (author);
     g_free (description);
+    g_free (cover);
     g_object_unref (G_OBJECT (doc));
 }
 
