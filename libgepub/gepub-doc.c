@@ -285,7 +285,7 @@ gepub_doc_get_resources (GepubDoc *doc)
  * @id: the resource id
  * @bufsize: (out): location to store the length in bytes of the contents
  *
- * Returns: (transfer full): the resource content
+ * Returns: (array length=bufsize) (transfer full): the resource content
  */
 guchar *
 gepub_doc_get_resource (GepubDoc *doc, gchar *id, gsize *bufsize)
@@ -308,7 +308,7 @@ gepub_doc_get_resource (GepubDoc *doc, gchar *id, gsize *bufsize)
  * @v: the resource path
  * @bufsize: (out): location to store length in bytes of the contents
  *
- * Returns: (transfer full): the resource content
+ * Returns: (array length=bufsize) (transfer full): the resource content
  */
 guchar *
 gepub_doc_get_resource_v (GepubDoc *doc, gchar *v, gsize *bufsize)
@@ -391,7 +391,7 @@ gepub_doc_get_spine (GepubDoc *doc)
  * @doc: a #GepubDoc
  * @bufsize: (out): location to store the length in bytes of the contents
  *
- * Returns: (transfer full): the current chapter data
+ * Returns: (array length=bufsize) (transfer full): the current chapter data
  */
 guchar *
 gepub_doc_get_current (GepubDoc *doc, gsize *bufsize)
