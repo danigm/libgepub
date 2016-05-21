@@ -342,7 +342,7 @@ gepub_doc_get_resource_mime_by_id (GepubDoc *doc, gchar *id)
         return NULL;
     }
 
-    return gres->mime;
+    return g_strdup (gres->mime);
 }
 
 /**
@@ -350,9 +350,9 @@ gepub_doc_get_resource_mime_by_id (GepubDoc *doc, gchar *id)
  * @doc: a #GepubDoc
  * @v: the resource path
  *
- * Returns: (transfer none): the resource mime
+ * Returns: (transfer full): the resource mime
  */
-guchar *
+gchar *
 gepub_doc_get_resource_mime (GepubDoc *doc, gchar *v)
 {
     gchar *path = NULL;
@@ -368,8 +368,10 @@ gepub_doc_get_resource_mime (GepubDoc *doc, gchar *v)
         keys = keys->next;
     }
 
+    g_free(path);
+
     if (keys)
-        return gres->mime;
+        return g_strdup (gres->mime);
     else
         return NULL;
 }
