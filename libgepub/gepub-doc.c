@@ -81,8 +81,6 @@ gepub_doc_finalize (GObject *object)
         doc->spine = NULL;
     }
 
-    xmlCleanupParser ();
-
     G_OBJECT_CLASS (gepub_doc_parent_class)->finalize (object);
 }
 
@@ -218,7 +216,6 @@ g_epub_doc_fill_spine (GepubDoc *doc)
     }
 
     xmlFreeDoc (xdoc);
-    xmlCleanupParser ();
 }
 
 /**
@@ -262,7 +259,6 @@ gepub_doc_get_metadata (GepubDoc *doc, gchar *mdata)
     xmlFree (text);
 
     xmlFreeDoc (xdoc);
-    xmlCleanupParser ();
 
     return ret;
 }
@@ -525,7 +521,6 @@ gepub_doc_get_cover (GepubDoc *doc)
     xmlFree (text);
 
     xmlFreeDoc (xdoc);
-    xmlCleanupParser ();
 
     return ret;
 }

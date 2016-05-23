@@ -173,7 +173,6 @@ gepub_archive_get_root_file (GepubArchive *archive)
     root_file = xmlGetProp (root_node, "full-path");
 
     xmlFreeDoc (doc);
-    xmlCleanupParser ();
     g_free (buffer);
 
     return root_file;
