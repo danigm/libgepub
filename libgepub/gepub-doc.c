@@ -383,7 +383,11 @@ gepub_doc_get_resource_v (GepubDoc *doc, gchar *v, gsize *bufsize)
 gchar *
 gepub_doc_get_resource_mime_by_id (GepubDoc *doc, gchar *id)
 {
-    GepubResource *gres = g_hash_table_lookup (doc->resources, id);
+    GepubResource *gres;
+
+    g_return_val_if_fail (id != NULL, NULL);
+
+    gres = g_hash_table_lookup (doc->resources, id);
     if (!gres) {
         // not found
         return NULL;
