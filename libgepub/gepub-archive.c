@@ -161,8 +161,6 @@ gepub_archive_get_root_file (GepubArchive *archive)
     gsize bufsize;
     gchar *root_file = NULL;
 
-    LIBXML_TEST_VERSION
-
     // root file is in META-INF/container.xml
     if (!gepub_archive_read_entry (archive, "META-INF/container.xml", &buffer, &bufsize))
         return NULL;

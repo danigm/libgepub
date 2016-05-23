@@ -159,8 +159,6 @@ g_epub_doc_fill_resources (GepubDoc *doc)
     gchar *id, *tmpuri, *uri;
     GepubResource *res;
 
-    LIBXML_TEST_VERSION
-
     xdoc = xmlRecoverDoc (doc->content);
     root_element = xmlDocGetRootElement (xdoc);
     mnode = gepub_utils_get_element_by_tag (root_element, "manifest");
@@ -195,8 +193,6 @@ g_epub_doc_fill_spine (GepubDoc *doc)
     xmlNode *snode = NULL;
     xmlNode *item = NULL;
     gchar *id;
-
-    LIBXML_TEST_VERSION
 
     xdoc = xmlRecoverDoc (doc->content);
     root_element = xmlDocGetRootElement (xdoc);
@@ -246,8 +242,6 @@ gepub_doc_get_metadata (GepubDoc *doc, gchar *mdata)
     xmlNode *mdata_node = NULL;
     gchar *ret;
     xmlChar *text;
-
-    LIBXML_TEST_VERSION
 
     xdoc = xmlRecoverDoc (doc->content);
     root_element = xmlDocGetRootElement (xdoc);
@@ -413,8 +407,6 @@ gepub_doc_get_text (GepubDoc *doc)
 
     GList *texts = NULL;
 
-    LIBXML_TEST_VERSION
-
     res = gepub_doc_get_current (doc, &size);
     if (!res) {
         return NULL;
@@ -445,8 +437,6 @@ gepub_doc_get_text_by_id (GepubDoc *doc, gchar *id)
     guchar *res = NULL;
 
     GList *texts = NULL;
-
-    LIBXML_TEST_VERSION
 
     res = gepub_doc_get_resource (doc, id, &size);
     if (!res) {
@@ -509,8 +499,6 @@ gepub_doc_get_cover (GepubDoc *doc)
     xmlNode *mnode = NULL;
     gchar *ret;
     xmlChar *text;
-
-    LIBXML_TEST_VERSION
 
     xdoc = xmlRecoverDoc (doc->content);
     root_element = xmlDocGetRootElement (xdoc);
