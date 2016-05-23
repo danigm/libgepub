@@ -29,7 +29,6 @@
 
 static void g_epub_doc_fill_resources (GepubDoc *doc);
 static void g_epub_doc_fill_spine (GepubDoc *doc);
-static gboolean equal_strs (gchar *one, gchar *two);
 
 void g_epub_resource_free (GepubResource *res)
 {
@@ -128,7 +127,7 @@ gepub_doc_new (const gchar *path)
     // doc resources hashtable:
     // id : (mime, path)
     doc->resources = g_hash_table_new_full (g_str_hash,
-                                            (GEqualFunc)equal_strs,
+                                            g_str_equal,
                                             (GDestroyNotify)g_free,
                                             (GDestroyNotify)g_epub_resource_free);
     g_epub_doc_fill_resources (doc);
@@ -138,14 +137,6 @@ gepub_doc_new (const gchar *path)
     g_free (file);
 
     return doc;
-}
-
-static gboolean
-equal_strs (gchar *one, gchar *two)
-{
-    if (strcmp (one, two))
-        return FALSE;
-    return TRUE;
 }
 
 static void
