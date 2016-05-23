@@ -27,8 +27,8 @@
 #include "gepub-archive.h"
 #include "gepub-text-chunk.h"
 
-static void g_epub_doc_fill_resources (GepubDoc *doc);
-static void g_epub_doc_fill_spine (GepubDoc *doc);
+static void gepub_doc_fill_resources (GepubDoc *doc);
+static void gepub_doc_fill_spine (GepubDoc *doc);
 
 struct _GepubDoc {
     GObject parent;
@@ -47,7 +47,7 @@ struct _GepubDocClass {
 G_DEFINE_TYPE (GepubDoc, gepub_doc, G_TYPE_OBJECT)
 
 static void
-g_epub_resource_free (GepubResource *res)
+gepub_resource_free (GepubResource *res)
 {
     g_free (res->mime);
     g_free (res->uri);
@@ -130,10 +130,10 @@ gepub_doc_new (const gchar *path)
     doc->resources = g_hash_table_new_full (g_str_hash,
                                             g_str_equal,
                                             (GDestroyNotify)g_free,
-                                            (GDestroyNotify)g_epub_resource_free);
-    g_epub_doc_fill_resources (doc);
+                                            (GDestroyNotify)gepub_resource_free);
+    gepub_doc_fill_resources (doc);
     doc->spine = NULL;
-    g_epub_doc_fill_spine (doc);
+    gepub_doc_fill_spine (doc);
 
     g_free (file);
 
@@ -141,7 +141,7 @@ gepub_doc_new (const gchar *path)
 }
 
 static void
-g_epub_doc_fill_resources (GepubDoc *doc)
+gepub_doc_fill_resources (GepubDoc *doc)
 {
     xmlDoc *xdoc = NULL;
     xmlNode *root_element = NULL;
@@ -177,7 +177,7 @@ g_epub_doc_fill_resources (GepubDoc *doc)
 }
 
 static void
-g_epub_doc_fill_spine (GepubDoc *doc)
+gepub_doc_fill_spine (GepubDoc *doc)
 {
     xmlDoc *xdoc = NULL;
     xmlNode *root_element = NULL;
