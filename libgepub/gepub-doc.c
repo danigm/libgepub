@@ -27,16 +27,9 @@
 #include "gepub-archive.h"
 #include "gepub-text-chunk.h"
 
-static void g_epub_doc_fill_resources (GepubDoc *doc);
-static void g_epub_doc_fill_spine (GepubDoc *doc);
-static gboolean equal_strs (gchar *one, gchar *two);
-
-void g_epub_resource_free (GepubResource *res)
-{
-    g_free (res->mime);
-    g_free (res->uri);
-    g_free (res);
-}
+static void gepub_doc_fill_resources (GepubDoc *doc);
+static void gepub_doc_fill_spine (GepubDoc *doc);
+static void gepub_doc_initable_iface_init (GInitableIface *iface);
 
 struct _GepubDoc {
     GObject parent;
@@ -44,6 +37,7 @@ struct _GepubDoc {
     GepubArchive *archive;
     guchar *content;
     gchar *content_base;
+    gchar *path;
     GHashTable *resources;
     GList *spine;
 };
@@ -52,43 +46,90 @@ struct _GepubDocClass {
     GObjectClass parent_class;
 };
 
-G_DEFINE_TYPE (GepubDoc, gepub_doc, G_TYPE_OBJECT)
+enum {
+    PROP_0,
+    PROP_PATH,
+    NUM_PROPS
+};
+
+static GParamSpec *properties[NUM_PROPS] = { NULL, };
+
+G_DEFINE_TYPE_WITH_CODE (GepubDoc, gepub_doc, G_TYPE_OBJECT,
+                         G_IMPLEMENT_INTERFACE (G_TYPE_INITABLE, gepub_doc_initable_iface_init))
+
+static void
+gepub_resource_free (GepubResource *res)
+{
+    g_free (res->mime);
+    g_free (res->uri);
+    g_free (res);
+}
 
 static void
 gepub_doc_finalize (GObject *object)
 {
     GepubDoc *doc = GEPUB_DOC (object);
 
-    if (doc->archive) {
-        g_object_unref (doc->archive);
-        doc->archive = NULL;
-    }
-    if (doc->content) {
-        g_free (doc->content);
-        doc->content = NULL;
-    }
-    if (doc->content_base)
-        g_free (doc->content_base);
-
-    if (doc->resources) {
-        g_hash_table_destroy (doc->resources);
-        doc->resources = NULL;
-    }
+    g_clear_object (&doc->archive);
+    g_clear_pointer (&doc->content, g_free);
+    g_clear_pointer (&doc->content_base, g_free);
+    g_clear_pointer (&doc->path, g_free);
+    g_clear_pointer (&doc->resources, g_hash_table_destroy);
 
     if (doc->spine) {
         g_list_foreach (doc->spine, (GFunc)g_free, NULL);
-        g_list_free (doc->spine);
-        doc->spine = NULL;
+        g_clear_pointer (&doc->spine, g_list_free);
     }
-
-    xmlCleanupParser ();
 
     G_OBJECT_CLASS (gepub_doc_parent_class)->finalize (object);
 }
 
 static void
+gepub_doc_set_property (GObject      *object,
+			guint         prop_id,
+			const GValue *value,
+			GParamSpec   *pspec)
+{
+    GepubDoc *doc = GEPUB_DOC (object);
+
+    switch (prop_id) {
+    case PROP_PATH:
+        doc->path = g_value_dup_string (value);
+        break;
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        break;
+    }
+}
+
+static void
+gepub_doc_get_property (GObject    *object,
+			guint       prop_id,
+			GValue     *value,
+			GParamSpec *pspec)
+{
+    GepubDoc *doc = GEPUB_DOC (object);
+
+    switch (prop_id) {
+    case PROP_PATH:
+        g_value_set_string (value, doc->path);
+        break;
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        break;
+    }
+}
+
+static void
 gepub_doc_init (GepubDoc *doc)
 {
+    /* doc resources hashtable:
+     * id : (mime, path)
+     */
+    doc->resources = g_hash_table_new_full (g_str_hash,
+                                            g_str_equal,
+                                            (GDestroyNotify)g_free,
+                                            (GDestroyNotify)gepub_resource_free);
 }
 
 static void
@@ -97,62 +138,76 @@ gepub_doc_class_init (GepubDocClass *klass)
     GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
     object_class->finalize = gepub_doc_finalize;
+    object_class->set_property = gepub_doc_set_property;
+    object_class->get_property = gepub_doc_get_property;
+
+    properties[PROP_PATH] =
+        g_param_spec_string ("path",
+                             "Path",
+                             "Path to the EPUB document",
+                             NULL,
+                             G_PARAM_READWRITE |
+                             G_PARAM_CONSTRUCT_ONLY |
+                             G_PARAM_STATIC_STRINGS);
+
+    g_object_class_install_properties (object_class, NUM_PROPS, properties);
+}
+
+static gboolean
+gepub_doc_initable_init (GInitable     *initable,
+                         GCancellable  *cancellable,
+                         GError       **error)
+{
+    GepubDoc *doc = GEPUB_DOC (initable);
+    gchar *file;
+    gsize bufsize = 0;
+    gint i = 0, len;
+
+    g_assert (doc->path != NULL);
+
+    doc->archive = gepub_archive_new (doc->path);
+    file = gepub_archive_get_root_file (doc->archive);
+    if (!file)
+        return FALSE;
+    if (!gepub_archive_read_entry (doc->archive, file, &(doc->content), &bufsize))
+        return FALSE;
+
+    len = strlen (file);
+    while (file[i++] != '/' && i < len);
+    doc->content_base = g_strndup (file, i);
+
+    gepub_doc_fill_resources (doc);
+    gepub_doc_fill_spine (doc);
+
+    g_free (file);
+
+    return TRUE;
+}
+
+static void
+gepub_doc_initable_iface_init (GInitableIface *iface)
+{
+    iface->init = gepub_doc_initable_init;
 }
 
 /**
  * gepub_doc_new:
  * @path: the epub doc path
+ * @error: location to store a #GError, or %NULL
  *
  * Returns: (transfer full): the new GepubDoc created
  */
 GepubDoc *
 gepub_doc_new (const gchar *path)
 {
-    GepubDoc *doc;
-
-    gchar *file;
-    gsize bufsize = 0;
-    gint i = 0, len;
-
-    doc = GEPUB_DOC (g_object_new (GEPUB_TYPE_DOC, NULL));
-    doc->archive = gepub_archive_new (path);
-
-    file = gepub_archive_get_root_file (doc->archive);
-    if (!file)
-        return NULL;
-    if (!gepub_archive_read_entry (doc->archive, file, &(doc->content), &bufsize))
-        return NULL;
-
-    len = strlen (file);
-    while (file[i++] != '/' && i < len);
-    doc->content_base = g_strndup (file, i);
-
-    // doc resources hashtable:
-    // id : (mime, path)
-    doc->resources = g_hash_table_new_full (g_str_hash,
-                                            (GEqualFunc)equal_strs,
-                                            (GDestroyNotify)g_free,
-                                            (GDestroyNotify)g_epub_resource_free);
-    g_epub_doc_fill_resources (doc);
-    doc->spine = NULL;
-    g_epub_doc_fill_spine (doc);
-
-    if (file)
-        g_free (file);
-
-    return doc;
-}
-
-static gboolean
-equal_strs (gchar *one, gchar *two)
-{
-    if (strcmp (one, two))
-        return FALSE;
-    return TRUE;
+    return g_initable_new (GEPUB_TYPE_DOC,
+                           NULL, NULL,
+                           "path", path,
+                           NULL);
 }
 
 static void
-g_epub_doc_fill_resources (GepubDoc *doc)
+gepub_doc_fill_resources (GepubDoc *doc)
 {
     xmlDoc *xdoc = NULL;
     xmlNode *root_element = NULL;
@@ -160,8 +215,6 @@ g_epub_doc_fill_resources (GepubDoc *doc)
     xmlNode *item = NULL;
     gchar *id, *tmpuri, *uri;
     GepubResource *res;
-
-    LIBXML_TEST_VERSION
 
     xdoc = xmlRecoverDoc (doc->content);
     root_element = xmlDocGetRootElement (xdoc);
@@ -190,15 +243,13 @@ g_epub_doc_fill_resources (GepubDoc *doc)
 }
 
 static void
-g_epub_doc_fill_spine (GepubDoc *doc)
+gepub_doc_fill_spine (GepubDoc *doc)
 {
     xmlDoc *xdoc = NULL;
     xmlNode *root_element = NULL;
     xmlNode *snode = NULL;
     xmlNode *item = NULL;
     gchar *id;
-
-    LIBXML_TEST_VERSION
 
     xdoc = xmlRecoverDoc (doc->content);
     root_element = xmlDocGetRootElement (xdoc);
@@ -218,7 +269,6 @@ g_epub_doc_fill_spine (GepubDoc *doc)
     }
 
     xmlFreeDoc (xdoc);
-    xmlCleanupParser ();
 }
 
 /**
@@ -250,8 +300,6 @@ gepub_doc_get_metadata (GepubDoc *doc, gchar *mdata)
     gchar *ret;
     xmlChar *text;
 
-    LIBXML_TEST_VERSION
-
     xdoc = xmlRecoverDoc (doc->content);
     root_element = xmlDocGetRootElement (xdoc);
     mnode = gepub_utils_get_element_by_tag (root_element, "metadata");
@@ -262,7 +310,6 @@ gepub_doc_get_metadata (GepubDoc *doc, gchar *mdata)
     xmlFree (text);
 
     xmlFreeDoc (xdoc);
-    xmlCleanupParser ();
 
     return ret;
 }
@@ -336,7 +383,11 @@ gepub_doc_get_resource_v (GepubDoc *doc, gchar *v, gsize *bufsize)
 gchar *
 gepub_doc_get_resource_mime_by_id (GepubDoc *doc, gchar *id)
 {
-    GepubResource *gres = g_hash_table_lookup (doc->resources, id);
+    GepubResource *gres;
+
+    g_return_val_if_fail (id != NULL, NULL);
+
+    gres = g_hash_table_lookup (doc->resources, id);
     if (!gres) {
         // not found
         return NULL;
@@ -417,8 +468,6 @@ gepub_doc_get_text (GepubDoc *doc)
 
     GList *texts = NULL;
 
-    LIBXML_TEST_VERSION
-
     res = gepub_doc_get_current (doc, &size);
     if (!res) {
         return NULL;
@@ -449,8 +498,6 @@ gepub_doc_get_text_by_id (GepubDoc *doc, gchar *id)
     guchar *res = NULL;
 
     GList *texts = NULL;
-
-    LIBXML_TEST_VERSION
 
     res = gepub_doc_get_resource (doc, id, &size);
     if (!res) {
@@ -514,8 +561,6 @@ gepub_doc_get_cover (GepubDoc *doc)
     gchar *ret;
     xmlChar *text;
 
-    LIBXML_TEST_VERSION
-
     xdoc = xmlRecoverDoc (doc->content);
     root_element = xmlDocGetRootElement (xdoc);
     mnode = gepub_utils_get_element_by_attr (root_element, "name", "cover");
@@ -525,7 +570,6 @@ gepub_doc_get_cover (GepubDoc *doc)
     xmlFree (text);
 
     xmlFreeDoc (xdoc);
-    xmlCleanupParser ();
 
     return ret;
 }

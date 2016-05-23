@@ -104,9 +104,7 @@ void
 test_read (const char *path)
 {
     GepubArchive *a;
-    GList *list_files;
-    gint i;
-    gint size;
+    GList *list_files = NULL;
     guchar *buffer;
     guchar *file = NULL;
     gsize bufsize;

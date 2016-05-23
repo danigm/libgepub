@@ -27,7 +27,6 @@ gboolean
 gepub_utils_has_parent_tag (xmlNode *node, gchar *name, ...)
 {
     va_list ap;
-    int i;
 
     xmlNode *cur_node = NULL;
     GList *tags = NULL;
@@ -111,7 +110,6 @@ gepub_utils_get_text_elements (xmlNode *node)
     GList *sub_texts = NULL;
 
     xmlNode *cur_node = NULL;
-    xmlNode *ret = NULL;
 
     for (cur_node = node; cur_node; cur_node = cur_node->next) {
         if (cur_node->type == XML_TEXT_NODE) {

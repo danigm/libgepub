@@ -71,10 +71,7 @@ gepub_archive_finalize (GObject *object)
 {
     GepubArchive *archive = GEPUB_ARCHIVE (object);
 
-    if (archive->path) {
-        g_free (archive->path);
-        archive->path = NULL;
-    }
+    g_clear_pointer (&archive->path, g_free);
 
     gepub_archive_close (archive);
 
@@ -161,8 +158,6 @@ gepub_archive_get_root_file (GepubArchive *archive)
     gsize bufsize;
     gchar *root_file = NULL;
 
-    LIBXML_TEST_VERSION
-
     // root file is in META-INF/container.xml
     if (!gepub_archive_read_entry (archive, "META-INF/container.xml", &buffer, &bufsize))
         return NULL;
@@ -173,7 +168,6 @@ gepub_archive_get_root_file (GepubArchive *archive)
     root_file = xmlGetProp (root_node, "full-path");
 
     xmlFreeDoc (doc);
-    xmlCleanupParser ();
     g_free (buffer);
 
     return root_file;

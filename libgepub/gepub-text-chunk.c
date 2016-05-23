@@ -29,10 +29,7 @@ gepub_text_chunk_finalize (GObject *object)
 {
     GepubTextChunk *t = GEPUB_TEXT_CHUNK (object);
 
-    if (t->text) {
-        g_free (t->text);
-        t->text = NULL;
-    }
+    g_clear_pointer (&t->text, g_free);
 
     G_OBJECT_CLASS (gepub_text_chunk_parent_class)->finalize (object);
 }
