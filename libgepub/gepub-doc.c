@@ -30,13 +30,6 @@
 static void g_epub_doc_fill_resources (GepubDoc *doc);
 static void g_epub_doc_fill_spine (GepubDoc *doc);
 
-void g_epub_resource_free (GepubResource *res)
-{
-    g_free (res->mime);
-    g_free (res->uri);
-    g_free (res);
-}
-
 struct _GepubDoc {
     GObject parent;
 
@@ -52,6 +45,14 @@ struct _GepubDocClass {
 };
 
 G_DEFINE_TYPE (GepubDoc, gepub_doc, G_TYPE_OBJECT)
+
+static void
+g_epub_resource_free (GepubResource *res)
+{
+    g_free (res->mime);
+    g_free (res->uri);
+    g_free (res);
+}
 
 static void
 gepub_doc_finalize (GObject *object)
