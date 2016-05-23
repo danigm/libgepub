@@ -29,6 +29,7 @@
 
 static void gepub_doc_fill_resources (GepubDoc *doc);
 static void gepub_doc_fill_spine (GepubDoc *doc);
+static void gepub_doc_initable_iface_init (GInitableIface *iface);
 
 struct _GepubDoc {
     GObject parent;
@@ -36,6 +37,7 @@ struct _GepubDoc {
     GepubArchive *archive;
     guchar *content;
     gchar *content_base;
+    gchar *path;
     GHashTable *resources;
     GList *spine;
 };
@@ -44,7 +46,16 @@ struct _GepubDocClass {
     GObjectClass parent_class;
 };
 
-G_DEFINE_TYPE (GepubDoc, gepub_doc, G_TYPE_OBJECT)
+enum {
+    PROP_0,
+    PROP_PATH,
+    NUM_PROPS
+};
+
+static GParamSpec *properties[NUM_PROPS] = { NULL, };
+
+G_DEFINE_TYPE_WITH_CODE (GepubDoc, gepub_doc, G_TYPE_OBJECT,
+                         G_IMPLEMENT_INTERFACE (G_TYPE_INITABLE, gepub_doc_initable_iface_init))
 
 static void
 gepub_resource_free (GepubResource *res)
@@ -62,6 +73,7 @@ gepub_doc_finalize (GObject *object)
     g_clear_object (&doc->archive);
     g_clear_pointer (&doc->content, g_free);
     g_clear_pointer (&doc->content_base, g_free);
+    g_clear_pointer (&doc->path, g_free);
     g_clear_pointer (&doc->resources, g_hash_table_destroy);
 
     if (doc->spine) {
@@ -73,8 +85,51 @@ gepub_doc_finalize (GObject *object)
 }
 
 static void
+gepub_doc_set_property (GObject      *object,
+			guint         prop_id,
+			const GValue *value,
+			GParamSpec   *pspec)
+{
+    GepubDoc *doc = GEPUB_DOC (object);
+
+    switch (prop_id) {
+    case PROP_PATH:
+        doc->path = g_value_dup_string (value);
+        break;
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        break;
+    }
+}
+
+static void
+gepub_doc_get_property (GObject    *object,
+			guint       prop_id,
+			GValue     *value,
+			GParamSpec *pspec)
+{
+    GepubDoc *doc = GEPUB_DOC (object);
+
+    switch (prop_id) {
+    case PROP_PATH:
+        g_value_set_string (value, doc->path);
+        break;
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        break;
+    }
+}
+
+static void
 gepub_doc_init (GepubDoc *doc)
 {
+    /* doc resources hashtable:
+     * id : (mime, path)
+     */
+    doc->resources = g_hash_table_new_full (g_str_hash,
+                                            g_str_equal,
+                                            (GDestroyNotify)g_free,
+                                            (GDestroyNotify)gepub_resource_free);
 }
 
 static void
@@ -83,49 +138,72 @@ gepub_doc_class_init (GepubDocClass *klass)
     GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
     object_class->finalize = gepub_doc_finalize;
+    object_class->set_property = gepub_doc_set_property;
+    object_class->get_property = gepub_doc_get_property;
+
+    properties[PROP_PATH] =
+        g_param_spec_string ("path",
+                             "Path",
+                             "Path to the EPUB document",
+                             NULL,
+                             G_PARAM_READWRITE |
+                             G_PARAM_CONSTRUCT_ONLY |
+                             G_PARAM_STATIC_STRINGS);
+
+    g_object_class_install_properties (object_class, NUM_PROPS, properties);
+}
+
+static gboolean
+gepub_doc_initable_init (GInitable     *initable,
+                         GCancellable  *cancellable,
+                         GError       **error)
+{
+    GepubDoc *doc = GEPUB_DOC (initable);
+    gchar *file;
+    gsize bufsize = 0;
+    gint i = 0, len;
+
+    g_assert (doc->path != NULL);
+
+    doc->archive = gepub_archive_new (doc->path);
+    file = gepub_archive_get_root_file (doc->archive);
+    if (!file)
+        return FALSE;
+    if (!gepub_archive_read_entry (doc->archive, file, &(doc->content), &bufsize))
+        return FALSE;
+
+    len = strlen (file);
+    while (file[i++] != '/' && i < len);
+    doc->content_base = g_strndup (file, i);
+
+    gepub_doc_fill_resources (doc);
+    gepub_doc_fill_spine (doc);
+
+    g_free (file);
+
+    return TRUE;
+}
+
+static void
+gepub_doc_initable_iface_init (GInitableIface *iface)
+{
+    iface->init = gepub_doc_initable_init;
 }
 
 /**
  * gepub_doc_new:
  * @path: the epub doc path
+ * @error: location to store a #GError, or %NULL
  *
  * Returns: (transfer full): the new GepubDoc created
  */
 GepubDoc *
 gepub_doc_new (const gchar *path)
 {
-    GepubDoc *doc;
-
-    gchar *file;
-    gsize bufsize = 0;
-    gint i = 0, len;
-
-    doc = GEPUB_DOC (g_object_new (GEPUB_TYPE_DOC, NULL));
-    doc->archive = gepub_archive_new (path);
-
-    file = gepub_archive_get_root_file (doc->archive);
-    if (!file)
-        return NULL;
-    if (!gepub_archive_read_entry (doc->archive, file, &(doc->content), &bufsize))
-        return NULL;
-
-    len = strlen (file);
-    while (file[i++] != '/' && i < len);
-    doc->content_base = g_strndup (file, i);
-
-    // doc resources hashtable:
-    // id : (mime, path)
-    doc->resources = g_hash_table_new_full (g_str_hash,
-                                            g_str_equal,
-                                            (GDestroyNotify)g_free,
-                                            (GDestroyNotify)gepub_resource_free);
-    gepub_doc_fill_resources (doc);
-    doc->spine = NULL;
-    gepub_doc_fill_spine (doc);
-
-    g_free (file);
-
-    return doc;
+    return g_initable_new (GEPUB_TYPE_DOC,
+                           NULL, NULL,
+                           "path", path,
+                           NULL);
 }
 
 static void
