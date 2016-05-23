@@ -135,8 +135,7 @@ gepub_doc_new (const gchar *path)
     doc->spine = NULL;
     g_epub_doc_fill_spine (doc);
 
-    if (file)
-        g_free (file);
+    g_free (file);
 
     return doc;
 }
