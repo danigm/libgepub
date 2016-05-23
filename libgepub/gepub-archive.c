@@ -71,10 +71,7 @@ gepub_archive_finalize (GObject *object)
 {
     GepubArchive *archive = GEPUB_ARCHIVE (object);
 
-    if (archive->path) {
-        g_free (archive->path);
-        archive->path = NULL;
-    }
+    g_clear_pointer (&archive->path, g_free);
 
     gepub_archive_close (archive);
 

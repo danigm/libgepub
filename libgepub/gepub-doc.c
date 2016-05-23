@@ -59,26 +59,14 @@ gepub_doc_finalize (GObject *object)
 {
     GepubDoc *doc = GEPUB_DOC (object);
 
-    if (doc->archive) {
-        g_object_unref (doc->archive);
-        doc->archive = NULL;
-    }
-    if (doc->content) {
-        g_free (doc->content);
-        doc->content = NULL;
-    }
-    if (doc->content_base)
-        g_free (doc->content_base);
-
-    if (doc->resources) {
-        g_hash_table_destroy (doc->resources);
-        doc->resources = NULL;
-    }
+    g_clear_object (&doc->archive);
+    g_clear_pointer (&doc->content, g_free);
+    g_clear_pointer (&doc->content_base, g_free);
+    g_clear_pointer (&doc->resources, g_hash_table_destroy);
 
     if (doc->spine) {
         g_list_foreach (doc->spine, (GFunc)g_free, NULL);
-        g_list_free (doc->spine);
-        doc->spine = NULL;
+        g_clear_pointer (&doc->spine, g_list_free);
     }
 
     G_OBJECT_CLASS (gepub_doc_parent_class)->finalize (object);
