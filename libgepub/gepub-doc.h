@@ -57,8 +57,8 @@ GList            *gepub_doc_get_text       (GepubDoc *doc);
 GList            *gepub_doc_get_text_by_id (GepubDoc *doc, gchar *id);
 void              gepub_doc_free_text      (GList *tlist);
 guchar           *gepub_doc_get_current    (GepubDoc *doc, gsize *bufsize);
-void              gepub_doc_go_next        (GepubDoc *doc);
-void              gepub_doc_go_prev        (GepubDoc *doc);
+gboolean          gepub_doc_go_next        (GepubDoc *doc);
+gboolean          gepub_doc_go_prev        (GepubDoc *doc);
 gchar            *gepub_doc_get_cover      (GepubDoc *doc);
 gchar            *gepub_doc_get_resource_path (GepubDoc *doc, gchar *id);
 

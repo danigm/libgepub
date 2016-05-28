@@ -527,21 +527,29 @@ gepub_doc_free_text (GList *tlist)
 /**
  * gepub_doc_go_next:
  * @doc: a #GepubDoc
+ * Returns: TRUE on success, FALSE if there's no next pages
  */
-void gepub_doc_go_next (GepubDoc *doc)
+gboolean gepub_doc_go_next (GepubDoc *doc)
 {
-    if (doc->spine->next)
+    if (doc->spine->next) {
         doc->spine = doc->spine->next;
+        return TRUE;
+    }
+    return FALSE;
 }
 
 /**
  * gepub_doc_go_next:
  * @doc: a #GepubDoc
+ * Returns: TRUE on success, FALSE if there's no prev pages
  */
-void gepub_doc_go_prev (GepubDoc *doc)
+gboolean gepub_doc_go_prev (GepubDoc *doc)
 {
-    if (doc->spine->prev)
+    if (doc->spine->prev) {
         doc->spine = doc->spine->prev;
+        return TRUE;
+    }
+    return FALSE;
 }
 
 
