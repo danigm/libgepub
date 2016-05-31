@@ -52,6 +52,7 @@ guchar           *gepub_doc_get_resource_v (GepubDoc *doc, gchar *v, gsize *bufs
 GHashTable       *gepub_doc_get_resources  (GepubDoc *doc);
 gchar            *gepub_doc_get_resource_mime (GepubDoc *doc, gchar *v);
 gchar            *gepub_doc_get_resource_mime_by_id (GepubDoc *doc, gchar *id);
+gchar            *gepub_doc_get_current_mime (GepubDoc *doc);
 GList            *gepub_doc_get_spine      (GepubDoc *doc);
 GList            *gepub_doc_get_text       (GepubDoc *doc);
 GList            *gepub_doc_get_text_by_id (GepubDoc *doc, gchar *id);
@@ -61,6 +62,7 @@ gboolean          gepub_doc_go_next        (GepubDoc *doc);
 gboolean          gepub_doc_go_prev        (GepubDoc *doc);
 gchar            *gepub_doc_get_cover      (GepubDoc *doc);
 gchar            *gepub_doc_get_resource_path (GepubDoc *doc, gchar *id);
+gchar            *gepub_doc_get_current_path (GepubDoc *doc);
 
 G_END_DECLS
 

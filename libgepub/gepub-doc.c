@@ -428,6 +428,18 @@ gepub_doc_get_resource_mime (GepubDoc *doc, gchar *v)
 }
 
 /**
+ * gepub_doc_get_current_mime:
+ * @doc: a #GepubDoc
+ *
+ * Returns: (transfer full): the current resource mime
+ */
+gchar *
+gepub_doc_get_current_mime (GepubDoc *doc)
+{
+    return gepub_doc_get_resource_mime_by_id (doc, doc->spine->data);
+}
+
+/**
  * gepub_doc_get_spine:
  * @doc: a #GepubDoc
  *
@@ -597,5 +609,22 @@ gchar *gepub_doc_get_resource_path (GepubDoc *doc, gchar *id)
         return NULL;
     }
 
-    return gres->uri;
+    return g_strdup (gres->uri);
+}
+
+/**
+ * gepub_doc_get_resource_path:
+ * @doc: a #GepubDoc
+ *
+ * Returns: (transfer full): the current resource path
+ */
+gchar *gepub_doc_get_current_path (GepubDoc *doc)
+{
+    GepubResource *gres = g_hash_table_lookup (doc->resources, doc->spine->data);
+    if (!gres) {
+        // not found
+        return NULL;
+    }
+
+    return g_strdup (gres->uri);
 }
