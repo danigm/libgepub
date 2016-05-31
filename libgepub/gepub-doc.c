@@ -173,8 +173,14 @@ gepub_doc_initable_init (GInitable     *initable,
         return FALSE;
 
     len = strlen (file);
-    while (file[i++] != '/' && i < len);
-    doc->content_base = g_strndup (file, i);
+    doc->content_base = g_strdup ("");
+    for (i=0; i<len; i++) {
+        if (file[i] == '/') {
+            g_free (doc->content_base);
+            doc->content_base = g_strndup (file, i+1);
+            break;
+        }
+    }
 
     gepub_doc_fill_resources (doc);
     gepub_doc_fill_spine (doc);
@@ -361,14 +367,10 @@ guchar *
 gepub_doc_get_resource_v (GepubDoc *doc, gchar *v, gsize *bufsize)
 {
     guchar *res = NULL;
-    gchar *path = NULL;
 
-    path = g_strdup_printf ("%s%s", doc->content_base, v);
-    if (!gepub_archive_read_entry (doc->archive, path, &res, bufsize)) {
-        g_free (path);
+    if (!gepub_archive_read_entry (doc->archive, v, &res, bufsize)) {
         return NULL;
     }
-    g_free (path);
 
     return res;
 }
