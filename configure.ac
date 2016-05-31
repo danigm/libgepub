@@ -19,13 +19,23 @@ AC_PROG_LIBTOOL
 PKG_CHECK_MODULES(GEPUB,
                   glib-2.0
                   gobject-2.0
-                  gtk+-3.0
                   gio-2.0
                   libxml-2.0
                   libarchive)
 
 AC_SUBST(GEPUB_CFLAGS)
 AC_SUBST(GEPUB_LIBS)
+
+PKG_CHECK_MODULES(GEPUB_TESTS,
+                  glib-2.0
+                  gobject-2.0
+                  gtk+-3.0
+                  gio-2.0
+                  libxml-2.0
+                  libarchive)
+
+AC_SUBST(GEPUB_TESTS_CFLAGS)
+AC_SUBST(GEPUB_TESTS_LIBS)
 
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_FILES([

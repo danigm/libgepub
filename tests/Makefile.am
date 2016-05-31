@@ -7,11 +7,11 @@ test_gepub_CPPFLAGS = \
 	$(AM_CPPFLAGS)
 
 test_gepub_CFLAGS = \
-	$(GEPUB_CFLAGS) \
+	$(GEPUB_TESTS_CFLAGS) \
 	$(WARN_CFLAGS) \
 	$(AM_CFLAGS)
 
 test_gepub_LDADD = \
 	$(top_builddir)/libgepub/libgepub.la \
-	$(GEPUB_LIBS) \
+	$(GEPUB_TESTS_LIBS) \
 	$(GTK_LIBS)
