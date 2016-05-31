@@ -20,6 +20,8 @@
 #include <config.h>
 #include <libxml/parser.h>
 #include <libxml/tree.h>
+#include <archive.h>
+#include <archive_entry.h>
 
 #include "gepub-archive.h"
 #include "gepub-utils.h"

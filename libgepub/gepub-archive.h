@@ -23,8 +23,6 @@
 #include <glib-object.h>
 #include <gio/gio.h>
 #include <glib.h>
-#include <archive.h>
-#include <archive_entry.h>
 
 G_BEGIN_DECLS
 
