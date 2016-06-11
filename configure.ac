@@ -17,6 +17,7 @@ AC_PROG_INSTALL
 AC_PROG_LIBTOOL
 
 PKG_CHECK_MODULES(GEPUB,
+                  libsoup-2.4
                   glib-2.0
                   gobject-2.0
                   gio-2.0
@@ -27,6 +28,7 @@ AC_SUBST(GEPUB_CFLAGS)
 AC_SUBST(GEPUB_LIBS)
 
 PKG_CHECK_MODULES(GEPUB_TESTS,
+                  libsoup-2.4
                   glib-2.0
                   gobject-2.0
                   gtk+-3.0

@@ -467,6 +467,32 @@ gepub_doc_get_current (GepubDoc *doc, gsize *bufsize)
 }
 
 /**
+ * gepub_doc_get_current_with_epub_uris:
+ * @doc: a #GepubDoc
+ * @bufsize: (out): location to store the length in bytes of the contents
+ *
+ * Returns: (array length=bufsize) (transfer full): the current chapter
+ * data, with resource uris renamed so they have the epub:// prefix and all
+ * are relative to the root file
+ */
+guchar *
+gepub_doc_get_current_with_epub_uris (GepubDoc *doc, gsize *bufsize)
+{
+    guchar *content = gepub_doc_get_current (doc, bufsize);
+    guchar *replaced = NULL;
+    gchar *path = gepub_doc_get_current_path (doc);
+    // getting the basepath of the current xhtml loaded
+    gchar *base = g_path_get_dirname (path);
+
+    replaced = gepub_utils_replace_resources (content, bufsize, base);
+
+    g_free (path);
+    g_free (content);
+
+    return replaced;
+}
+
+/**
  * gepub_doc_get_text:
  * @doc: a #GepubDoc
  *
@@ -615,18 +641,12 @@ gchar *gepub_doc_get_resource_path (GepubDoc *doc, gchar *id)
 }
 
 /**
- * gepub_doc_get_resource_path:
+ * gepub_doc_get_current_path:
  * @doc: a #GepubDoc
  *
  * Returns: (transfer full): the current resource path
  */
 gchar *gepub_doc_get_current_path (GepubDoc *doc)
 {
-    GepubResource *gres = g_hash_table_lookup (doc->resources, doc->spine->data);
-    if (!gres) {
-        // not found
-        return NULL;
-    }
-
-    return g_strdup (gres->uri);
+    return gepub_doc_get_resource_path (doc, doc->spine->data);
 }

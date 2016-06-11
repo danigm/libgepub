@@ -16,12 +16,58 @@
  * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
  */
 
+#include <libsoup/soup.h>
+
 #include <libxml/tree.h>
+#include <libxml/parser.h>
 #include <stdarg.h>
 #include <string.h>
 
 #include "gepub-utils.h"
 #include "gepub-text-chunk.h"
+
+
+/**
+ * Replaces the attr value with epub:// prefix for the tagname. This
+ * function also makes the resource absolute based on the epub root
+ */
+static void
+set_epub_uri (xmlNode *node, gchar *path, gchar *tagname, gchar *attr)
+{
+    xmlNode *cur_node = NULL;
+    xmlNode *ret = NULL;
+    xmlChar *text = NULL;
+
+    SoupURI *baseURI;
+    gchar *basepath = g_strdup_printf ("epub://%s", path);
+
+    baseURI = soup_uri_new (basepath);
+    g_free (basepath);
+
+    for (cur_node = node; cur_node; cur_node = cur_node->next) {
+        if (cur_node->type == XML_ELEMENT_NODE ) {
+            text = xmlGetProp (cur_node, attr);
+            if (!strcmp (cur_node->name, tagname) && text) {
+                SoupURI *uri = soup_uri_new_with_base (baseURI, text);
+                gchar *value = soup_uri_to_string (uri, FALSE);
+
+                xmlSetProp (cur_node, attr, value);
+
+                soup_uri_free (uri);
+                g_free (value);
+            }
+            if (text) {
+                xmlFree (text);
+                text = NULL;
+            }
+        }
+
+        if (cur_node->children)
+            set_epub_uri (cur_node->children, path, tagname, attr);
+    }
+
+    soup_uri_free (baseURI);
+}
 
 gboolean
 gepub_utils_has_parent_tag (xmlNode *node, gchar *name, ...)
@@ -149,4 +195,31 @@ gepub_utils_get_text_elements (xmlNode *node)
     }
 
     return text_list;
+}
+
+/**
+ * replacing epub media paths, for css, image and svg files, to be
+ * able to provide these files to webkit from the epub file
+ **/
+guchar *
+gepub_utils_replace_resources (guchar *content, gsize *bufsize, gchar *path)
+{
+    xmlDoc *doc = NULL;
+    xmlNode *root_element = NULL;
+    guchar *buffer;
+
+    doc = xmlRecoverDoc (content);
+    root_element = xmlDocGetRootElement (doc);
+
+    // replacing css resources
+    set_epub_uri (root_element, path, "link", "href");
+    // replacing images resources
+    set_epub_uri (root_element, path, "img", "src");
+    // replacing svg images resources
+    set_epub_uri (root_element, path, "image", "xlink:href");
+
+    xmlDocDumpFormatMemory (doc, (xmlChar**)&buffer, (int*)bufsize, 1);
+    xmlFreeDoc (doc);
+
+    return buffer;
 }

@@ -1,0 +1,2 @@
+ - support for multi-page display: get_current_next() or get_current_nth()
+   to the the page nth

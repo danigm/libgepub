@@ -53,6 +53,17 @@ update_text (GepubDoc *doc)
 }
 
 void
+print_replaced_text (GepubDoc *doc)
+{
+    gsize s = 0;
+    guchar *content = NULL;
+    content = gepub_doc_get_current_with_epub_uris (doc, &s);
+
+    printf ("\n\nREPLACED:\n%s\n", content);
+    g_free (content);
+}
+
+void
 button_pressed (GtkButton *button, GepubDoc *doc)
 {
     if (!strcmp (gtk_button_get_label (button), "prev")) {
@@ -61,6 +72,7 @@ button_pressed (GtkButton *button, GepubDoc *doc)
         gepub_doc_go_next (doc);
     }
     update_text (doc);
+    print_replaced_text (doc);
 }
 
 void
