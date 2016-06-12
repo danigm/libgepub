@@ -39,7 +39,7 @@ set_epub_uri (xmlNode *node, gchar *path, gchar *tagname, gchar *attr)
     xmlChar *text = NULL;
 
     SoupURI *baseURI;
-    gchar *basepath = g_strdup_printf ("epub://%s", path);
+    gchar *basepath = g_strdup_printf ("epub://%s/", path);
 
     baseURI = soup_uri_new (basepath);
     g_free (basepath);
