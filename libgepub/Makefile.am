@@ -52,6 +52,7 @@ Gepub_0_3_gir_INCLUDES = GObject-2.0 libxml2-2.0
 Gepub_0_3_gir_CFLAGS = $(INCLUDES)
 Gepub_0_3_gir_LIBS = libgepub.la
 Gepub_0_3_gir_FILES = $(introspection_sources)
+Gepub_0_3_gir_SCANNERFLAGS = --warn-all
 INTROSPECTION_GIRS += Gepub-0.3.gir
 
 girdir = $(datadir)/gir-1.0
