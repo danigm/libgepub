@@ -35,7 +35,6 @@ static void
 set_epub_uri (xmlNode *node, gchar *path, gchar *tagname, gchar *attr)
 {
     xmlNode *cur_node = NULL;
-    xmlNode *ret = NULL;
     xmlChar *text = NULL;
 
     SoupURI *baseURI;
