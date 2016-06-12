@@ -217,6 +217,8 @@ gepub_utils_replace_resources (guchar *content, gsize *bufsize, gchar *path)
     set_epub_uri (root_element, path, "img", "src");
     // replacing svg images resources
     set_epub_uri (root_element, path, "image", "xlink:href");
+    // replacing crosslinks
+    set_epub_uri (root_element, path, "a", "href");
 
     xmlDocDumpFormatMemory (doc, (xmlChar**)&buffer, (int*)bufsize, 1);
     xmlFreeDoc (doc);
