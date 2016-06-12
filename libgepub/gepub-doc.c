@@ -36,6 +36,7 @@ struct _GepubDoc {
 
     GepubArchive *archive;
     guchar *content;
+    gsize content_len;
     gchar *content_base;
     gchar *path;
     GHashTable *resources;
@@ -169,7 +170,7 @@ gepub_doc_initable_init (GInitable     *initable,
     file = gepub_archive_get_root_file (doc->archive);
     if (!file)
         return FALSE;
-    if (!gepub_archive_read_entry (doc->archive, file, &(doc->content), &bufsize))
+    if (!gepub_archive_read_entry (doc->archive, file, &doc->content, &doc->content_len))
         return FALSE;
 
     len = strlen (file);
@@ -222,7 +223,7 @@ gepub_doc_fill_resources (GepubDoc *doc)
     gchar *id, *tmpuri, *uri;
     GepubResource *res;
 
-    xdoc = xmlRecoverDoc (doc->content);
+    xdoc = xmlRecoverMemory (doc->content, doc->content_len);
     root_element = xmlDocGetRootElement (xdoc);
     mnode = gepub_utils_get_element_by_tag (root_element, "manifest");
 
@@ -257,7 +258,7 @@ gepub_doc_fill_spine (GepubDoc *doc)
     xmlNode *item = NULL;
     gchar *id;
 
-    xdoc = xmlRecoverDoc (doc->content);
+    xdoc = xmlRecoverMemory (doc->content, doc->content_len);
     root_element = xmlDocGetRootElement (xdoc);
     snode = gepub_utils_get_element_by_tag (root_element, "spine");
 
@@ -306,7 +307,7 @@ gepub_doc_get_metadata (GepubDoc *doc, gchar *mdata)
     gchar *ret;
     xmlChar *text;
 
-    xdoc = xmlRecoverDoc (doc->content);
+    xdoc = xmlRecoverMemory (doc->content, doc->content_len);
     root_element = xmlDocGetRootElement (xdoc);
     mnode = gepub_utils_get_element_by_tag (root_element, "metadata");
     mdata_node = gepub_utils_get_element_by_tag (mnode, mdata);
@@ -604,7 +605,7 @@ gepub_doc_get_cover (GepubDoc *doc)
     gchar *ret;
     xmlChar *text;
 
-    xdoc = xmlRecoverDoc (doc->content);
+    xdoc = xmlRecoverMemory (doc->content, doc->content_len);
     root_element = xmlDocGetRootElement (xdoc);
     mnode = gepub_utils_get_element_by_attr (root_element, "name", "cover");
     text = xmlGetProp(mnode, "content");

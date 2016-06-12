@@ -140,11 +140,10 @@ gepub_archive_read_entry (GepubArchive *archive,
         archive_read_data_skip (archive->archive);
     }
 
-    *bufsize = archive_entry_size (entry) + 1;
-    size = (*bufsize) - 1;
-    *buffer = g_malloc (*bufsize);
+    *bufsize = archive_entry_size (entry);
+    size = *bufsize;
+    *buffer = g_malloc0 (*bufsize);
     archive_read_data (archive->archive, *buffer, size);
-    (*buffer)[size] = '\0';
 
     gepub_archive_close (archive);
     return TRUE;
@@ -164,7 +163,7 @@ gepub_archive_get_root_file (GepubArchive *archive)
     if (!gepub_archive_read_entry (archive, "META-INF/container.xml", &buffer, &bufsize))
         return NULL;
 
-    doc = xmlRecoverDoc (buffer);
+    doc = xmlRecoverMemory (buffer, bufsize);
     root_element = xmlDocGetRootElement (doc);
     root_node = gepub_utils_get_element_by_tag (root_element, "rootfile");
     root_file = xmlGetProp (root_node, "full-path");

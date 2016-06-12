@@ -208,7 +208,7 @@ gepub_utils_replace_resources (guchar *content, gsize *bufsize, gchar *path)
     xmlNode *root_element = NULL;
     guchar *buffer;
 
-    doc = xmlRecoverDoc (content);
+    doc = xmlRecoverMemory (content, *bufsize);
     root_element = xmlDocGetRootElement (doc);
 
     // replacing css resources
