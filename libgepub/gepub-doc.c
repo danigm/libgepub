@@ -408,20 +408,15 @@ gepub_doc_get_resource_mime_by_id (GepubDoc *doc, gchar *id)
 gchar *
 gepub_doc_get_resource_mime (GepubDoc *doc, gchar *v)
 {
-    gchar *path = NULL;
     GepubResource *gres;
     GList *keys = g_hash_table_get_keys (doc->resources);
 
-    path = g_strdup_printf ("%s%s", doc->content_base, v);
-
     while (keys) {
         gres = ((GepubResource*)g_hash_table_lookup (doc->resources, keys->data));
-        if (!strcmp (gres->uri, path))
+        if (!strcmp (gres->uri, v))
             break;
         keys = keys->next;
     }
-
-    g_free(path);
 
     if (keys)
         return g_strdup (gres->mime);
