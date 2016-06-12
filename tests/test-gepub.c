@@ -64,8 +64,10 @@ print_replaced_text (GepubDoc *doc)
 }
 
 void
-button_pressed (GtkButton *button, GepubDoc *doc)
+button_pressed (GtkButton *button, GepubWidget *widget)
 {
+    GepubDoc *doc = gepub_widget_get_doc (widget);
+
     if (!strcmp (gtk_button_get_label (button), "prev")) {
         gepub_doc_go_prev (doc);
     } else {
@@ -73,6 +75,8 @@ button_pressed (GtkButton *button, GepubDoc *doc)
     }
     update_text (doc);
     print_replaced_text (doc);
+
+    gepub_widget_reload (widget);
 }
 
 void
@@ -243,6 +247,7 @@ main (int argc, char **argv)
 
     GepubDoc *doc;
     GtkWidget *textview2;
+    GtkWidget *widget = gepub_widget_new ();
 
     if (argc < 2) {
         printf ("you should provide an .epub file\n");
@@ -255,7 +260,9 @@ main (int argc, char **argv)
     vpaned = gtk_paned_new (GTK_ORIENTATION_HORIZONTAL);
     gtk_container_add (GTK_CONTAINER (window), vpaned);
 
-    doc = gepub_doc_new (argv[1]);
+    // gepub widget
+    gepub_widget_load_epub (GEPUB_WIDGET (widget), argv[1]);
+    doc = gepub_widget_get_doc (GEPUB_WIDGET (widget));
     if (!doc) {
         perror ("BAD epub FILE");
         return -1;
@@ -276,22 +283,23 @@ main (int argc, char **argv)
     vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
     hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
     b_prev = gtk_button_new_with_label ("prev");
-    g_signal_connect (b_prev, "clicked", (GCallback)button_pressed, doc);
+    g_signal_connect (b_prev, "clicked", (GCallback)button_pressed, GEPUB_WIDGET (widget));
     b_next = gtk_button_new_with_label ("next");
-    g_signal_connect (b_next, "clicked", (GCallback)button_pressed, doc);
+    g_signal_connect (b_next, "clicked", (GCallback)button_pressed, GEPUB_WIDGET (widget));
     gtk_container_add (GTK_CONTAINER (hbox), b_prev);
     gtk_container_add (GTK_CONTAINER (hbox), b_next);
     gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 5);
     gtk_box_pack_start (GTK_BOX (vbox), scrolled, TRUE, TRUE, 5);
 
-    gtk_widget_set_size_request (GTK_WIDGET (vbox), 400, 500);
-    gtk_paned_add1 (GTK_PANED (vpaned), vbox);
-
     textview = gtk_text_view_new ();
     scrolled = gtk_scrolled_window_new (NULL, NULL);
     gtk_container_add (GTK_CONTAINER (scrolled), textview);
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-    gtk_paned_add2 (GTK_PANED (vpaned), scrolled);
+    gtk_box_pack_start (GTK_BOX (vbox), scrolled, TRUE, TRUE, 5);
+
+    gtk_widget_set_size_request (GTK_WIDGET (vbox), 400, 500);
+    gtk_paned_add1 (GTK_PANED (vpaned), vbox);
+    gtk_paned_add2 (GTK_PANED (vpaned), widget);
 
     gtk_widget_show_all (window);
 

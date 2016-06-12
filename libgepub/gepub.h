@@ -4,5 +4,6 @@
 #include "gepub-archive.h"
 #include "gepub-text-chunk.h"
 #include "gepub-doc.h"
+#include "gepub-widget.h"
 
 #endif

@@ -4,6 +4,7 @@ NOINST_H_FILES = \
 	gepub-utils.h
 
 INST_H_FILES = \
+	gepub-widget.h		\
 	gepub-archive.h		\
 	gepub-text-chunk.h	\
 	gepub-doc.h		\
@@ -13,6 +14,7 @@ libgepubincludedir = $(includedir)/libgepub
 libgepubinclude_HEADERS = $(INST_H_FILES)
 
 libgepub_la_SOURCES = \
+	gepub-widget.c			\
 	gepub-archive.c			\
 	gepub-text-chunk.c		\
 	gepub-doc.c				\
@@ -48,7 +50,7 @@ if HAVE_INTROSPECTION
 introspection_sources = $(libgepub_la_SOURCES)
 
 Gepub-0.3.gir: libgepub.la
-Gepub_0_3_gir_INCLUDES = GObject-2.0 libxml2-2.0
+Gepub_0_3_gir_INCLUDES = GObject-2.0 libxml2-2.0 WebKit2-4.0
 Gepub_0_3_gir_CFLAGS = $(INCLUDES)
 Gepub_0_3_gir_LIBS = libgepub.la
 Gepub_0_3_gir_FILES = $(introspection_sources)
