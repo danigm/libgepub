@@ -70,40 +70,30 @@ G_END_DECLS
 /**
  * GEPUB_META_TITLE:
  * The book title.
- *
- * Value: title
  */
 #define GEPUB_META_TITLE "title"
 
 /**
  * GEPUB_META_LANG:
  * The book lang.
- *
- * Value: language
  */
 #define GEPUB_META_LANG "language"
 
 /**
  * GEPUB_META_ID:
  * The book id.
- *
- * Value: identifier
  */
 #define GEPUB_META_ID "identifier"
 
 /**
  * GEPUB_META_AUTHOR:
  * The book author.
- *
- * Value: creator
  */
 #define GEPUB_META_AUTHOR "creator"
 
 /**
  * GEPUB_META_DESC:
  * The book description.
- *
- * Value: description
  */
 #define GEPUB_META_DESC "description"
 

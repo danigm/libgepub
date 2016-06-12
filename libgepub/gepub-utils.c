@@ -27,8 +27,7 @@
 #include "gepub-text-chunk.h"
 
 
-/**
- * Replaces the attr value with epub:// prefix for the tagname. This
+/* Replaces the attr value with epub:// prefix for the tagname. This
  * function also makes the resource absolute based on the epub root
  */
 static void
@@ -101,6 +100,13 @@ gepub_utils_has_parent_tag (xmlNode *node, gchar *name, ...)
     return FALSE;
 }
 
+/**
+ * gepub_utils_get_element_by_tag: (skip):
+ * @node: an #xmlNode
+ * @name: the tag name
+ *
+ * Returns: the tag matching @name.
+ */
 xmlNode *
 gepub_utils_get_element_by_tag (xmlNode *node, gchar *name)
 {
@@ -120,6 +126,14 @@ gepub_utils_get_element_by_tag (xmlNode *node, gchar *name)
     return ret;
 }
 
+/**
+ * gepub_utils_get_element_by_attr: (skip):
+ * @node: an #xmlNode
+ * @attr: the attribute
+ * @value: the value
+ *
+ * Returns: the element matching @attr and @value.
+ */
 xmlNode *
 gepub_utils_get_element_by_attr (xmlNode *node, gchar *attr, gchar *value)
 {
@@ -148,6 +162,13 @@ gepub_utils_get_element_by_attr (xmlNode *node, gchar *attr, gchar *value)
     return ret;
 }
 
+/**
+ * gepub_utils_get_text_elements:
+ * @node: an #xmlNode
+ *
+ * Returns: (element-type Gepub.TextChunk) (transfer full): the text elements
+ *  of @node.
+ */
 GList *
 gepub_utils_get_text_elements (xmlNode *node)
 {
@@ -196,10 +217,9 @@ gepub_utils_get_text_elements (xmlNode *node)
     return text_list;
 }
 
-/**
- * replacing epub media paths, for css, image and svg files, to be
+/* Replacing epub media paths, for css, image and svg files, to be
  * able to provide these files to webkit from the epub file
- **/
+ */
 guchar *
 gepub_utils_replace_resources (guchar *content, gsize *bufsize, gchar *path)
 {

@@ -200,7 +200,6 @@ gepub_doc_initable_iface_init (GInitableIface *iface)
 /**
  * gepub_doc_new:
  * @path: the epub doc path
- * @error: location to store a #GError, or %NULL
  *
  * Returns: (transfer full): the new GepubDoc created
  */
@@ -552,7 +551,7 @@ gepub_doc_get_text_by_id (GepubDoc *doc, gchar *id)
 
 /**
  * gepub_doc_free_text:
- * @doc: a #GList
+ * @tlist: (element-type Gepub.TextChunk): a #GList
  */
 void
 gepub_doc_free_text (GList *tlist)
@@ -575,7 +574,7 @@ gboolean gepub_doc_go_next (GepubDoc *doc)
 }
 
 /**
- * gepub_doc_go_next:
+ * gepub_doc_go_prev:
  * @doc: a #GepubDoc
  * Returns: TRUE on success, FALSE if there's no prev pages
  */

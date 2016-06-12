@@ -105,6 +105,12 @@ gepub_archive_new (const gchar *path)
     return archive;
 }
 
+/**
+ * gepub_archive_list_files:
+ * @archive: a #GepubArchive
+ *
+ * Returns: (element-type utf8) (transfer full): list of files in the archive
+ */
 GList *
 gepub_archive_list_files (GepubArchive *archive)
 {
