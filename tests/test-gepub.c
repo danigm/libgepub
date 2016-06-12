@@ -199,7 +199,7 @@ test_doc_resources (const char *path)
     guchar *ncx;
     gsize size;
 
-    ncx = gepub_doc_get_resource (doc, "ncx", &size);
+    ncx = gepub_doc_get_resource_by_id (doc, "ncx", &size);
     PTEST ("ncx:\n%s\n", ncx);
     g_free (ncx);
 

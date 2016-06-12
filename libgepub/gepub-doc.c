@@ -333,7 +333,7 @@ gepub_doc_get_resources (GepubDoc *doc)
 }
 
 /**
- * gepub_doc_get_resource:
+ * gepub_doc_get_resource_by_id:
  * @doc: a #GepubDoc
  * @id: the resource id
  * @bufsize: (out): location to store the length in bytes of the contents
@@ -341,7 +341,7 @@ gepub_doc_get_resources (GepubDoc *doc)
  * Returns: (array length=bufsize) (transfer full): the resource content
  */
 guchar *
-gepub_doc_get_resource (GepubDoc *doc, gchar *id, gsize *bufsize)
+gepub_doc_get_resource_by_id (GepubDoc *doc, gchar *id, gsize *bufsize)
 {
     guchar *res = NULL;
     GepubResource *gres = g_hash_table_lookup (doc->resources, id);
@@ -356,19 +356,19 @@ gepub_doc_get_resource (GepubDoc *doc, gchar *id, gsize *bufsize)
 }
 
 /**
- * gepub_doc_get_resource_v:
+ * gepub_doc_get_resource:
  * @doc: a #GepubDoc
- * @v: the resource path
+ * @path: the resource path
  * @bufsize: (out): location to store length in bytes of the contents
  *
  * Returns: (array length=bufsize) (transfer full): the resource content
  */
 guchar *
-gepub_doc_get_resource_v (GepubDoc *doc, gchar *v, gsize *bufsize)
+gepub_doc_get_resource (GepubDoc *doc, gchar *path, gsize *bufsize)
 {
     guchar *res = NULL;
 
-    if (!gepub_archive_read_entry (doc->archive, v, &res, bufsize)) {
+    if (!gepub_archive_read_entry (doc->archive, path, &res, bufsize)) {
         return NULL;
     }
 
@@ -401,19 +401,19 @@ gepub_doc_get_resource_mime_by_id (GepubDoc *doc, gchar *id)
 /**
  * gepub_doc_get_resource_mime:
  * @doc: a #GepubDoc
- * @v: the resource path
+ * @path: the resource path
  *
  * Returns: (transfer full): the resource mime
  */
 gchar *
-gepub_doc_get_resource_mime (GepubDoc *doc, gchar *v)
+gepub_doc_get_resource_mime (GepubDoc *doc, gchar *path)
 {
     GepubResource *gres;
     GList *keys = g_hash_table_get_keys (doc->resources);
 
     while (keys) {
         gres = ((GepubResource*)g_hash_table_lookup (doc->resources, keys->data));
-        if (!strcmp (gres->uri, v))
+        if (!strcmp (gres->uri, path))
             break;
         keys = keys->next;
     }
@@ -458,7 +458,7 @@ gepub_doc_get_spine (GepubDoc *doc)
 guchar *
 gepub_doc_get_current (GepubDoc *doc, gsize *bufsize)
 {
-    return gepub_doc_get_resource (doc, doc->spine->data, bufsize);
+    return gepub_doc_get_resource_by_id (doc, doc->spine->data, bufsize);
 }
 
 /**
@@ -534,7 +534,7 @@ gepub_doc_get_text_by_id (GepubDoc *doc, gchar *id)
 
     GList *texts = NULL;
 
-    res = gepub_doc_get_resource (doc, id, &size);
+    res = gepub_doc_get_resource_by_id (doc, id, &size);
     if (!res) {
         return NULL;
     }
