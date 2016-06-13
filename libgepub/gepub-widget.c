@@ -50,7 +50,7 @@ resource_callback (WebKitURISchemeRequest *request, gpointer user_data)
     uri = g_strdup (webkit_uri_scheme_request_get_uri (request));
     // removing "epub://"
     path = uri + 7;
-    contents = gepub_doc_get_resource_v (widget->doc, path, &stream_length);
+    contents = gepub_doc_get_resource (widget->doc, path, &stream_length);
     mime = gepub_doc_get_resource_mime (widget->doc, path);
 
     if (!mime) {
