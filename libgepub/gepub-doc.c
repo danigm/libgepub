@@ -36,6 +36,7 @@ struct _GepubDoc {
 
     GepubArchive *archive;
     guchar *content;
+    gsize content_len;
     gchar *content_base;
     gchar *path;
     GHashTable *resources;
@@ -169,7 +170,7 @@ gepub_doc_initable_init (GInitable     *initable,
     file = gepub_archive_get_root_file (doc->archive);
     if (!file)
         return FALSE;
-    if (!gepub_archive_read_entry (doc->archive, file, &(doc->content), &bufsize))
+    if (!gepub_archive_read_entry (doc->archive, file, &doc->content, &doc->content_len))
         return FALSE;
 
     len = strlen (file);
@@ -199,7 +200,6 @@ gepub_doc_initable_iface_init (GInitableIface *iface)
 /**
  * gepub_doc_new:
  * @path: the epub doc path
- * @error: location to store a #GError, or %NULL
  *
  * Returns: (transfer full): the new GepubDoc created
  */
@@ -222,7 +222,7 @@ gepub_doc_fill_resources (GepubDoc *doc)
     gchar *id, *tmpuri, *uri;
     GepubResource *res;
 
-    xdoc = xmlRecoverDoc (doc->content);
+    xdoc = xmlRecoverMemory (doc->content, doc->content_len);
     root_element = xmlDocGetRootElement (xdoc);
     mnode = gepub_utils_get_element_by_tag (root_element, "manifest");
 
@@ -257,7 +257,7 @@ gepub_doc_fill_spine (GepubDoc *doc)
     xmlNode *item = NULL;
     gchar *id;
 
-    xdoc = xmlRecoverDoc (doc->content);
+    xdoc = xmlRecoverMemory (doc->content, doc->content_len);
     root_element = xmlDocGetRootElement (xdoc);
     snode = gepub_utils_get_element_by_tag (root_element, "spine");
 
@@ -306,7 +306,7 @@ gepub_doc_get_metadata (GepubDoc *doc, gchar *mdata)
     gchar *ret;
     xmlChar *text;
 
-    xdoc = xmlRecoverDoc (doc->content);
+    xdoc = xmlRecoverMemory (doc->content, doc->content_len);
     root_element = xmlDocGetRootElement (xdoc);
     mnode = gepub_utils_get_element_by_tag (root_element, "metadata");
     mdata_node = gepub_utils_get_element_by_tag (mnode, mdata);
@@ -333,7 +333,7 @@ gepub_doc_get_resources (GepubDoc *doc)
 }
 
 /**
- * gepub_doc_get_resource:
+ * gepub_doc_get_resource_by_id:
  * @doc: a #GepubDoc
  * @id: the resource id
  * @bufsize: (out): location to store the length in bytes of the contents
@@ -341,7 +341,7 @@ gepub_doc_get_resources (GepubDoc *doc)
  * Returns: (array length=bufsize) (transfer full): the resource content
  */
 guchar *
-gepub_doc_get_resource (GepubDoc *doc, gchar *id, gsize *bufsize)
+gepub_doc_get_resource_by_id (GepubDoc *doc, gchar *id, gsize *bufsize)
 {
     guchar *res = NULL;
     GepubResource *gres = g_hash_table_lookup (doc->resources, id);
@@ -356,19 +356,19 @@ gepub_doc_get_resource (GepubDoc *doc, gchar *id, gsize *bufsize)
 }
 
 /**
- * gepub_doc_get_resource_v:
+ * gepub_doc_get_resource:
  * @doc: a #GepubDoc
- * @v: the resource path
+ * @path: the resource path
  * @bufsize: (out): location to store length in bytes of the contents
  *
  * Returns: (array length=bufsize) (transfer full): the resource content
  */
 guchar *
-gepub_doc_get_resource_v (GepubDoc *doc, gchar *v, gsize *bufsize)
+gepub_doc_get_resource (GepubDoc *doc, gchar *path, gsize *bufsize)
 {
     guchar *res = NULL;
 
-    if (!gepub_archive_read_entry (doc->archive, v, &res, bufsize)) {
+    if (!gepub_archive_read_entry (doc->archive, path, &res, bufsize)) {
         return NULL;
     }
 
@@ -401,12 +401,12 @@ gepub_doc_get_resource_mime_by_id (GepubDoc *doc, gchar *id)
 /**
  * gepub_doc_get_resource_mime:
  * @doc: a #GepubDoc
- * @v: the resource path
+ * @path: the resource path
  *
  * Returns: (transfer full): the resource mime
  */
 gchar *
-gepub_doc_get_resource_mime (GepubDoc *doc, gchar *v)
+gepub_doc_get_resource_mime (GepubDoc *doc, gchar *path)
 {
     GepubResource *gres;
     GList *keys = g_hash_table_get_keys (doc->resources);
@@ -458,7 +458,7 @@ gepub_doc_get_spine (GepubDoc *doc)
 guchar *
 gepub_doc_get_current (GepubDoc *doc, gsize *bufsize)
 {
-    return gepub_doc_get_resource (doc, doc->spine->data, bufsize);
+    return gepub_doc_get_resource_by_id (doc, doc->spine->data, bufsize);
 }
 
 /**
@@ -534,7 +534,7 @@ gepub_doc_get_text_by_id (GepubDoc *doc, gchar *id)
 
     GList *texts = NULL;
 
-    res = gepub_doc_get_resource (doc, id, &size);
+    res = gepub_doc_get_resource_by_id (doc, id, &size);
     if (!res) {
         return NULL;
     }
@@ -551,7 +551,7 @@ gepub_doc_get_text_by_id (GepubDoc *doc, gchar *id)
 
 /**
  * gepub_doc_free_text:
- * @doc: a #GList
+ * @tlist: (element-type Gepub.TextChunk): a #GList
  */
 void
 gepub_doc_free_text (GList *tlist)
@@ -574,7 +574,7 @@ gboolean gepub_doc_go_next (GepubDoc *doc)
 }
 
 /**
- * gepub_doc_go_next:
+ * gepub_doc_go_prev:
  * @doc: a #GepubDoc
  * Returns: TRUE on success, FALSE if there's no prev pages
  */
@@ -604,7 +604,7 @@ gepub_doc_get_cover (GepubDoc *doc)
     gchar *ret;
     xmlChar *text;
 
-    xdoc = xmlRecoverDoc (doc->content);
+    xdoc = xmlRecoverMemory (doc->content, doc->content_len);
     root_element = xmlDocGetRootElement (xdoc);
     mnode = gepub_utils_get_element_by_attr (root_element, "name", "cover");
     text = xmlGetProp(mnode, "content");

@@ -47,10 +47,10 @@ GType             gepub_doc_get_type                        (void) G_GNUC_CONST;
 GepubDoc         *gepub_doc_new                             (const gchar *path);
 gchar            *gepub_doc_get_content                     (GepubDoc *doc);
 gchar            *gepub_doc_get_metadata                    (GepubDoc *doc, gchar *mdata);
-guchar           *gepub_doc_get_resource                    (GepubDoc *doc, gchar *id, gsize *bufsize);
-guchar           *gepub_doc_get_resource_v                  (GepubDoc *doc, gchar *v, gsize *bufsize);
+guchar           *gepub_doc_get_resource                    (GepubDoc *doc, gchar *path, gsize *bufsize);
+guchar           *gepub_doc_get_resource_by_id              (GepubDoc *doc, gchar *id, gsize *bufsize);
 GHashTable       *gepub_doc_get_resources                   (GepubDoc *doc);
-gchar            *gepub_doc_get_resource_mime               (GepubDoc *doc, gchar *v);
+gchar            *gepub_doc_get_resource_mime               (GepubDoc *doc, gchar *path);
 gchar            *gepub_doc_get_resource_mime_by_id         (GepubDoc *doc, gchar *id);
 gchar            *gepub_doc_get_current_mime                (GepubDoc *doc);
 GList            *gepub_doc_get_spine                       (GepubDoc *doc);
@@ -70,40 +70,30 @@ G_END_DECLS
 /**
  * GEPUB_META_TITLE:
  * The book title.
- *
- * Value: title
  */
 #define GEPUB_META_TITLE "title"
 
 /**
  * GEPUB_META_LANG:
  * The book lang.
- *
- * Value: language
  */
 #define GEPUB_META_LANG "language"
 
 /**
  * GEPUB_META_ID:
  * The book id.
- *
- * Value: identifier
  */
 #define GEPUB_META_ID "identifier"
 
 /**
  * GEPUB_META_AUTHOR:
  * The book author.
- *
- * Value: creator
  */
 #define GEPUB_META_AUTHOR "creator"
 
 /**
  * GEPUB_META_DESC:
  * The book description.
- *
- * Value: description
  */
 #define GEPUB_META_DESC "description"
 

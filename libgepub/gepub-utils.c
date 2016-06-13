@@ -27,19 +27,17 @@
 #include "gepub-text-chunk.h"
 
 
-/**
- * Replaces the attr value with epub:// prefix for the tagname. This
+/* Replaces the attr value with epub:// prefix for the tagname. This
  * function also makes the resource absolute based on the epub root
  */
 static void
 set_epub_uri (xmlNode *node, gchar *path, gchar *tagname, gchar *attr)
 {
     xmlNode *cur_node = NULL;
-    xmlNode *ret = NULL;
     xmlChar *text = NULL;
 
     SoupURI *baseURI;
-    gchar *basepath = g_strdup_printf ("epub://%s", path);
+    gchar *basepath = g_strdup_printf ("epub://%s/", path);
 
     baseURI = soup_uri_new (basepath);
     g_free (basepath);
@@ -102,6 +100,13 @@ gepub_utils_has_parent_tag (xmlNode *node, gchar *name, ...)
     return FALSE;
 }
 
+/**
+ * gepub_utils_get_element_by_tag: (skip):
+ * @node: an #xmlNode
+ * @name: the tag name
+ *
+ * Returns: the tag matching @name.
+ */
 xmlNode *
 gepub_utils_get_element_by_tag (xmlNode *node, gchar *name)
 {
@@ -121,6 +126,14 @@ gepub_utils_get_element_by_tag (xmlNode *node, gchar *name)
     return ret;
 }
 
+/**
+ * gepub_utils_get_element_by_attr: (skip):
+ * @node: an #xmlNode
+ * @attr: the attribute
+ * @value: the value
+ *
+ * Returns: the element matching @attr and @value.
+ */
 xmlNode *
 gepub_utils_get_element_by_attr (xmlNode *node, gchar *attr, gchar *value)
 {
@@ -149,6 +162,13 @@ gepub_utils_get_element_by_attr (xmlNode *node, gchar *attr, gchar *value)
     return ret;
 }
 
+/**
+ * gepub_utils_get_text_elements:
+ * @node: an #xmlNode
+ *
+ * Returns: (element-type Gepub.TextChunk) (transfer full): the text elements
+ *  of @node.
+ */
 GList *
 gepub_utils_get_text_elements (xmlNode *node)
 {
@@ -197,10 +217,9 @@ gepub_utils_get_text_elements (xmlNode *node)
     return text_list;
 }
 
-/**
- * replacing epub media paths, for css, image and svg files, to be
+/* Replacing epub media paths, for css, image and svg files, to be
  * able to provide these files to webkit from the epub file
- **/
+ */
 guchar *
 gepub_utils_replace_resources (guchar *content, gsize *bufsize, gchar *path)
 {
@@ -208,7 +227,7 @@ gepub_utils_replace_resources (guchar *content, gsize *bufsize, gchar *path)
     xmlNode *root_element = NULL;
     guchar *buffer;
 
-    doc = xmlRecoverDoc (content);
+    doc = xmlRecoverMemory (content, *bufsize);
     root_element = xmlDocGetRootElement (doc);
 
     // replacing css resources
@@ -217,6 +236,8 @@ gepub_utils_replace_resources (guchar *content, gsize *bufsize, gchar *path)
     set_epub_uri (root_element, path, "img", "src");
     // replacing svg images resources
     set_epub_uri (root_element, path, "image", "xlink:href");
+    // replacing crosslinks
+    set_epub_uri (root_element, path, "a", "href");
 
     xmlDocDumpFormatMemory (doc, (xmlChar**)&buffer, (int*)bufsize, 1);
     xmlFreeDoc (doc);

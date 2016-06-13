@@ -54,7 +54,7 @@ typedef struct _GepubTextChunk      GepubTextChunk;
 typedef struct _GepubTextChunkClass GepubTextChunkClass;
 
 GType               gepub_text_chunk_get_type     (void) G_GNUC_CONST;
-GepubTextChunk     *gepub_text_chunk_new          (GepubTextChunkType type, const guchar *path);
+GepubTextChunk     *gepub_text_chunk_new          (GepubTextChunkType type, const guchar *text);
 gchar              *gepub_text_chunk_type_str     (GepubTextChunk *chunk);
 gchar              *gepub_text_chunk_text         (GepubTextChunk *chunk);
 GepubTextChunkType  gepub_text_chunk_type         (GepubTextChunk *chunk);
