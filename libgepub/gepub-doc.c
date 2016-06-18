@@ -39,7 +39,9 @@ struct _GepubDoc {
     gchar *content_base;
     gchar *path;
     GHashTable *resources;
+
     GList *spine;
+    GList *page;
 };
 
 struct _GepubDocClass {
@@ -49,6 +51,7 @@ struct _GepubDocClass {
 enum {
     PROP_0,
     PROP_PATH,
+    PROP_PAGE,
     NUM_PROPS
 };
 
@@ -95,6 +98,9 @@ gepub_doc_set_property (GObject      *object,
     case PROP_PATH:
         doc->path = g_value_dup_string (value);
         break;
+    case PROP_PAGE:
+        gepub_doc_set_page (doc, g_value_get_int (value));
+        break;
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
         break;
@@ -112,6 +118,9 @@ gepub_doc_get_property (GObject    *object,
     switch (prop_id) {
     case PROP_PATH:
         g_value_set_string (value, doc->path);
+        break;
+    case PROP_PAGE:
+        g_value_set_int (value, gepub_doc_get_page (doc));
         break;
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -148,6 +157,13 @@ gepub_doc_class_init (GepubDocClass *klass)
                              G_PARAM_READWRITE |
                              G_PARAM_CONSTRUCT_ONLY |
                              G_PARAM_STATIC_STRINGS);
+    properties[PROP_PAGE] =
+        g_param_spec_int ("page",
+                          "Current page",
+                          "The current page index",
+                          -1, G_MAXINT, 0,
+                          G_PARAM_READWRITE |
+                          G_PARAM_STATIC_STRINGS);
 
     g_object_class_install_properties (object_class, NUM_PROPS, properties);
 }
@@ -281,6 +297,8 @@ gepub_doc_fill_spine (GepubDoc *doc)
     }
 
     doc->spine = g_list_reverse (spine);
+    doc->page = doc->spine;
+
     xmlFreeDoc (xdoc);
 }
 
@@ -432,19 +450,7 @@ gepub_doc_get_resource_mime (GepubDoc *doc, const gchar *path)
 gchar *
 gepub_doc_get_current_mime (GepubDoc *doc)
 {
-    return gepub_doc_get_resource_mime_by_id (doc, doc->spine->data);
-}
-
-/**
- * gepub_doc_get_spine:
- * @doc: a #GepubDoc
- *
- * Returns: (element-type utf8) (transfer none): the document spine
- */
-GList *
-gepub_doc_get_spine (GepubDoc *doc)
-{
-    return doc->spine;
+    return gepub_doc_get_resource_mime_by_id (doc, doc->page->data);
 }
 
 /**
@@ -456,7 +462,7 @@ gepub_doc_get_spine (GepubDoc *doc)
 GBytes *
 gepub_doc_get_current (GepubDoc *doc)
 {
-    return gepub_doc_get_resource_by_id (doc, doc->spine->data);
+    return gepub_doc_get_resource_by_id (doc, doc->page->data);
 }
 
 /**
@@ -549,6 +555,19 @@ gepub_doc_get_text_by_id (GepubDoc *doc, const gchar *id)
     return texts;
 }
 
+static gboolean
+gepub_doc_set_page_internal (GepubDoc *doc,
+                             GList    *page)
+{
+    if (!page || doc->page == page)
+        return FALSE;
+
+    doc->page = page;
+    g_object_notify_by_pspec (G_OBJECT (doc), properties[PROP_PAGE]);
+
+    return TRUE;
+}
+
 /**
  * gepub_doc_go_next:
  * @doc: a #GepubDoc
@@ -558,11 +577,7 @@ gepub_doc_get_text_by_id (GepubDoc *doc, const gchar *id)
 gboolean
 gepub_doc_go_next (GepubDoc *doc)
 {
-    if (doc->spine->next) {
-        doc->spine = doc->spine->next;
-        return TRUE;
-    }
-    return FALSE;
+    return gepub_doc_set_page_internal (doc, doc->page->next);
 }
 
 /**
@@ -574,13 +589,51 @@ gepub_doc_go_next (GepubDoc *doc)
 gboolean
 gepub_doc_go_prev (GepubDoc *doc)
 {
-    if (doc->spine->prev) {
-        doc->spine = doc->spine->prev;
-        return TRUE;
-    }
-    return FALSE;
+    return gepub_doc_set_page_internal (doc, doc->page->prev);
 }
 
+/**
+ * gepub_doc_get_n_pages:
+ * @doc: a #GepubDoc
+ *
+ * Returns: the number of pages in the document
+ */
+int
+gepub_doc_get_n_pages (GepubDoc *doc)
+{
+    return g_list_length (doc->spine);
+}
+
+/**
+ * gepub_doc_get_page:
+ * @doc: a #GepubDoc
+ *
+ * Returns: the current page index, starting from 0
+ */
+int
+gepub_doc_get_page (GepubDoc *doc)
+{
+    return g_list_position (doc->spine, doc->page);
+}
+
+/**
+ * gepub_doc_set_page:
+ * @doc: a #GepubDoc
+ * @index: the index of the new page
+ *
+ * Sets the document current page to @index.
+ */
+void
+gepub_doc_set_page (GepubDoc *doc,
+                    gint      index)
+{
+    GList *page;
+
+    g_return_if_fail (index >= 0 && index <= gepub_doc_get_n_pages (doc));
+
+    page = g_list_nth (doc->spine, index);
+    gepub_doc_set_page_internal (doc, page);
+}
 
 /**
  * gepub_doc_get_cover:
@@ -642,5 +695,18 @@ gepub_doc_get_resource_path (GepubDoc *doc, const gchar *id)
 gchar *
 gepub_doc_get_current_path (GepubDoc *doc)
 {
-    return gepub_doc_get_resource_path (doc, doc->spine->data);
+    return gepub_doc_get_resource_path (doc, doc->page->data);
+}
+
+/**
+ * gepub_doc_get_current_id:
+ * @doc: a #GepubDoc
+ *
+
+ * Returns: (transfer none): the current resource id
+ */
+const gchar *
+gepub_doc_get_current_id (GepubDoc *doc)
+{
+    return doc->page->data;
 }

@@ -220,19 +220,14 @@ test_doc_resources (const char *path)
 }
 
 void
-p (gchar *value, gpointer data)
-{
-    static int id = 0;
-    PTEST ("%d: %s\n", id++, value);
-}
-
-void
 test_doc_spine (const char *path)
 {
     GepubDoc *doc = gepub_doc_new (path);
+    int id = 0;
 
-    GList *spine = gepub_doc_get_spine (doc);
-    g_list_foreach (spine, (GFunc)p, NULL);
+    do {
+        PTEST ("%d: %s\n", id++, gepub_doc_get_current_id (doc));
+    } while (gepub_doc_go_next (doc));
 
     g_object_unref (G_OBJECT (doc));
 }
