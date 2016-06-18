@@ -46,12 +46,11 @@ static void
 resource_callback (WebKitURISchemeRequest *request, gpointer user_data)
 {
     GInputStream *stream;
-    gsize stream_length;
     gchar *path;
     gchar *uri;
-    guchar *contents;
     gchar *mime;
     GepubWidget *widget = user_data;
+    GBytes *contents;
 
     if (!widget->doc)
       return;
@@ -59,7 +58,7 @@ resource_callback (WebKitURISchemeRequest *request, gpointer user_data)
     uri = g_strdup (webkit_uri_scheme_request_get_uri (request));
     // removing "epub://"
     path = uri + 7;
-    contents = gepub_doc_get_resource (widget->doc, path, &stream_length);
+    contents = gepub_doc_get_resource (widget->doc, path);
     mime = gepub_doc_get_resource_mime (widget->doc, path);
 
     if (!mime) {
@@ -67,10 +66,11 @@ resource_callback (WebKitURISchemeRequest *request, gpointer user_data)
         return;
     }
 
-    stream = g_memory_input_stream_new_from_data (contents, stream_length, g_free);
-    webkit_uri_scheme_request_finish (request, stream, stream_length, mime);
+    stream = g_memory_input_stream_new_from_bytes (contents);
+    webkit_uri_scheme_request_finish (request, stream, g_bytes_get_size (contents), mime);
 
     g_object_unref (stream);
+    g_bytes_unref (contents);
     g_free (mime);
     g_free (uri);
 }
@@ -209,16 +209,12 @@ gepub_widget_set_doc (GepubWidget *widget,
 void
 gepub_widget_reload (GepubWidget *widget)
 {
-    gsize bufsize = 0;
-    guchar *buffer = NULL;
     GBytes *current;
 
     if (!widget->doc)
       return;
 
-    buffer = gepub_doc_get_current_with_epub_uris (widget->doc, &bufsize);
-    current = g_bytes_new_take (buffer, bufsize);
-
+    current = gepub_doc_get_current_with_epub_uris (widget->doc);
     webkit_web_view_load_bytes (WEBKIT_WEB_VIEW (widget),
                                 current,
                                 gepub_doc_get_current_mime (widget->doc),

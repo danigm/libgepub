@@ -40,10 +40,8 @@ GType             gepub_archive_get_type       (void) G_GNUC_CONST;
 
 GepubArchive     *gepub_archive_new            (const gchar  *path);
 GList            *gepub_archive_list_files     (GepubArchive *archive);
-gboolean          gepub_archive_read_entry     (GepubArchive *archive,
-                                                const gchar *path,
-                                                guchar **buffer,
-                                                gsize *bufsize);
+GBytes           *gepub_archive_read_entry     (GepubArchive *archive,
+                                                const gchar *path);
 gchar            *gepub_archive_get_root_file  (GepubArchive *archive);
 
 G_END_DECLS

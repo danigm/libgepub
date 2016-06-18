@@ -128,17 +128,16 @@ gepub_archive_list_files (GepubArchive *archive)
     return file_list;
 }
 
-gboolean
+GBytes *
 gepub_archive_read_entry (GepubArchive *archive,
-                          const gchar *path,
-                          guchar **buffer,
-                          gsize *bufsize)
+                          const gchar *path)
 {
     struct archive_entry *entry;
+    guchar *buffer;
     gint size;
 
     if (!gepub_archive_open (archive))
-        return FALSE;
+        return NULL;
 
     while (archive_read_next_header (archive->archive, &entry) == ARCHIVE_OK) {
         if (g_ascii_strcasecmp (path, archive_entry_pathname (entry)) == 0)
@@ -146,13 +145,12 @@ gepub_archive_read_entry (GepubArchive *archive,
         archive_read_data_skip (archive->archive);
     }
 
-    *bufsize = archive_entry_size (entry);
-    size = *bufsize;
-    *buffer = g_malloc0 (*bufsize);
-    archive_read_data (archive->archive, *buffer, size);
+    size = archive_entry_size (entry);
+    buffer = g_malloc0 (size);
+    archive_read_data (archive->archive, buffer, size);
 
     gepub_archive_close (archive);
-    return TRUE;
+    return g_bytes_new_take (buffer, size);
 }
 
 gchar *
@@ -161,21 +159,24 @@ gepub_archive_get_root_file (GepubArchive *archive)
     xmlDoc *doc = NULL;
     xmlNode *root_element = NULL;
     xmlNode *root_node = NULL;
-    guchar *buffer;
+    GBytes *bytes;
+    const guchar *buffer;
     gsize bufsize;
     gchar *root_file = NULL;
 
     // root file is in META-INF/container.xml
-    if (!gepub_archive_read_entry (archive, "META-INF/container.xml", &buffer, &bufsize))
+    bytes = gepub_archive_read_entry (archive, "META-INF/container.xml");
+    if (!bytes)
         return NULL;
 
+    buffer = g_bytes_get_data (bytes, &bufsize);
     doc = xmlRecoverMemory (buffer, bufsize);
     root_element = xmlDocGetRootElement (doc);
     root_node = gepub_utils_get_element_by_tag (root_element, "rootfile");
     root_file = xmlGetProp (root_node, "full-path");
 
     xmlFreeDoc (doc);
-    g_free (buffer);
+    g_bytes_unref (bytes);
 
     return root_file;
 }

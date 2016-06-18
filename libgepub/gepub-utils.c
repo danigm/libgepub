@@ -220,14 +220,17 @@ gepub_utils_get_text_elements (xmlNode *node)
 /* Replacing epub media paths, for css, image and svg files, to be
  * able to provide these files to webkit from the epub file
  */
-guchar *
-gepub_utils_replace_resources (guchar *content, gsize *bufsize, gchar *path)
+GBytes *
+gepub_utils_replace_resources (GBytes *content, gchar *path)
 {
     xmlDoc *doc = NULL;
     xmlNode *root_element = NULL;
     guchar *buffer;
+    const guchar *data;
+    gsize bufsize;
 
-    doc = xmlRecoverMemory (content, *bufsize);
+    data = g_bytes_get_data (content, &bufsize);
+    doc = xmlRecoverMemory (data, bufsize);
     root_element = xmlDocGetRootElement (doc);
 
     // replacing css resources
@@ -239,8 +242,8 @@ gepub_utils_replace_resources (guchar *content, gsize *bufsize, gchar *path)
     // replacing crosslinks
     set_epub_uri (root_element, path, "a", "href");
 
-    xmlDocDumpFormatMemory (doc, (xmlChar**)&buffer, (int*)bufsize, 1);
+    xmlDocDumpFormatMemory (doc, (xmlChar**)&buffer, (int*)&bufsize, 1);
     xmlFreeDoc (doc);
 
-    return buffer;
+    return g_bytes_new_take (buffer, bufsize);
 }

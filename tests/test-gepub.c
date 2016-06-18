@@ -55,12 +55,14 @@ update_text (GepubDoc *doc)
 void
 print_replaced_text (GepubDoc *doc)
 {
-    gsize s = 0;
-    guchar *content = NULL;
-    content = gepub_doc_get_current_with_epub_uris (doc, &s);
+    GBytes *content;
+    gsize s;
+    const guchar *data;
+    content = gepub_doc_get_current_with_epub_uris (doc);
 
-    printf ("\n\nREPLACED:\n%s\n", content);
-    g_free (content);
+    data = g_bytes_get_data (content, &s);
+    printf ("\n\nREPLACED:\n%s\n", data);
+    g_bytes_unref (content);
 }
 
 void
@@ -121,9 +123,10 @@ test_read (const char *path)
 {
     GepubArchive *a;
     GList *list_files = NULL;
-    guchar *buffer;
+    const guchar *buffer;
     guchar *file = NULL;
     gsize bufsize;
+    GBytes *bytes;
 
     a = gepub_archive_new (path);
 
@@ -131,11 +134,15 @@ test_read (const char *path)
     GHashTable *ht = (GHashTable*)gepub_doc_get_resources (doc);
     g_hash_table_foreach (ht, (GHFunc)find_xhtml, &file);
 
-    gepub_archive_read_entry (a, file, &buffer, &bufsize);
-    if (bufsize)
-        PTEST ("doc:%s\n----\n%s\n-----\n", file, buffer);
+    bytes = gepub_archive_read_entry (a, file);
+    if (bytes) {
+        const char *data;
+        gsize size;
 
-    g_free (buffer);
+        buffer = g_bytes_get_data (bytes, &bufsize);
+        PTEST ("doc:%s\n----\n%s\n-----\n", file, buffer);
+        g_bytes_unref (bytes);
+    }
 
     g_list_foreach (list_files, (GFunc)g_free, NULL);
     g_list_free (list_files);
@@ -200,12 +207,14 @@ test_doc_resources (const char *path)
     GepubDoc *doc = gepub_doc_new (path);
     GHashTable *ht = (GHashTable*)gepub_doc_get_resources (doc);
     g_hash_table_foreach (ht, (GHFunc)pk, NULL);
-    guchar *ncx;
+    GBytes *ncx;
+    const guchar *data;
     gsize size;
 
-    ncx = gepub_doc_get_resource_by_id (doc, "ncx", &size);
-    PTEST ("ncx:\n%s\n", ncx);
-    g_free (ncx);
+    ncx = gepub_doc_get_resource_by_id (doc, "ncx");
+    data = g_bytes_get_data (ncx, &size);
+    PTEST ("ncx:\n%s\n", data);
+    g_bytes_unref (ncx);
 
     g_object_unref (G_OBJECT (doc));
 }
