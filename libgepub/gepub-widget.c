@@ -32,6 +32,14 @@ struct _GepubWidgetClass {
     WebKitWebViewClass parent_class;
 };
 
+enum {
+    PROP_0,
+    PROP_DOC,
+    NUM_PROPS
+};
+
+static GParamSpec *properties[NUM_PROPS] = { NULL, };
+
 G_DEFINE_TYPE (GepubWidget, gepub_widget, WEBKIT_TYPE_WEB_VIEW)
 
 static void
@@ -68,6 +76,42 @@ resource_callback (WebKitURISchemeRequest *request, gpointer user_data)
 }
 
 static void
+gepub_widget_set_property (GObject      *object,
+                           guint         prop_id,
+                           const GValue *value,
+                           GParamSpec   *pspec)
+{
+    GepubWidget *widget = GEPUB_WIDGET (object);
+
+    switch (prop_id) {
+    case PROP_DOC:
+        gepub_widget_set_doc (widget, g_value_get_object (value));
+        break;
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        break;
+    }
+}
+
+static void
+gepub_widget_get_property (GObject    *object,
+                           guint       prop_id,
+                           GValue     *value,
+                           GParamSpec *pspec)
+{
+    GepubWidget *widget = GEPUB_WIDGET (object);
+
+    switch (prop_id) {
+    case PROP_DOC:
+        g_value_set_object (value, gepub_widget_get_doc (widget));
+        break;
+    default:
+        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
+        break;
+    }
+}
+
+static void
 gepub_widget_finalize (GObject *object)
 {
     GepubWidget *widget = GEPUB_WIDGET (object);
@@ -101,6 +145,18 @@ gepub_widget_class_init (GepubWidgetClass *klass)
 
     object_class->constructed = gepub_widget_constructed;
     object_class->finalize = gepub_widget_finalize;
+    object_class->set_property = gepub_widget_set_property;
+    object_class->get_property = gepub_widget_get_property;
+
+    properties[PROP_DOC] =
+        g_param_spec_object ("doc",
+                             "The GepubDoc",
+                             "The GepubDoc for this widget",
+                             GEPUB_TYPE_DOC,
+                             G_PARAM_READWRITE |
+                             G_PARAM_STATIC_STRINGS);
+
+    g_object_class_install_properties (object_class, NUM_PROPS, properties);
 }
 
 /**
@@ -128,19 +184,20 @@ gepub_widget_get_doc (GepubWidget *widget)
 }
 
 /**
- * gepub_widget_load_epub:
+ * gepub_widget_set_doc:
  * @widget: a #GepubWidget
- * @path: The epub doc path
+ * @doc: (nullable): a #GepubDoc
  *
- * This method reloads the widget with the new document
+ * Sets @doc as the document displayed by the widget.
  */
 void
-gepub_widget_load_epub (GepubWidget *widget, const gchar *path)
+gepub_widget_set_doc (GepubWidget *widget,
+                      GepubDoc    *doc)
 {
-    g_clear_object (&widget->doc);
-
-    widget->doc = gepub_doc_new (path);
-    gepub_widget_reload (widget);
+    if (g_set_object (&widget->doc, doc)) {
+        gepub_widget_reload (widget);
+        g_object_notify_by_pspec (G_OBJECT (widget), properties[PROP_DOC]);
+    }
 }
 
 /**

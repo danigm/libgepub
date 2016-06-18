@@ -261,12 +261,13 @@ main (int argc, char **argv)
     gtk_container_add (GTK_CONTAINER (window), vpaned);
 
     // gepub widget
-    gepub_widget_load_epub (GEPUB_WIDGET (widget), argv[1]);
-    doc = gepub_widget_get_doc (GEPUB_WIDGET (widget));
+    doc = gepub_doc_new (argv[1]);
     if (!doc) {
         perror ("BAD epub FILE");
         return -1;
     }
+
+    gepub_widget_set_doc (GEPUB_WIDGET (widget), doc);
 
     scrolled = gtk_scrolled_window_new (NULL, NULL);
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
@@ -320,6 +321,8 @@ main (int argc, char **argv)
     }
 
     gtk_main ();
+
+    g_object_unref (doc);
 
     return 0;
 }
