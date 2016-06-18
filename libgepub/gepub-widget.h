@@ -40,7 +40,7 @@ typedef struct _GepubWidgetClass GepubWidgetClass;
 
 GType             gepub_widget_get_type                        (void) G_GNUC_CONST;
 
-GtkWidget        *gepub_widget_new                             ();
+GtkWidget        *gepub_widget_new                             (void);
 GepubDoc         *gepub_widget_get_doc                         (GepubWidget *widget);
 void              gepub_widget_load_epub                       (GepubWidget *widget, const gchar *path);
 void              gepub_widget_reload                          (GepubWidget *widget);

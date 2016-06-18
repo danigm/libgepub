@@ -72,10 +72,7 @@ gepub_widget_finalize (GObject *object)
 {
     GepubWidget *widget = GEPUB_WIDGET (object);
 
-    if (widget->doc) {
-        g_object_unref (widget->doc);
-        widget->doc = NULL;
-    }
+    g_clear_object (&widget->doc);
 
     G_OBJECT_CLASS (gepub_widget_parent_class)->finalize (object);
 }
@@ -108,20 +105,14 @@ gepub_widget_class_init (GepubWidgetClass *klass)
 
 /**
  * gepub_widget_new:
- * @path: the epub doc path
- * @error: location to store a #GError, or %NULL
  *
  * Returns: (transfer full): the new GepubWidget created
  */
 GtkWidget *
-gepub_widget_new (const gchar *path)
+gepub_widget_new (void)
 {
-    GepubWidget *widget = g_object_new (GEPUB_TYPE_WIDGET,
-                                        NULL);
-
-    widget->doc = NULL;
-
-    return GTK_WIDGET (widget);
+  return g_object_new (GEPUB_TYPE_WIDGET,
+                       NULL);
 }
 
 /**
@@ -146,10 +137,7 @@ gepub_widget_get_doc (GepubWidget *widget)
 void
 gepub_widget_load_epub (GepubWidget *widget, const gchar *path)
 {
-    if (widget->doc) {
-        g_object_unref (widget->doc);
-        widget->doc = NULL;
-    }
+    g_clear_object (&widget->doc);
 
     widget->doc = gepub_doc_new (path);
     gepub_widget_reload (widget);
