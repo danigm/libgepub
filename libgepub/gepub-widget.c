@@ -23,17 +23,16 @@
 #include "gepub-widget.h"
 
 struct _GepubWidget {
-    GtkBox parent;
+    WebKitWebView parent;
 
     GepubDoc *doc;
-    WebKitWebView *view;
 };
 
 struct _GepubWidgetClass {
-    GtkBoxClass parent_class;
+    WebKitWebViewClass parent_class;
 };
 
-G_DEFINE_TYPE (GepubWidget, gepub_widget, GTK_TYPE_BOX)
+G_DEFINE_TYPE (GepubWidget, gepub_widget, WEBKIT_TYPE_WEB_VIEW)
 
 static void
 resource_callback (WebKitURISchemeRequest *request, gpointer user_data)
@@ -44,9 +43,11 @@ resource_callback (WebKitURISchemeRequest *request, gpointer user_data)
     gchar *uri;
     guchar *contents;
     gchar *mime;
-    GepubWidget *widget;
+    GepubWidget *widget = user_data;
 
-    widget = GEPUB_WIDGET (user_data);
+    if (!widget->doc)
+      return;
+
     uri = g_strdup (webkit_uri_scheme_request_get_uri (request));
     // removing "epub://"
     path = uri + 7;
@@ -75,17 +76,25 @@ gepub_widget_finalize (GObject *object)
         g_object_unref (widget->doc);
         widget->doc = NULL;
     }
-    if (widget->view) {
-        gtk_widget_destroy (GTK_WIDGET (widget->view));
-        widget->view = NULL;
-    }
 
     G_OBJECT_CLASS (gepub_widget_parent_class)->finalize (object);
 }
 
 static void
-gepub_widget_init (GepubWidget *doc)
+gepub_widget_init (GepubWidget *widget)
 {
+}
+
+static void
+gepub_widget_constructed (GObject *object)
+{
+    WebKitWebContext *ctx;
+    GepubWidget *widget = GEPUB_WIDGET (object);
+
+    G_OBJECT_CLASS (gepub_widget_parent_class)->constructed (object);
+
+    ctx = webkit_web_view_get_context (WEBKIT_WEB_VIEW (widget));
+    webkit_web_context_register_uri_scheme (ctx, "epub", resource_callback, widget, NULL);
 }
 
 static void
@@ -93,6 +102,7 @@ gepub_widget_class_init (GepubWidgetClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
+    object_class->constructed = gepub_widget_constructed;
     object_class->finalize = gepub_widget_finalize;
 }
 
@@ -107,12 +117,9 @@ GtkWidget *
 gepub_widget_new (const gchar *path)
 {
     GepubWidget *widget = g_object_new (GEPUB_TYPE_WIDGET,
-                                        "orientation", GTK_ORIENTATION_HORIZONTAL,
-                                        "spacing", 0,
                                         NULL);
 
     widget->doc = NULL;
-    widget->view = NULL;
 
     return GTK_WIDGET (widget);
 }
@@ -130,18 +137,6 @@ gepub_widget_get_doc (GepubWidget *widget)
 }
 
 /**
- * gepub_widget_get_wkview:
- * @widget: a #GepubWidget
- *
- * Returns: (transfer none): the #WebKitWebView related with the widget
- */
-WebKitWebView *
-gepub_widget_get_wkview (GepubWidget *widget)
-{
-    return widget->view;
-}
-
-/**
  * gepub_widget_load_epub:
  * @widget: a #GepubWidget
  * @path: The epub doc path
@@ -151,27 +146,13 @@ gepub_widget_get_wkview (GepubWidget *widget)
 void
 gepub_widget_load_epub (GepubWidget *widget, const gchar *path)
 {
-    GtkBox *box = GTK_BOX (widget);
-    WebKitWebContext *ctx = NULL;
-
     if (widget->doc) {
         g_object_unref (widget->doc);
         widget->doc = NULL;
     }
-    if (widget->view) {
-        gtk_widget_destroy (GTK_WIDGET (widget->view));
-        widget->view = NULL;
-    }
 
     widget->doc = gepub_doc_new (path);
-    widget->view = WEBKIT_WEB_VIEW (webkit_web_view_new ());
-
-    ctx = webkit_web_view_get_context (WEBKIT_WEB_VIEW (widget->view));
-    webkit_web_context_register_uri_scheme (ctx, "epub", resource_callback, widget, NULL);
-
     gepub_widget_reload (widget);
-
-    gtk_box_pack_start (box, GTK_WIDGET (widget->view), TRUE, TRUE, 0);
 }
 
 /**
@@ -186,11 +167,13 @@ gepub_widget_reload (GepubWidget *widget)
     gsize bufsize = 0;
     guchar *buffer = NULL;
 
+    if (!widget->doc)
+      return;
+
     buffer = gepub_doc_get_current_with_epub_uris (widget->doc, &bufsize);
 
-    webkit_web_view_load_bytes (
-        widget->view,
-        g_bytes_new_take (buffer, bufsize),
-        gepub_doc_get_current_mime (widget->doc),
-        "UTF-8", NULL);
+    webkit_web_view_load_bytes (WEBKIT_WEB_VIEW (widget),
+                                g_bytes_new_take (buffer, bufsize),
+                                gepub_doc_get_current_mime (widget->doc),
+                                "UTF-8", NULL);
 }

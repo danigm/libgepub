@@ -42,7 +42,6 @@ GType             gepub_widget_get_type                        (void) G_GNUC_CON
 
 GtkWidget        *gepub_widget_new                             ();
 GepubDoc         *gepub_widget_get_doc                         (GepubWidget *widget);
-WebKitWebView    *gepub_widget_get_wkview                      (GepubWidget *widget);
 void              gepub_widget_load_epub                       (GepubWidget *widget, const gchar *path);
 void              gepub_widget_reload                          (GepubWidget *widget);
 
