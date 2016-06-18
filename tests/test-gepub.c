@@ -77,8 +77,6 @@ button_pressed (GtkButton *button, GepubWidget *widget)
     }
     update_text (doc);
     print_replaced_text (doc);
-
-    gepub_widget_reload (widget);
 }
 
 void

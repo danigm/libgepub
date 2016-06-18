@@ -183,6 +183,20 @@ gepub_widget_get_doc (GepubWidget *widget)
     return widget->doc;
 }
 
+static void
+reload_current_chapter (GepubWidget *widget)
+{
+    GBytes *current;
+
+    current = gepub_doc_get_current_with_epub_uris (widget->doc);
+    webkit_web_view_load_bytes (WEBKIT_WEB_VIEW (widget),
+                                current,
+                                gepub_doc_get_current_mime (widget->doc),
+                                "UTF-8", NULL);
+
+    g_bytes_unref (current);
+}
+
 /**
  * gepub_widget_set_doc:
  * @widget: a #GepubWidget
@@ -194,31 +208,23 @@ void
 gepub_widget_set_doc (GepubWidget *widget,
                       GepubDoc    *doc)
 {
-    if (g_set_object (&widget->doc, doc)) {
-        gepub_widget_reload (widget);
-        g_object_notify_by_pspec (G_OBJECT (widget), properties[PROP_DOC]);
+    if (widget->doc == doc)
+        return;
+
+    if (widget->doc != NULL) {
+        g_signal_handlers_disconnect_by_func (widget->doc,
+                                              reload_current_chapter, widget);
+        g_object_unref (widget->doc);
     }
-}
 
-/**
- * gepub_widget_reload:
- * @widget: a #GepubWidget
- *
- * This method reloads the data with the GepubDoc current chapter
- */
-void
-gepub_widget_reload (GepubWidget *widget)
-{
-    GBytes *current;
+    widget->doc = doc;
 
-    if (!widget->doc)
-      return;
+    if (widget->doc != NULL) {
+        g_object_ref (widget->doc);
+        reload_current_chapter (widget);
+        g_signal_connect_swapped (widget->doc, "notify::page",
+                                  G_CALLBACK (reload_current_chapter), widget);
+    }
 
-    current = gepub_doc_get_current_with_epub_uris (widget->doc);
-    webkit_web_view_load_bytes (WEBKIT_WEB_VIEW (widget),
-                                current,
-                                gepub_doc_get_current_mime (widget->doc),
-                                "UTF-8", NULL);
-
-    g_bytes_unref (current);
+    g_object_notify_by_pspec (G_OBJECT (widget), properties[PROP_DOC]);
 }

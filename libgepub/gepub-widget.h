@@ -46,8 +46,6 @@ GepubDoc         *gepub_widget_get_doc                         (GepubWidget *wid
 void              gepub_widget_set_doc                         (GepubWidget *widget,
                                                                 GepubDoc    *doc);
 
-void              gepub_widget_reload                          (GepubWidget *widget);
-
 G_END_DECLS
 
 #endif /* __GEPUB_WIDGET_H__ */
