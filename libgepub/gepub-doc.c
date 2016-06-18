@@ -553,7 +553,8 @@ gepub_doc_get_text_by_id (GepubDoc *doc, gchar *id)
  *
  * Returns: TRUE on success, FALSE if there's no next pages
  */
-gboolean gepub_doc_go_next (GepubDoc *doc)
+gboolean
+gepub_doc_go_next (GepubDoc *doc)
 {
     if (doc->spine->next) {
         doc->spine = doc->spine->next;
@@ -568,7 +569,8 @@ gboolean gepub_doc_go_next (GepubDoc *doc)
  *
  * Returns: TRUE on success, FALSE if there's no prev pages
  */
-gboolean gepub_doc_go_prev (GepubDoc *doc)
+gboolean
+gepub_doc_go_prev (GepubDoc *doc)
 {
     if (doc->spine->prev) {
         doc->spine = doc->spine->prev;
@@ -617,7 +619,8 @@ gepub_doc_get_cover (GepubDoc *doc)
  *
  * Returns: (transfer full): the resource path
  */
-gchar *gepub_doc_get_resource_path (GepubDoc *doc, gchar *id)
+gchar *
+gepub_doc_get_resource_path (GepubDoc *doc, gchar *id)
 {
     GepubResource *gres = g_hash_table_lookup (doc->resources, id);
     if (!gres) {
@@ -634,7 +637,8 @@ gchar *gepub_doc_get_resource_path (GepubDoc *doc, gchar *id)
  *
  * Returns: (transfer full): the current resource path
  */
-gchar *gepub_doc_get_current_path (GepubDoc *doc)
+gchar *
+gepub_doc_get_current_path (GepubDoc *doc)
 {
     return gepub_doc_get_resource_path (doc, doc->spine->data);
 }
