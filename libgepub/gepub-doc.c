@@ -562,6 +562,7 @@ gepub_doc_free_text (GList *tlist)
 /**
  * gepub_doc_go_next:
  * @doc: a #GepubDoc
+ *
  * Returns: TRUE on success, FALSE if there's no next pages
  */
 gboolean gepub_doc_go_next (GepubDoc *doc)
@@ -576,6 +577,7 @@ gboolean gepub_doc_go_next (GepubDoc *doc)
 /**
  * gepub_doc_go_prev:
  * @doc: a #GepubDoc
+ *
  * Returns: TRUE on success, FALSE if there's no prev pages
  */
 gboolean gepub_doc_go_prev (GepubDoc *doc)

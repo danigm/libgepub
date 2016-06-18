@@ -144,7 +144,7 @@ gepub_widget_load_epub (GepubWidget *widget, const gchar *path)
 }
 
 /**
- * gepub_widget_load_epub:
+ * gepub_widget_reload:
  * @widget: a #GepubWidget
  *
  * This method reloads the data with the GepubDoc current chapter
