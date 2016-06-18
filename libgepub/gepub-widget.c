@@ -211,14 +211,18 @@ gepub_widget_reload (GepubWidget *widget)
 {
     gsize bufsize = 0;
     guchar *buffer = NULL;
+    GBytes *current;
 
     if (!widget->doc)
       return;
 
     buffer = gepub_doc_get_current_with_epub_uris (widget->doc, &bufsize);
+    current = g_bytes_new_take (buffer, bufsize);
 
     webkit_web_view_load_bytes (WEBKIT_WEB_VIEW (widget),
-                                g_bytes_new_take (buffer, bufsize),
+                                current,
                                 gepub_doc_get_current_mime (widget->doc),
                                 "UTF-8", NULL);
+
+    g_bytes_unref (current);
 }
