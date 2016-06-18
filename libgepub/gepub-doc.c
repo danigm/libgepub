@@ -260,6 +260,7 @@ gepub_doc_fill_spine (GepubDoc *doc)
     gchar *id;
     const char *data;
     gsize size;
+    GList *spine = NULL;
 
     data = g_bytes_get_data (doc->content, &size);
     xdoc = xmlRecoverMemory (data, size);
@@ -275,10 +276,11 @@ gepub_doc_fill_spine (GepubDoc *doc)
 
         id = xmlGetProp (item, "idref");
 
-        doc->spine = g_list_append (doc->spine, id);
+        spine = g_list_prepend (spine, id);
         item = item->next;
     }
 
+    doc->spine = g_list_reverse (spine);
     xmlFreeDoc (xdoc);
 }
 
