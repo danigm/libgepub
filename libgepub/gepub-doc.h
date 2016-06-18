@@ -46,22 +46,22 @@ GType             gepub_doc_get_type                        (void) G_GNUC_CONST;
 
 GepubDoc         *gepub_doc_new                             (const gchar *path);
 GBytes           *gepub_doc_get_content                     (GepubDoc *doc);
-gchar            *gepub_doc_get_metadata                    (GepubDoc *doc, gchar *mdata);
-GBytes           *gepub_doc_get_resource                    (GepubDoc *doc, gchar *path);
-GBytes           *gepub_doc_get_resource_by_id              (GepubDoc *doc, gchar *id);
+gchar            *gepub_doc_get_metadata                    (GepubDoc *doc, const gchar *mdata);
+GBytes           *gepub_doc_get_resource                    (GepubDoc *doc, const gchar *path);
+GBytes           *gepub_doc_get_resource_by_id              (GepubDoc *doc, const gchar *id);
 GHashTable       *gepub_doc_get_resources                   (GepubDoc *doc);
-gchar            *gepub_doc_get_resource_mime               (GepubDoc *doc, gchar *path);
-gchar            *gepub_doc_get_resource_mime_by_id         (GepubDoc *doc, gchar *id);
+gchar            *gepub_doc_get_resource_mime               (GepubDoc *doc, const gchar *path);
+gchar            *gepub_doc_get_resource_mime_by_id         (GepubDoc *doc, const gchar *id);
 gchar            *gepub_doc_get_current_mime                (GepubDoc *doc);
 GList            *gepub_doc_get_spine                       (GepubDoc *doc);
 GList            *gepub_doc_get_text                        (GepubDoc *doc);
-GList            *gepub_doc_get_text_by_id                  (GepubDoc *doc, gchar *id);
+GList            *gepub_doc_get_text_by_id                  (GepubDoc *doc, const gchar *id);
 GBytes           *gepub_doc_get_current                     (GepubDoc *doc);
 GBytes           *gepub_doc_get_current_with_epub_uris      (GepubDoc *doc);
 gboolean          gepub_doc_go_next                         (GepubDoc *doc);
 gboolean          gepub_doc_go_prev                         (GepubDoc *doc);
 gchar            *gepub_doc_get_cover                       (GepubDoc *doc);
-gchar            *gepub_doc_get_resource_path               (GepubDoc *doc, gchar *id);
+gchar            *gepub_doc_get_resource_path               (GepubDoc *doc, const gchar *id);
 gchar            *gepub_doc_get_current_path                (GepubDoc *doc);
 
 G_END_DECLS

@@ -22,9 +22,9 @@
 #include <glib.h>
 #include <libxml/tree.h>
 
-xmlNode * gepub_utils_get_element_by_tag  (xmlNode *node, gchar *name);
-xmlNode * gepub_utils_get_element_by_attr (xmlNode *node, gchar *attr, gchar *value);
+xmlNode * gepub_utils_get_element_by_tag  (xmlNode *node, const gchar *name);
+xmlNode * gepub_utils_get_element_by_attr (xmlNode *node, const gchar *attr, const gchar *value);
 GList *   gepub_utils_get_text_elements   (xmlNode *node);
-GBytes *  gepub_utils_replace_resources   (GBytes *content, gchar *path);
+GBytes *  gepub_utils_replace_resources   (GBytes *content, const gchar *path);
 
 #endif

@@ -302,7 +302,7 @@ gepub_doc_get_content (GepubDoc *doc)
  * Returns: (transfer full): metadata string
  */
 gchar *
-gepub_doc_get_metadata (GepubDoc *doc, gchar *mdata)
+gepub_doc_get_metadata (GepubDoc *doc, const gchar *mdata)
 {
     xmlDoc *xdoc = NULL;
     xmlNode *root_element = NULL;
@@ -348,7 +348,7 @@ gepub_doc_get_resources (GepubDoc *doc)
  * Returns: (transfer full): the resource content
  */
 GBytes *
-gepub_doc_get_resource_by_id (GepubDoc *doc, gchar *id)
+gepub_doc_get_resource_by_id (GepubDoc *doc, const gchar *id)
 {
     GepubResource *gres = g_hash_table_lookup (doc->resources, id);
     if (!gres) {
@@ -367,7 +367,7 @@ gepub_doc_get_resource_by_id (GepubDoc *doc, gchar *id)
  * Returns: (transfer full): the resource content
  */
 GBytes *
-gepub_doc_get_resource (GepubDoc *doc, gchar *path)
+gepub_doc_get_resource (GepubDoc *doc, const gchar *path)
 {
     return gepub_archive_read_entry (doc->archive, path);
 }
@@ -380,7 +380,7 @@ gepub_doc_get_resource (GepubDoc *doc, gchar *path)
  * Returns: (transfer full): the resource content
  */
 gchar *
-gepub_doc_get_resource_mime_by_id (GepubDoc *doc, gchar *id)
+gepub_doc_get_resource_mime_by_id (GepubDoc *doc, const gchar *id)
 {
     GepubResource *gres;
 
@@ -403,7 +403,7 @@ gepub_doc_get_resource_mime_by_id (GepubDoc *doc, gchar *id)
  * Returns: (transfer full): the resource mime
  */
 gchar *
-gepub_doc_get_resource_mime (GepubDoc *doc, gchar *path)
+gepub_doc_get_resource_mime (GepubDoc *doc, const gchar *path)
 {
     GepubResource *gres;
     GList *keys = g_hash_table_get_keys (doc->resources);
@@ -521,7 +521,7 @@ gepub_doc_get_text (GepubDoc *doc)
  * Returns: (element-type Gepub.TextChunk) (transfer full): the list of text in the current chapter.
  */
 GList *
-gepub_doc_get_text_by_id (GepubDoc *doc, gchar *id)
+gepub_doc_get_text_by_id (GepubDoc *doc, const gchar *id)
 {
     xmlDoc *xdoc = NULL;
     xmlNode *root_element = NULL;
@@ -620,7 +620,7 @@ gepub_doc_get_cover (GepubDoc *doc)
  * Returns: (transfer full): the resource path
  */
 gchar *
-gepub_doc_get_resource_path (GepubDoc *doc, gchar *id)
+gepub_doc_get_resource_path (GepubDoc *doc, const gchar *id)
 {
     GepubResource *gres = g_hash_table_lookup (doc->resources, id);
     if (!gres) {

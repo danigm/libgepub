@@ -31,7 +31,7 @@
  * function also makes the resource absolute based on the epub root
  */
 static void
-set_epub_uri (xmlNode *node, gchar *path, gchar *tagname, gchar *attr)
+set_epub_uri (xmlNode *node, const gchar *path, const gchar *tagname, const gchar *attr)
 {
     xmlNode *cur_node = NULL;
     xmlChar *text = NULL;
@@ -108,7 +108,7 @@ gepub_utils_has_parent_tag (xmlNode *node, gchar *name, ...)
  * Returns: the tag matching @name.
  */
 xmlNode *
-gepub_utils_get_element_by_tag (xmlNode *node, gchar *name)
+gepub_utils_get_element_by_tag (xmlNode *node, const gchar *name)
 {
     xmlNode *cur_node = NULL;
     xmlNode *ret = NULL;
@@ -135,7 +135,7 @@ gepub_utils_get_element_by_tag (xmlNode *node, gchar *name)
  * Returns: the element matching @attr and @value.
  */
 xmlNode *
-gepub_utils_get_element_by_attr (xmlNode *node, gchar *attr, gchar *value)
+gepub_utils_get_element_by_attr (xmlNode *node, const gchar *attr, const gchar *value)
 {
     xmlNode *cur_node = NULL;
     xmlNode *ret = NULL;
@@ -221,7 +221,7 @@ gepub_utils_get_text_elements (xmlNode *node)
  * able to provide these files to webkit from the epub file
  */
 GBytes *
-gepub_utils_replace_resources (GBytes *content, gchar *path)
+gepub_utils_replace_resources (GBytes *content, const gchar *path)
 {
     xmlDoc *doc = NULL;
     xmlNode *root_element = NULL;
