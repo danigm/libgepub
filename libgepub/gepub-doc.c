@@ -507,7 +507,7 @@ gepub_doc_get_text (GepubDoc *doc)
     if (!res) {
         return NULL;
     }
-    xdoc = htmlReadDoc (res, "", NULL, HTML_PARSE_NOWARNING | HTML_PARSE_NOERROR);
+    xdoc = htmlReadMemory (res, size, "", NULL, HTML_PARSE_NOWARNING | HTML_PARSE_NOERROR);
     root_element = xmlDocGetRootElement (xdoc);
     texts = gepub_utils_get_text_elements (root_element);
 
@@ -539,7 +539,7 @@ gepub_doc_get_text_by_id (GepubDoc *doc, gchar *id)
         return NULL;
     }
 
-    xdoc = htmlReadDoc (res, "", NULL, HTML_PARSE_NOWARNING | HTML_PARSE_NOERROR);
+    xdoc = htmlReadMemory (res, size, "", NULL, HTML_PARSE_NOWARNING | HTML_PARSE_NOERROR);
     root_element = xmlDocGetRootElement (xdoc);
     texts = gepub_utils_get_text_elements (root_element);
 
