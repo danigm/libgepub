@@ -56,7 +56,6 @@ gchar            *gepub_doc_get_current_mime                (GepubDoc *doc);
 GList            *gepub_doc_get_spine                       (GepubDoc *doc);
 GList            *gepub_doc_get_text                        (GepubDoc *doc);
 GList            *gepub_doc_get_text_by_id                  (GepubDoc *doc, gchar *id);
-void              gepub_doc_free_text                       (GList *tlist);
 guchar           *gepub_doc_get_current                     (GepubDoc *doc, gsize *bufsize);
 guchar           *gepub_doc_get_current_with_epub_uris      (GepubDoc *doc, gsize *bufsize);
 gboolean          gepub_doc_go_next                         (GepubDoc *doc);

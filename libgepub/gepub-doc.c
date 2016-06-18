@@ -491,7 +491,7 @@ gepub_doc_get_current_with_epub_uris (GepubDoc *doc, gsize *bufsize)
  * gepub_doc_get_text:
  * @doc: a #GepubDoc
  *
- * Returns: (element-type Gepub.TextChunk) (transfer full): the list of text in the current chapter, Free with gepub_doc_free_text().
+ * Returns: (element-type Gepub.TextChunk) (transfer full): the list of text in the current chapter.
  */
 GList *
 gepub_doc_get_text (GepubDoc *doc)
@@ -522,7 +522,7 @@ gepub_doc_get_text (GepubDoc *doc)
  * @doc: a #GepubDoc
  * @id: the resource id
  *
- * Returns: (element-type Gepub.TextChunk) (transfer full): the list of text in the current chapter, Free with gepub_doc_free_text().
+ * Returns: (element-type Gepub.TextChunk) (transfer full): the list of text in the current chapter.
  */
 GList *
 gepub_doc_get_text_by_id (GepubDoc *doc, gchar *id)
@@ -547,16 +547,6 @@ gepub_doc_get_text_by_id (GepubDoc *doc, gchar *id)
     xmlFreeDoc (xdoc);
 
     return texts;
-}
-
-/**
- * gepub_doc_free_text:
- * @tlist: (element-type Gepub.TextChunk): a #GList
- */
-void
-gepub_doc_free_text (GList *tlist)
-{
-    g_list_free_full (tlist, (GDestroyNotify)g_object_unref);
 }
 
 /**
