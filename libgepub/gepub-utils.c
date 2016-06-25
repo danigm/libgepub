@@ -230,7 +230,7 @@ gepub_utils_replace_resources (GBytes *content, const gchar *path)
     gsize bufsize;
 
     data = g_bytes_get_data (content, &bufsize);
-    doc = xmlRecoverMemory (data, bufsize);
+    doc = xmlReadMemory (data, bufsize, "", NULL, XML_PARSE_NOWARNING | XML_PARSE_NOERROR);
     root_element = xmlDocGetRootElement (doc);
 
     // replacing css resources
