@@ -46,6 +46,10 @@ GepubDoc         *gepub_widget_get_doc                         (GepubWidget *wid
 void              gepub_widget_set_doc                         (GepubWidget *widget,
                                                                 GepubDoc    *doc);
 
+void              gepub_widget_set_pagination                  (GepubWidget *widget, gboolean p);
+void              gepub_widget_page_next                       (GepubWidget *widget);
+void              gepub_widget_page_prev                       (GepubWidget *widget);
+
 G_END_DECLS
 
 #endif /* __GEPUB_WIDGET_H__ */

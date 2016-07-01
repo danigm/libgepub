@@ -26,6 +26,8 @@ struct _GepubWidget {
     WebKitWebView parent;
 
     GepubDoc *doc;
+    gboolean paginate;
+    gint page;
 };
 
 struct _GepubWidgetClass {
@@ -35,6 +37,7 @@ struct _GepubWidgetClass {
 enum {
     PROP_0,
     PROP_DOC,
+    PROP_PAGINATE,
     NUM_PROPS
 };
 
@@ -87,6 +90,9 @@ gepub_widget_set_property (GObject      *object,
     case PROP_DOC:
         gepub_widget_set_doc (widget, g_value_get_object (value));
         break;
+    case PROP_PAGINATE:
+        gepub_widget_set_pagination (widget, g_value_get_boolean (value));
+        break;
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
         break;
@@ -104,6 +110,9 @@ gepub_widget_get_property (GObject    *object,
     switch (prop_id) {
     case PROP_DOC:
         g_value_set_object (value, gepub_widget_get_doc (widget));
+        break;
+    case PROP_PAGINATE:
+        g_value_set_boolean (value, widget->paginate);
         break;
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -156,6 +165,13 @@ gepub_widget_class_init (GepubWidgetClass *klass)
                              G_PARAM_READWRITE |
                              G_PARAM_STATIC_STRINGS);
 
+    properties[PROP_PAGINATE] =
+        g_param_spec_boolean ("paginate",
+                              "paginate",
+                              "If the widget should paginate",
+                              FALSE,
+                              G_PARAM_READWRITE);
+
     g_object_class_install_properties (object_class, NUM_PROPS, properties);
 }
 
@@ -184,6 +200,48 @@ gepub_widget_get_doc (GepubWidget *widget)
 }
 
 static void
+paginate_cb (WebKitWebView  *web_view,
+             WebKitLoadEvent load_event,
+             gpointer        user_data)
+{
+
+    GepubWidget *widget = GEPUB_WIDGET (web_view);
+
+    if (load_event == WEBKIT_LOAD_FINISHED) {
+        const gchar *script = "function initialize() { "
+                                  "var d = document.querySelector('body');"
+                                  "var ourH = window.innerHeight - 40; "
+                                  "var ourW = window.innerWidth - 20; "
+                                  "var fullH = d.offsetHeight; "
+                                  "var pageCount = Math.floor(fullH/ourH)+1;"
+                                  "var newW = pageCount * ourW; "
+                                  "d.style.height = ourH+'px';"
+                                  "d.style.width = newW+'px';"
+                                  "d.style.WebkitColumnCount = pageCount;"
+                                  "d.style.WebkitColumnGap = '20px';"
+                                  "d.style.overflow = 'hidden';"
+                                  "window.currentPage = 0; "
+                              "};"
+                              "function next() { "
+                                  "var ourW = window.innerWidth - 10; "
+                                  "window.currentPage += 1; "
+                                  "window.scroll(ourW * window.currentPage, 0); "
+                              "};"
+                              "function prev() { "
+                                  "var ourW = window.innerWidth - 10; "
+                                  "window.currentPage -= 1; "
+                                  "window.scroll(ourW * window.currentPage, 0); "
+                              "};"
+                              "initialize();";
+
+        if (widget->paginate) {
+            webkit_web_view_run_javascript(web_view, "document.querySelector('body').style.margin = '20px';", NULL, NULL, NULL);
+            webkit_web_view_run_javascript(web_view, script, NULL, NULL, NULL);
+        }
+    }
+}
+
+static void
 reload_current_chapter (GepubWidget *widget)
 {
     GBytes *current;
@@ -193,6 +251,8 @@ reload_current_chapter (GepubWidget *widget)
                                 current,
                                 gepub_doc_get_current_mime (widget->doc),
                                 "UTF-8", NULL);
+
+    g_signal_connect (widget, "load-changed", G_CALLBACK (paginate_cb), NULL);
 
     g_bytes_unref (current);
 }
@@ -227,4 +287,43 @@ gepub_widget_set_doc (GepubWidget *widget,
     }
 
     g_object_notify_by_pspec (G_OBJECT (widget), properties[PROP_DOC]);
+}
+
+/**
+ * gepub_widget_set_pagination:
+ * @widget: a #GepubWidget
+ * @p: true if the widget should paginate
+ *
+ * Enable or disable pagination
+ */
+void
+gepub_widget_set_pagination (GepubWidget *widget,
+                             gboolean p)
+{
+    widget->paginate = p;
+    reload_current_chapter (widget);
+}
+
+/**
+ * gepub_widget_page_next:
+ * @widget: a #GepubWidget
+ *
+ * Change the page to the next
+ */
+void
+gepub_widget_page_next (GepubWidget *widget)
+{
+    webkit_web_view_run_javascript(WEBKIT_WEB_VIEW (widget), "next();", NULL, NULL, NULL);
+}
+
+/**
+ * gepub_widget_page_prev:
+ * @widget: a #GepubWidget
+ *
+ * Change the page to the prev
+ */
+void
+gepub_widget_page_prev (GepubWidget *widget)
+{
+    webkit_web_view_run_javascript(WEBKIT_WEB_VIEW (widget), "prev();", NULL, NULL, NULL);
 }

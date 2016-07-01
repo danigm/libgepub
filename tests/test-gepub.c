@@ -69,11 +69,19 @@ void
 button_pressed (GtkButton *button, GepubWidget *widget)
 {
     GepubDoc *doc = gepub_widget_get_doc (widget);
+    printf("CLICKED %s\n",  gtk_button_get_label (button));
 
-    if (!strcmp (gtk_button_get_label (button), "prev")) {
+    if (!strcmp (gtk_button_get_label (button), "< chapter")) {
         gepub_doc_go_prev (doc);
-    } else {
+    } else if (!strcmp (gtk_button_get_label (button), "chapter >")) {
         gepub_doc_go_next (doc);
+    } else if (!strcmp (gtk_button_get_label (button), "< page")) {
+        gepub_widget_page_prev (widget);
+    } else if (!strcmp (gtk_button_get_label (button), "page >")) {
+        gepub_widget_page_next (widget);
+    } else if (!strcmp (gtk_button_get_label (button), "paginated")) {
+        gboolean b = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button));
+        gepub_widget_set_pagination (widget, b);
     }
     update_text (doc);
     print_replaced_text (doc);
@@ -245,6 +253,11 @@ main (int argc, char **argv)
     GtkWidget *b_next;
     GtkWidget *b_prev;
 
+    GtkWidget *b_next2;
+    GtkWidget *b_prev2;
+
+    GtkWidget *paginate;
+
     GtkTextBuffer *buffer;
 
     GepubDoc *doc;
@@ -285,12 +298,26 @@ main (int argc, char **argv)
 
     vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
     hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
-    b_prev = gtk_button_new_with_label ("prev");
+    b_prev = gtk_button_new_with_label ("< chapter");
     g_signal_connect (b_prev, "clicked", (GCallback)button_pressed, GEPUB_WIDGET (widget));
-    b_next = gtk_button_new_with_label ("next");
+    b_next = gtk_button_new_with_label ("chapter >");
     g_signal_connect (b_next, "clicked", (GCallback)button_pressed, GEPUB_WIDGET (widget));
+
+    b_prev2 = gtk_button_new_with_label ("< page");
+    g_signal_connect (b_prev2, "clicked", (GCallback)button_pressed, GEPUB_WIDGET (widget));
+    b_next2 = gtk_button_new_with_label ("page >");
+    g_signal_connect (b_next2, "clicked", (GCallback)button_pressed, GEPUB_WIDGET (widget));
+
+    paginate = gtk_check_button_new_with_label ("paginated");
+    g_signal_connect (paginate, "clicked", (GCallback)button_pressed, GEPUB_WIDGET (widget));
+
     gtk_container_add (GTK_CONTAINER (hbox), b_prev);
     gtk_container_add (GTK_CONTAINER (hbox), b_next);
+
+    gtk_container_add (GTK_CONTAINER (hbox), b_prev2);
+    gtk_container_add (GTK_CONTAINER (hbox), b_next2);
+    gtk_container_add (GTK_CONTAINER (hbox), paginate);
+
     gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 5);
     gtk_box_pack_start (GTK_BOX (vbox), scrolled, TRUE, TRUE, 5);
 
