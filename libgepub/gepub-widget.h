@@ -50,6 +50,11 @@ void              gepub_widget_set_pagination                  (GepubWidget *wid
 void              gepub_widget_page_next                       (GepubWidget *widget);
 void              gepub_widget_page_prev                       (GepubWidget *widget);
 
+gint              gepub_widget_get_n_pages                     (GepubWidget *widget);
+gint              gepub_widget_get_page                        (GepubWidget *widget);
+void              gepub_widget_set_page                        (GepubWidget *widget,
+                                                                gint         index);
+
 G_END_DECLS
 
 #endif /* __GEPUB_WIDGET_H__ */

@@ -19,6 +19,7 @@
 
 #include <config.h>
 #include <gtk/gtk.h>
+#include <JavaScriptCore/JSValueRef.h>
 
 #include "gepub-widget.h"
 
@@ -28,6 +29,7 @@ struct _GepubWidget {
     GepubDoc *doc;
     gboolean paginate;
     gint page;
+    gint chapter_pages;
 };
 
 struct _GepubWidgetClass {
@@ -38,12 +40,94 @@ enum {
     PROP_0,
     PROP_DOC,
     PROP_PAGINATE,
+    PROP_PAGE,
+    PROP_NPAGES,
     NUM_PROPS
 };
 
 static GParamSpec *properties[NUM_PROPS] = { NULL, };
 
 G_DEFINE_TYPE (GepubWidget, gepub_widget, WEBKIT_TYPE_WEB_VIEW)
+
+static void
+pagination_initialize_finished (GObject      *object,
+                                GAsyncResult *result,
+                                gpointer     user_data)
+{
+    WebKitJavascriptResult *js_result;
+    JSValueRef              value;
+    JSGlobalContextRef      context;
+    GError                 *error = NULL;
+    GepubWidget            *widget = GEPUB_WIDGET (user_data);
+
+    js_result = webkit_web_view_run_javascript_finish (WEBKIT_WEB_VIEW (object), result, &error);
+    if (!js_result) {
+        g_warning ("Error running javascript: %s", error->message);
+        g_error_free (error);
+        return;
+    }
+
+    context = webkit_javascript_result_get_global_context (js_result);
+    value = webkit_javascript_result_get_value (js_result);
+    if (JSValueIsNumber (context, value)) {
+        double n;
+
+        n = JSValueToNumber (context, value, NULL);
+        widget->chapter_pages = (int)n;
+        g_object_notify_by_pspec (G_OBJECT (widget), properties[PROP_NPAGES]);
+    } else {
+        g_warning ("Error running javascript: unexpected return value");
+    }
+    webkit_javascript_result_unref (js_result);
+}
+
+static void
+paginate_cb (WebKitWebView  *web_view,
+             WebKitLoadEvent load_event,
+             gpointer        user_data)
+{
+
+    GepubWidget *widget = GEPUB_WIDGET (web_view);
+
+    if (load_event == WEBKIT_LOAD_FINISHED) {
+        const gchar *script = "function initialize() { "
+                                  "var d = document.querySelector('body');"
+                                  "var ourH = window.innerHeight - 40; "
+                                  "var ourW = window.innerWidth - 20; "
+                                  "var fullH = d.offsetHeight; "
+                                  "var pageCount = Math.floor(fullH/ourH)+1;"
+                                  "var newW = pageCount * ourW; "
+                                  "d.style.height = ourH+'px';"
+                                  "d.style.width = newW+'px';"
+                                  "d.style.WebkitColumnCount = pageCount;"
+                                  "d.style.WebkitColumnGap = '20px';"
+                                  "d.style.overflow = 'hidden';"
+                                  "window.currentPage = 0; "
+                                  "return pageCount;"
+                              "};"
+                              "function next() { "
+                                  "var ourW = window.innerWidth - 10; "
+                                  "window.currentPage += 1; "
+                                  "window.scroll(ourW * window.currentPage, 0); "
+                              "};"
+                              "function prev() { "
+                                  "var ourW = window.innerWidth - 10; "
+                                  "window.currentPage -= 1; "
+                                  "window.scroll(ourW * window.currentPage, 0); "
+                              "};"
+                              "function nth(index) { "
+                                  "var ourW = window.innerWidth - 10; "
+                                  "window.currentPage = index; "
+                                  "window.scroll(ourW * window.currentPage, 0); "
+                              "};"
+                              "initialize();";
+
+        if (widget->paginate) {
+            webkit_web_view_run_javascript (web_view, "document.querySelector('body').style.margin = '20px';", NULL, NULL, NULL);
+            webkit_web_view_run_javascript (web_view, script, NULL, pagination_initialize_finished, (gpointer)widget);
+        }
+    }
+}
 
 static void
 resource_callback (WebKitURISchemeRequest *request, gpointer user_data)
@@ -93,6 +177,9 @@ gepub_widget_set_property (GObject      *object,
     case PROP_PAGINATE:
         gepub_widget_set_pagination (widget, g_value_get_boolean (value));
         break;
+    case PROP_PAGE:
+        gepub_widget_set_page (widget, g_value_get_int (value));
+        break;
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
         break;
@@ -113,6 +200,12 @@ gepub_widget_get_property (GObject    *object,
         break;
     case PROP_PAGINATE:
         g_value_set_boolean (value, widget->paginate);
+        break;
+    case PROP_PAGE:
+        g_value_set_int (value, gepub_widget_get_page (widget));
+        break;
+    case PROP_NPAGES:
+        g_value_set_int (value, gepub_widget_get_n_pages (widget));
         break;
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -145,6 +238,7 @@ gepub_widget_constructed (GObject *object)
 
     ctx = webkit_web_view_get_context (WEBKIT_WEB_VIEW (widget));
     webkit_web_context_register_uri_scheme (ctx, "epub", resource_callback, widget, NULL);
+    g_signal_connect (widget, "load-changed", G_CALLBACK (paginate_cb), NULL);
 }
 
 static void
@@ -171,6 +265,20 @@ gepub_widget_class_init (GepubWidgetClass *klass)
                               "If the widget should paginate",
                               FALSE,
                               G_PARAM_READWRITE);
+
+    properties[PROP_PAGE] =
+        g_param_spec_int ("page",
+                          "Current page",
+                          "Current page in the chapter",
+                          -1, G_MAXINT, 0,
+                          G_PARAM_READWRITE);
+
+    properties[PROP_NPAGES] =
+        g_param_spec_int ("chapter_pages",
+                          "Current chapter pages",
+                          "Current chapter number of pages",
+                          -1, G_MAXINT, 0,
+                          G_PARAM_READABLE);
 
     g_object_class_install_properties (object_class, NUM_PROPS, properties);
 }
@@ -200,48 +308,6 @@ gepub_widget_get_doc (GepubWidget *widget)
 }
 
 static void
-paginate_cb (WebKitWebView  *web_view,
-             WebKitLoadEvent load_event,
-             gpointer        user_data)
-{
-
-    GepubWidget *widget = GEPUB_WIDGET (web_view);
-
-    if (load_event == WEBKIT_LOAD_FINISHED) {
-        const gchar *script = "function initialize() { "
-                                  "var d = document.querySelector('body');"
-                                  "var ourH = window.innerHeight - 40; "
-                                  "var ourW = window.innerWidth - 20; "
-                                  "var fullH = d.offsetHeight; "
-                                  "var pageCount = Math.floor(fullH/ourH)+1;"
-                                  "var newW = pageCount * ourW; "
-                                  "d.style.height = ourH+'px';"
-                                  "d.style.width = newW+'px';"
-                                  "d.style.WebkitColumnCount = pageCount;"
-                                  "d.style.WebkitColumnGap = '20px';"
-                                  "d.style.overflow = 'hidden';"
-                                  "window.currentPage = 0; "
-                              "};"
-                              "function next() { "
-                                  "var ourW = window.innerWidth - 10; "
-                                  "window.currentPage += 1; "
-                                  "window.scroll(ourW * window.currentPage, 0); "
-                              "};"
-                              "function prev() { "
-                                  "var ourW = window.innerWidth - 10; "
-                                  "window.currentPage -= 1; "
-                                  "window.scroll(ourW * window.currentPage, 0); "
-                              "};"
-                              "initialize();";
-
-        if (widget->paginate) {
-            webkit_web_view_run_javascript(web_view, "document.querySelector('body').style.margin = '20px';", NULL, NULL, NULL);
-            webkit_web_view_run_javascript(web_view, script, NULL, NULL, NULL);
-        }
-    }
-}
-
-static void
 reload_current_chapter (GepubWidget *widget)
 {
     GBytes *current;
@@ -251,9 +317,6 @@ reload_current_chapter (GepubWidget *widget)
                                 current,
                                 gepub_doc_get_current_mime (widget->doc),
                                 "UTF-8", NULL);
-
-    g_signal_connect (widget, "load-changed", G_CALLBACK (paginate_cb), NULL);
-
     g_bytes_unref (current);
 }
 
@@ -313,7 +376,11 @@ gepub_widget_set_pagination (GepubWidget *widget,
 void
 gepub_widget_page_next (GepubWidget *widget)
 {
-    webkit_web_view_run_javascript(WEBKIT_WEB_VIEW (widget), "next();", NULL, NULL, NULL);
+    if (widget->page >= widget->chapter_pages)
+        return;
+
+    webkit_web_view_run_javascript (WEBKIT_WEB_VIEW (widget), "next();", NULL, NULL, NULL);
+    widget->page += 1;
 }
 
 /**
@@ -325,5 +392,58 @@ gepub_widget_page_next (GepubWidget *widget)
 void
 gepub_widget_page_prev (GepubWidget *widget)
 {
-    webkit_web_view_run_javascript(WEBKIT_WEB_VIEW (widget), "prev();", NULL, NULL, NULL);
+    if (widget->page <= 0)
+        return;
+
+    webkit_web_view_run_javascript (WEBKIT_WEB_VIEW (widget), "prev();", NULL, NULL, NULL);
+    widget->page -= 1;
+}
+
+/**
+ * gepub_widget_get_n_pages:
+ * @widget: a #GepubWidget
+ *
+ * Returns: the number of pages in the chapter
+ */
+int
+gepub_widget_get_n_pages (GepubWidget *widget)
+{
+    return widget->chapter_pages;
+}
+
+/**
+ * gepub_widget_get_page:
+ * @widget: a #GepubWidget
+ *
+ * Returns: the current page in the chapter
+ */
+int
+gepub_widget_get_page (GepubWidget *widget)
+{
+    return widget->page;
+}
+
+/**
+ * gepub_widget_set_page:
+ * @widget: a #GepubWidget
+ * @index: the new page index
+ *
+ * Sets the widget current page to @index.
+ */
+void
+gepub_widget_set_page (GepubWidget *widget, gint index)
+{
+    gchar *script;
+
+    if (index >= widget->chapter_pages)
+        return;
+
+    if (index < 0)
+        return;
+
+    script = g_strdup_printf ("nth(%d);", index);
+    webkit_web_view_run_javascript (WEBKIT_WEB_VIEW (widget), script, NULL, NULL, NULL);
+    widget->page = index;
+
+    g_free (script);
 }
