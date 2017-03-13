@@ -313,8 +313,11 @@ gepub_doc_get_current_with_epub_uris (GepubDoc *doc)
 gboolean
 gepub_doc_go_next (GepubDoc *doc)
 {
-    g_object_notify_by_pspec (G_OBJECT (doc), properties[PROP_PAGE]);
-    return epub_next_page (doc->rust_epub_doc);
+    gboolean isok = epub_next_page (doc->rust_epub_doc);
+    if (isok) {
+        g_object_notify_by_pspec (G_OBJECT (doc), properties[PROP_PAGE]);
+    }
+    return isok;
 }
 
 /**
@@ -326,8 +329,11 @@ gepub_doc_go_next (GepubDoc *doc)
 gboolean
 gepub_doc_go_prev (GepubDoc *doc)
 {
-    g_object_notify_by_pspec (G_OBJECT (doc), properties[PROP_PAGE]);
-    return epub_prev_page (doc->rust_epub_doc);
+    gboolean isok = epub_prev_page (doc->rust_epub_doc);
+    if (isok) {
+        g_object_notify_by_pspec (G_OBJECT (doc), properties[PROP_PAGE]);
+    }
+    return isok;
 }
 
 /**
