@@ -43,7 +43,7 @@ button_pressed (GtkButton *button, GepubDoc *doc)
     printf ("CURRENT: %d\n", gepub_doc_get_page (doc));
     printf ("CURRENT: %s\n", gepub_doc_get_current_id (doc));
     printf ("CURRENT: %s\n", gepub_doc_get_current_path (doc));
-    print_replaced_text (doc);
+    //print_replaced_text (doc);
 }
 
 void
@@ -93,6 +93,8 @@ main (int argc, char **argv)
 
     GtkTextBuffer *buffer;
 
+    GError *error = NULL;
+
     GepubDoc *doc;
     GtkWidget *widget = gepub_widget_new ();
 
@@ -108,7 +110,11 @@ main (int argc, char **argv)
     gtk_container_add (GTK_CONTAINER (window), vpaned);
 
     // gepub widget
-    doc = gepub_doc_new (argv[1]);
+    GFile *file = g_file_new_for_path (argv[1]);
+    doc = g_initable_new (gepub_doc_get_type (), NULL, &error,
+                          "file", file,
+                          NULL);
+    g_object_unref (file);
     if (!doc) {
         perror ("BAD epub FILE");
         return -1;

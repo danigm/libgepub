@@ -64,6 +64,7 @@ enum {
     PROP_0,
     PROP_PATH,
     PROP_PAGE,
+    PROP_FILE,
     NUM_PROPS
 };
 
@@ -94,9 +95,16 @@ gepub_doc_set_property (GObject      *object,
     case PROP_PATH:
         doc->path = g_value_dup_string (value);
         break;
-    //case PROP_PAGE:
-    //    gepub_doc_set_page (doc, g_value_get_int (value));
-    //    break;
+    case PROP_PAGE:
+        gepub_doc_set_page (doc, g_value_get_int (value));
+        break;
+    case PROP_FILE: {
+        GFile *f = G_FILE (g_value_get_object (value));
+        if (f) {
+            doc->path = g_file_get_path (G_FILE (g_value_get_object (value)));
+        }
+        break;
+    }
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
         break;
@@ -115,9 +123,14 @@ gepub_doc_get_property (GObject    *object,
     case PROP_PATH:
         g_value_set_string (value, doc->path);
         break;
-    //case PROP_PAGE:
-    //    g_value_set_int (value, gepub_doc_get_page (doc));
-    //    break;
+    case PROP_PAGE:
+        g_value_set_int (value, gepub_doc_get_page (doc));
+        break;
+    case PROP_FILE: {
+        GFile *f = g_file_new_for_path (doc->path);
+        g_value_set_object (value, f);
+        break;
+    }
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
         break;
@@ -153,6 +166,15 @@ gepub_doc_class_init (GepubDocClass *klass)
                           -1, G_MAXINT, 0,
                           G_PARAM_READWRITE |
                           G_PARAM_STATIC_STRINGS);
+
+    properties[PROP_FILE] =
+        g_param_spec_object ("file",
+                             "File",
+                             "GFile to the EPUB document",
+                             G_TYPE_FILE,
+                             G_PARAM_READWRITE |
+                             G_PARAM_CONSTRUCT_ONLY |
+                             G_PARAM_STATIC_STRINGS);
 
     g_object_class_install_properties (object_class, NUM_PROPS, properties);
 }
