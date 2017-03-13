@@ -5,7 +5,7 @@ authors = ["Daniel Garcia Moreno <danigm@wadobo.com>"]
 
 [dependencies]
 libc = "0.2"
-epub = "1.0.2"
+epub = "1.0.3"
 
 [dependencies.glib]
 git = "https://github.com/gtk-rs/glib"
