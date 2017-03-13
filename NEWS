@@ -2,6 +2,7 @@ Version 0.5
 ===========
 
  - Replaced gepub-archive / gepub-doc C source with Rust epub lib
+ - Added file property to be able to initialize with a GFile
 
 Version 0.4
 ===========
