@@ -311,6 +311,8 @@ gepub_doc_fill_spine (GepubDoc *doc)
 GBytes *
 gepub_doc_get_content (GepubDoc *doc)
 {
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
+
     return doc->content;
 }
 
@@ -332,6 +334,9 @@ gepub_doc_get_metadata (GepubDoc *doc, const gchar *mdata)
     xmlChar *text;
     const char *data;
     gsize size;
+
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
+    g_return_val_if_fail (mdata != NULL, NULL);
 
     data = g_bytes_get_data (doc->content, &size);
     xdoc = xmlRecoverMemory (data, size);
@@ -357,6 +362,8 @@ gepub_doc_get_metadata (GepubDoc *doc, const gchar *mdata)
 GHashTable *
 gepub_doc_get_resources (GepubDoc *doc)
 {
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
+
     return doc->resources;
 }
 
@@ -370,7 +377,12 @@ gepub_doc_get_resources (GepubDoc *doc)
 GBytes *
 gepub_doc_get_resource_by_id (GepubDoc *doc, const gchar *id)
 {
-    GepubResource *gres = g_hash_table_lookup (doc->resources, id);
+    GepubResource *gres;
+
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
+    g_return_val_if_fail (id != NULL, NULL);
+
+    gres = g_hash_table_lookup (doc->resources, id);
     if (!gres) {
         // not found
         return NULL;
@@ -389,6 +401,9 @@ gepub_doc_get_resource_by_id (GepubDoc *doc, const gchar *id)
 GBytes *
 gepub_doc_get_resource (GepubDoc *doc, const gchar *path)
 {
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
+    g_return_val_if_fail (path != NULL, NULL);
+
     return gepub_archive_read_entry (doc->archive, path);
 }
 
@@ -404,6 +419,7 @@ gepub_doc_get_resource_mime_by_id (GepubDoc *doc, const gchar *id)
 {
     GepubResource *gres;
 
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
     g_return_val_if_fail (id != NULL, NULL);
 
     gres = g_hash_table_lookup (doc->resources, id);
@@ -426,7 +442,12 @@ gchar *
 gepub_doc_get_resource_mime (GepubDoc *doc, const gchar *path)
 {
     GepubResource *gres;
-    GList *keys = g_hash_table_get_keys (doc->resources);
+    GList *keys;
+
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
+    g_return_val_if_fail (path != NULL, NULL);
+
+    keys = g_hash_table_get_keys (doc->resources);
 
     while (keys) {
         gres = ((GepubResource*)g_hash_table_lookup (doc->resources, keys->data));
@@ -450,6 +471,9 @@ gepub_doc_get_resource_mime (GepubDoc *doc, const gchar *path)
 gchar *
 gepub_doc_get_current_mime (GepubDoc *doc)
 {
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
+    g_return_val_if_fail (doc->page != NULL, NULL);
+
     return gepub_doc_get_resource_mime_by_id (doc, doc->page->data);
 }
 
@@ -462,6 +486,9 @@ gepub_doc_get_current_mime (GepubDoc *doc)
 GBytes *
 gepub_doc_get_current (GepubDoc *doc)
 {
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
+    g_return_val_if_fail (doc->page != NULL, NULL);
+
     return gepub_doc_get_resource_by_id (doc, doc->page->data);
 }
 
@@ -476,12 +503,17 @@ gepub_doc_get_current (GepubDoc *doc)
 GBytes *
 gepub_doc_get_current_with_epub_uris (GepubDoc *doc)
 {
-    GBytes *content = gepub_doc_get_current (doc);
-    gchar *path = gepub_doc_get_current_path (doc);
-    // getting the basepath of the current xhtml loaded
-    gchar *base = g_path_get_dirname (path);
+    GBytes *content, *replaced;
+    gchar *path, *base;
 
-    GBytes *replaced = gepub_utils_replace_resources (content, base);
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
+
+    content = gepub_doc_get_current (doc);
+    path = gepub_doc_get_current_path (doc);
+    // getting the basepath of the current xhtml loaded
+    base = g_path_get_dirname (path);
+
+    replaced = gepub_utils_replace_resources (content, base);
 
     g_free (path);
     g_bytes_unref (content);
@@ -505,6 +537,8 @@ gepub_doc_get_text (GepubDoc *doc)
     gsize size;
 
     GList *texts = NULL;
+
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
 
     current = gepub_doc_get_current (doc);
     if (!current) {
@@ -538,6 +572,9 @@ gepub_doc_get_text_by_id (GepubDoc *doc, const gchar *id)
     GBytes *contents;
 
     GList *texts = NULL;
+
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
+    g_return_val_if_fail (id != NULL, NULL);
 
     contents = gepub_doc_get_resource_by_id (doc, id);
     if (!res) {
@@ -577,6 +614,9 @@ gepub_doc_set_page_internal (GepubDoc *doc,
 gboolean
 gepub_doc_go_next (GepubDoc *doc)
 {
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), FALSE);
+    g_return_val_if_fail (doc->page != NULL, FALSE);
+
     return gepub_doc_set_page_internal (doc, doc->page->next);
 }
 
@@ -589,6 +629,9 @@ gepub_doc_go_next (GepubDoc *doc)
 gboolean
 gepub_doc_go_prev (GepubDoc *doc)
 {
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), FALSE);
+    g_return_val_if_fail (doc->page != NULL, FALSE);
+
     return gepub_doc_set_page_internal (doc, doc->page->prev);
 }
 
@@ -601,6 +644,8 @@ gepub_doc_go_prev (GepubDoc *doc)
 int
 gepub_doc_get_n_pages (GepubDoc *doc)
 {
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), 0);
+
     return g_list_length (doc->spine);
 }
 
@@ -613,6 +658,10 @@ gepub_doc_get_n_pages (GepubDoc *doc)
 int
 gepub_doc_get_page (GepubDoc *doc)
 {
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), 0);
+    g_return_val_if_fail (doc->spine != NULL, 0);
+    g_return_val_if_fail (doc->page != NULL, 0);
+
     return g_list_position (doc->spine, doc->page);
 }
 
@@ -628,6 +677,8 @@ gepub_doc_set_page (GepubDoc *doc,
                     gint      index)
 {
     GList *page;
+
+    g_return_if_fail (GEPUB_IS_DOC (doc));
 
     g_return_if_fail (index >= 0 && index <= gepub_doc_get_n_pages (doc));
 
@@ -653,6 +704,9 @@ gepub_doc_get_cover (GepubDoc *doc)
     const char *data;
     gsize size;
 
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
+    g_return_val_if_fail (doc->content != NULL, NULL);
+
     data = g_bytes_get_data (doc->content, &size);
     xdoc = xmlRecoverMemory (data, size);
     root_element = xmlDocGetRootElement (xdoc);
@@ -677,7 +731,12 @@ gepub_doc_get_cover (GepubDoc *doc)
 gchar *
 gepub_doc_get_resource_path (GepubDoc *doc, const gchar *id)
 {
-    GepubResource *gres = g_hash_table_lookup (doc->resources, id);
+    GepubResource *gres;
+
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
+    g_return_val_if_fail (id != NULL, NULL);
+
+    gres = g_hash_table_lookup (doc->resources, id);
     if (!gres) {
         // not found
         return NULL;
@@ -695,6 +754,9 @@ gepub_doc_get_resource_path (GepubDoc *doc, const gchar *id)
 gchar *
 gepub_doc_get_current_path (GepubDoc *doc)
 {
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
+    g_return_val_if_fail (doc->page != NULL, NULL);
+
     return gepub_doc_get_resource_path (doc, doc->page->data);
 }
 
@@ -708,5 +770,8 @@ gepub_doc_get_current_path (GepubDoc *doc)
 const gchar *
 gepub_doc_get_current_id (GepubDoc *doc)
 {
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
+    g_return_val_if_fail (doc->page != NULL, NULL);
+
     return doc->page->data;
 }

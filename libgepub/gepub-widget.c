@@ -180,6 +180,8 @@ gepub_widget_new (void)
 GepubDoc *
 gepub_widget_get_doc (GepubWidget *widget)
 {
+    g_return_val_if_fail (GEPUB_IS_WIDGET (widget), NULL);
+
     return widget->doc;
 }
 
@@ -208,6 +210,8 @@ void
 gepub_widget_set_doc (GepubWidget *widget,
                       GepubDoc    *doc)
 {
+    g_return_if_fail (GEPUB_IS_WIDGET (widget));
+
     if (widget->doc == doc)
         return;
 
