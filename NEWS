@@ -1,8 +1,3 @@
-Version 0.5
-===========
-
- - Replaced gepub-archive / gepub-doc C source with Rust epub lib
-
 Version 0.4
 ===========
 
