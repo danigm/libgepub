@@ -1,0 +1,7 @@
+Version 0.4
+===========
+
+ - Improve GepubDoc API
+ - Resource management inside the lib
+ - Better GTK+ doc and glib use
+ - New GepubWidget based on WebKitWebView
