@@ -47,13 +47,20 @@ void              gepub_widget_set_doc                         (GepubWidget *wid
                                                                 GepubDoc    *doc);
 
 void              gepub_widget_set_pagination                  (GepubWidget *widget, gboolean p);
-void              gepub_widget_page_next                       (GepubWidget *widget);
-void              gepub_widget_page_prev                       (GepubWidget *widget);
 
-gint              gepub_widget_get_n_pages                     (GepubWidget *widget);
-gint              gepub_widget_get_page                        (GepubWidget *widget);
-void              gepub_widget_set_page                        (GepubWidget *widget,
+gint              gepub_widget_get_n_chapters                  (GepubWidget *widget);
+gint              gepub_widget_get_chapter                     (GepubWidget *widget);
+gint              gepub_widget_get_chapter_length              (GepubWidget *widget);
+void              gepub_widget_set_chapter                     (GepubWidget *widget,
                                                                 gint         index);
+gboolean          gepub_widget_chapter_next                    (GepubWidget *widget);
+gboolean          gepub_widget_chapter_prev                    (GepubWidget *widget);
+
+gfloat            gepub_widget_get_pos                         (GepubWidget *widget);
+void              gepub_widget_set_pos                         (GepubWidget *widget,
+                                                                gfloat       index);
+gboolean          gepub_widget_page_next                       (GepubWidget *widget);
+gboolean          gepub_widget_page_prev                       (GepubWidget *widget);
 
 G_END_DECLS
 

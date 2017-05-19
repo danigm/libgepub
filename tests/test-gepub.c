@@ -23,7 +23,7 @@ GtkWidget *PAGE_LABEL;
 static void
 reload_current_chapter (GepubWidget *widget)
 {
-    gchar *txt = g_strdup_printf ("%d", gepub_widget_get_n_pages (widget));
+    gchar *txt = g_strdup_printf ("%02.2f", gepub_widget_get_pos (widget));
     gtk_label_set_text (GTK_LABEL (PAGE_LABEL), txt);
     g_free (txt);
 }
@@ -87,24 +87,13 @@ button_pressed (GtkButton *button, GepubWidget *widget)
     } else if (!strcmp (gtk_button_get_label (button), "paginated")) {
         gboolean b = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button));
         gepub_widget_set_pagination (widget, b);
+    } else if (!strcmp (gtk_button_get_label (button), "< page")) {
+        gepub_widget_page_prev (widget);
+    } else if (!strcmp (gtk_button_get_label (button), "page >")) {
+        gepub_widget_page_next (widget);
     }
     update_text (doc);
-    print_replaced_text (doc);
-}
-
-void
-spin_changed (GtkSpinButton *button, GepubWidget *widget)
-{
-    gint value = gtk_spin_button_get_value_as_int (button);
-    gint npages = gepub_widget_get_n_pages (widget);
-
-    printf ("PAGE VALUE: %d - %d\n", value, npages);
-    if (value >= gepub_widget_get_n_pages (widget)) {
-        gtk_spin_button_set_value (button, npages);
-        return;
-    }
-
-    gepub_widget_set_page (widget, value);
+    //print_replaced_text (doc);
 }
 
 void
@@ -273,7 +262,8 @@ main (int argc, char **argv)
     GtkWidget *b_next;
     GtkWidget *b_prev;
 
-    GtkWidget *spin_button;
+    GtkWidget *p_next;
+    GtkWidget *p_prev;
 
     GtkWidget *paginate;
 
@@ -290,7 +280,7 @@ main (int argc, char **argv)
 
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
     g_signal_connect (window, "destroy", (GCallback)gtk_main_quit, NULL);
-    gtk_widget_set_size_request (GTK_WIDGET (window), 800, 500);
+    gtk_widget_set_size_request (GTK_WIDGET (window), 1200, 800);
     vpaned = gtk_paned_new (GTK_ORIENTATION_HORIZONTAL);
     gtk_container_add (GTK_CONTAINER (window), vpaned);
 
@@ -322,8 +312,10 @@ main (int argc, char **argv)
     b_next = gtk_button_new_with_label ("chapter >");
     g_signal_connect (b_next, "clicked", (GCallback)button_pressed, GEPUB_WIDGET (widget));
 
-    spin_button = gtk_spin_button_new_with_range (0, G_MAXINT, 1);
-    g_signal_connect (spin_button, "value-changed", (GCallback)spin_changed, GEPUB_WIDGET (widget));
+    p_prev = gtk_button_new_with_label ("< page");
+    g_signal_connect (p_prev, "clicked", (GCallback)button_pressed, GEPUB_WIDGET (widget));
+    p_next = gtk_button_new_with_label ("page >");
+    g_signal_connect (p_next, "clicked", (GCallback)button_pressed, GEPUB_WIDGET (widget));
 
     PAGE_LABEL = gtk_label_new ("0");
 
@@ -336,7 +328,9 @@ main (int argc, char **argv)
     gtk_container_add (GTK_CONTAINER (hbox), b_prev);
     gtk_container_add (GTK_CONTAINER (hbox), b_next);
 
-    gtk_container_add (GTK_CONTAINER (hbox), spin_button);
+    gtk_container_add (GTK_CONTAINER (hbox), p_prev);
+    gtk_container_add (GTK_CONTAINER (hbox), p_next);
+
     gtk_container_add (GTK_CONTAINER (hbox), PAGE_LABEL);
     gtk_container_add (GTK_CONTAINER (hbox), paginate);
 
@@ -349,7 +343,7 @@ main (int argc, char **argv)
     gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (scrolled), GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
     gtk_box_pack_start (GTK_BOX (vbox), scrolled, TRUE, TRUE, 5);
 
-    gtk_widget_set_size_request (GTK_WIDGET (vbox), 400, 500);
+    gtk_widget_set_size_request (GTK_WIDGET (vbox), 600, 500);
     gtk_paned_add1 (GTK_PANED (vpaned), vbox);
     gtk_paned_add2 (GTK_PANED (vpaned), widget);
 
