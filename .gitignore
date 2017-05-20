@@ -1,0 +1,17 @@
+*.gir
+*.typelib
+Makefile
+Makefile.in
+aclocal.m4
+autom4te.cache
+config.*
+configure
+depcomp
+libtool
+*.pc
+*.stamp
+*.la
+*.o
+*.lo
+.deps
+.libs
