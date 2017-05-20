@@ -165,7 +165,15 @@ reload_length_cb (GtkWidget *widget,
 
     if (gwidget->paginate) {
         webkit_web_view_run_javascript (web_view,
-                "document.querySelector('body').setAttribute('style', 'overflow: hidden; column-gap: 0px;');"
+                // TODO: Adjusts to show a little margin at least
+                "document.querySelector('body').setAttribute('style', '"
+                    "overflow: hidden;"
+                    "column-gap: 0px;"
+                    "margin-left: 0px;"
+                    "margin-right: 0px;"
+                    "padding-left: 0px;"
+                    "padding-right: 0px;"
+                    "');"
                 "document.querySelector('body').style.columnWidth = window.innerWidth+'px';"
                 "document.querySelector('body').style.height = window.innerHeight+'px';"
                 "document.querySelector('body').scrollWidth",
