@@ -20,6 +20,7 @@
 #include <config.h>
 #include <gtk/gtk.h>
 #include <JavaScriptCore/JSValueRef.h>
+#include <locale.h>
 
 #include "gepub-widget.h"
 
@@ -32,7 +33,9 @@ struct _GepubWidget {
     gint chapter_pos; // position in the chapter, a percentage based on chapter_length
     gint length;
     gint init_chapter_pos;
-    gint margin;
+    gint margin; // lateral margin in px
+    gint font_size; // font size in pt
+    gfloat line_height;
 };
 
 struct _GepubWidgetClass {
@@ -163,33 +166,47 @@ reload_length_cb (GtkWidget *widget,
         "window.innerWidth",
         NULL, get_length_finished, (gpointer)widget);
 
-    if (gwidget->paginate) {
-        gint m = GEPUB_WIDGET (widget)->margin;
-        gchar *script;
+    gint m = GEPUB_WIDGET (widget)->margin;
+    gint f = GEPUB_WIDGET (widget)->font_size;
+    gfloat l = GEPUB_WIDGET (widget)->line_height;
 
+    gchar *script;
+    script = g_strdup_printf (
+        "if (!document.querySelector('#gepubwrap'))"
+        "document.body.innerHTML = '<div id=\"gepubwrap\">' + document.body.innerHTML + '</div>';"
+
+        "document.querySelector('#gepubwrap').style.marginLeft = '%dpx';"
+        "document.querySelector('#gepubwrap').style.marginRight = '%dpx';"
+        , m, m);
+    webkit_web_view_run_javascript (web_view, script, NULL, NULL, NULL);
+    g_free (script);
+
+    if (f) {
         script = g_strdup_printf (
-            "document.body.style.overflow = 'hidden';"
-            "document.body.style.margin = '20px 0px 20px 0px';"
-            "document.body.style.padding = '0px';"
-            "document.body.style.columnWidth = window.innerWidth+'px';"
-            "document.body.style.height = (window.innerHeight - 40) +'px';"
-            "document.body.style.columnGap = '0px';"
-
-            "if (!document.querySelector('#gepubwrap'))"
-            "document.body.innerHTML = '<div id=\"gepubwrap\">' + document.body.innerHTML + '</div>';"
-
-            "document.querySelector('#gepubwrap').style.marginLeft = '%dpx';"
-            "document.querySelector('#gepubwrap').style.marginRight = '%dpx';"
-
-            "document.body.scrollWidth"
-            ,
-            m, m);
-
-        webkit_web_view_run_javascript (web_view,
-                script,
-                NULL, pagination_initialize_finished, (gpointer)widget);
-
+            "document.querySelector('#gepubwrap').style.fontSize = '%dpt';"
+            , f);
+        webkit_web_view_run_javascript (web_view, script, NULL, NULL, NULL);
         g_free (script);
+    }
+
+    if (l) {
+        script = g_strdup_printf (
+            "document.querySelector('#gepubwrap').style.lineHeight = %f;"
+            , l);
+        webkit_web_view_run_javascript (web_view, script, NULL, NULL, NULL);
+        g_free (script);
+    }
+
+    if (gwidget->paginate) {
+        webkit_web_view_run_javascript (web_view,
+                "document.body.style.overflow = 'hidden';"
+                "document.body.style.margin = '20px 0px 20px 0px';"
+                "document.body.style.padding = '0px';"
+                "document.body.style.columnWidth = window.innerWidth+'px';"
+                "document.body.style.height = (window.innerHeight - 40) +'px';"
+                "document.body.style.columnGap = '0px';"
+                "document.body.scrollWidth",
+                NULL, pagination_initialize_finished, (gpointer)widget);
     }
 }
 
@@ -314,6 +331,11 @@ gepub_widget_init (GepubWidget *widget)
     widget->length = 0;
     widget->init_chapter_pos = 0;
     widget->margin = 20;
+    widget->font_size = 0;
+    widget->line_height = 0;
+
+    // locale to avoid '1,2' in line_height string composition
+    setlocale(LC_NUMERIC, "C");
 }
 
 static void
@@ -659,4 +681,60 @@ gint
 gepub_widget_get_margin (GepubWidget *widget)
 {
     return widget->margin;
+}
+
+/**
+ * gepub_widget_get_fontsize:
+ * @widget: a #GepubWidget
+ *
+ * Gets the widget custom font size in pt, if 0, it's not set
+ */
+gint
+gepub_widget_get_fontsize (GepubWidget *widget)
+{
+    return widget->font_size;
+}
+
+/**
+ * gepub_widget_set_fontsize:
+ * @widget: a #GepubWidget
+ * @size: the custom font size in pt
+ *
+ * Sets the widget custom font size, use 0 to show book's styles
+ */
+void
+gepub_widget_set_fontsize (GepubWidget *widget,
+                           gint         size)
+{
+    widget->font_size = size;
+    reload_length_cb (GTK_WIDGET (widget), NULL, NULL);
+}
+
+/**
+ * gepub_widget_get_lineheight:
+ * @widget: a #GepubWidget
+ *
+ * Gets the widget custom line height, if 0, it's not set
+ */
+gfloat
+gepub_widget_get_lineheight (GepubWidget *widget)
+{
+    return widget->line_height;
+}
+
+/**
+ * gepub_widget_set_lineheight:
+ * @widget: a #GepubWidget
+ * @size: the custom line height
+ *
+ * Sets the widget custom line height, the real size will be this
+ * number multiplied by the font size.
+ * Use 0 to show book's styles
+ */
+void
+gepub_widget_set_lineheight (GepubWidget *widget,
+                             gfloat       size)
+{
+    widget->line_height = size;
+    reload_length_cb (GTK_WIDGET (widget), NULL, NULL);
 }

@@ -66,6 +66,14 @@ gint              gepub_widget_get_margin                      (GepubWidget *wid
 void              gepub_widget_set_margin                      (GepubWidget *widget,
                                                                 gint         margin);
 
+gint              gepub_widget_get_fontsize                    (GepubWidget *widget);
+void              gepub_widget_set_fontsize                    (GepubWidget *widget,
+                                                                gint         size);
+
+gfloat            gepub_widget_get_lineheight                  (GepubWidget *widget);
+void              gepub_widget_set_lineheight                  (GepubWidget *widget,
+                                                                gfloat       size);
+
 G_END_DECLS
 
 #endif /* __GEPUB_WIDGET_H__ */

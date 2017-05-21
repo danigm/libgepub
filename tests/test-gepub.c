@@ -95,6 +95,24 @@ button_pressed (GtkButton *button, GepubWidget *widget)
         gepub_widget_set_margin (widget, gepub_widget_get_margin (widget) + 20);
     } else if (!strcmp (gtk_button_get_label (button), "margin -")) {
         gepub_widget_set_margin (widget, gepub_widget_get_margin (widget) - 20);
+    } else if (!strcmp (gtk_button_get_label (button), "font +")) {
+        gint f = gepub_widget_get_fontsize (widget);
+        f = f ? f : 12;
+        printf ("font %d\n", f);
+        gepub_widget_set_fontsize (widget, f + 2);
+    } else if (!strcmp (gtk_button_get_label (button), "font -")) {
+        gint f = gepub_widget_get_fontsize (widget);
+        f = f ? f : 12;
+        printf ("font %d\n", f);
+        gepub_widget_set_fontsize (widget, f - 2);
+    } else if (!strcmp (gtk_button_get_label (button), "line height +")) {
+        gfloat l = gepub_widget_get_lineheight (widget);
+        l = l ? l : 1.5;
+        gepub_widget_set_lineheight (widget, l + 0.1);
+    } else if (!strcmp (gtk_button_get_label (button), "line height -")) {
+        gfloat l = gepub_widget_get_lineheight (widget);
+        l = l ? l : 1.5;
+        gepub_widget_set_lineheight (widget, l - 0.1);
     }
     update_text (doc);
     //print_replaced_text (doc);
@@ -273,6 +291,12 @@ main (int argc, char **argv)
     GtkWidget *margin1;
     GtkWidget *margin2;
 
+    GtkWidget *font1;
+    GtkWidget *font2;
+
+    GtkWidget *lh1;
+    GtkWidget *lh2;
+
     GtkWidget *paginate;
 
     GtkTextBuffer *buffer;
@@ -280,6 +304,9 @@ main (int argc, char **argv)
     GepubDoc *doc;
     GtkWidget *textview2;
     GtkWidget *widget = gepub_widget_new ();
+
+    webkit_settings_set_enable_developer_extras (
+        webkit_web_view_get_settings (WEBKIT_WEB_VIEW (widget)), TRUE);
 
     if (argc < 2) {
         printf ("you should provide an .epub file\n");
@@ -331,6 +358,16 @@ main (int argc, char **argv)
     margin2 = gtk_button_new_with_label ("margin -");
     g_signal_connect (margin2, "clicked", (GCallback)button_pressed, GEPUB_WIDGET (widget));
 
+    font1 = gtk_button_new_with_label ("font +");
+    g_signal_connect (font1, "clicked", (GCallback)button_pressed, GEPUB_WIDGET (widget));
+    font2 = gtk_button_new_with_label ("font -");
+    g_signal_connect (font2, "clicked", (GCallback)button_pressed, GEPUB_WIDGET (widget));
+
+    lh1 = gtk_button_new_with_label ("line height +");
+    g_signal_connect (lh1, "clicked", (GCallback)button_pressed, GEPUB_WIDGET (widget));
+    lh2 = gtk_button_new_with_label ("line height -");
+    g_signal_connect (lh2, "clicked", (GCallback)button_pressed, GEPUB_WIDGET (widget));
+
     PAGE_LABEL = gtk_label_new ("0");
 
     g_signal_connect_swapped (widget, "notify",
@@ -350,6 +387,12 @@ main (int argc, char **argv)
 
     gtk_container_add (GTK_CONTAINER (hbox2), margin1);
     gtk_container_add (GTK_CONTAINER (hbox2), margin2);
+
+    gtk_container_add (GTK_CONTAINER (hbox2), font1);
+    gtk_container_add (GTK_CONTAINER (hbox2), font2);
+
+    gtk_container_add (GTK_CONTAINER (hbox2), lh1);
+    gtk_container_add (GTK_CONTAINER (hbox2), lh2);
 
     gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 5);
     gtk_box_pack_start (GTK_BOX (vbox), hbox2, FALSE, FALSE, 5);
