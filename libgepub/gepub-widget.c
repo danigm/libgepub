@@ -32,6 +32,7 @@ struct _GepubWidget {
     gint chapter_pos; // position in the chapter, a percentage based on chapter_length
     gint length;
     gint init_chapter_pos;
+    gint margin;
 };
 
 struct _GepubWidgetClass {
@@ -113,7 +114,6 @@ pagination_initialize_finished (GObject      *object,
         if (widget->chapter_pos) {
             adjust_chapter_pos (widget);
         }
-
     } else {
         g_warning ("Error running javascript: unexpected return value");
     }
@@ -164,20 +164,32 @@ reload_length_cb (GtkWidget *widget,
         NULL, get_length_finished, (gpointer)widget);
 
     if (gwidget->paginate) {
+        gint m = GEPUB_WIDGET (widget)->margin;
+        gchar *script;
+
+        script = g_strdup_printf (
+            "document.body.style.overflow = 'hidden';"
+            "document.body.style.margin = '20px 0px 20px 0px';"
+            "document.body.style.padding = '0px';"
+            "document.body.style.columnWidth = window.innerWidth+'px';"
+            "document.body.style.height = (window.innerHeight - 40) +'px';"
+            "document.body.style.columnGap = '0px';"
+
+            "if (!document.querySelector('#gepubwrap'))"
+            "document.body.innerHTML = '<div id=\"gepubwrap\">' + document.body.innerHTML + '</div>';"
+
+            "document.querySelector('#gepubwrap').style.marginLeft = '%dpx';"
+            "document.querySelector('#gepubwrap').style.marginRight = '%dpx';"
+
+            "document.body.scrollWidth"
+            ,
+            m, m);
+
         webkit_web_view_run_javascript (web_view,
-                // TODO: Adjusts to show a little margin at least
-                "document.querySelector('body').setAttribute('style', '"
-                    "overflow: hidden;"
-                    "column-gap: 0px;"
-                    "margin-left: 0px;"
-                    "margin-right: 0px;"
-                    "padding-left: 0px;"
-                    "padding-right: 0px;"
-                    "');"
-                "document.querySelector('body').style.columnWidth = window.innerWidth+'px';"
-                "document.querySelector('body').style.height = window.innerHeight+'px';"
-                "document.querySelector('body').scrollWidth",
+                script,
                 NULL, pagination_initialize_finished, (gpointer)widget);
+
+        g_free (script);
     }
 }
 
@@ -301,6 +313,7 @@ gepub_widget_init (GepubWidget *widget)
     widget->chapter_pos = 0;
     widget->length = 0;
     widget->init_chapter_pos = 0;
+    widget->margin = 20;
 }
 
 static void
@@ -618,4 +631,32 @@ gepub_widget_set_pos (GepubWidget *widget,
     adjust_chapter_pos (widget);
 
     g_object_notify_by_pspec (G_OBJECT (widget), properties[PROP_CHAPTER_POS]);
+}
+
+
+/**
+ * gepub_widget_set_margin:
+ * @widget: a #GepubWidget
+ * @margin: the margin in pixels
+ *
+ * Sets the widget left and right margin
+ */
+void
+gepub_widget_set_margin (GepubWidget *widget,
+                         gint         margin)
+{
+    widget->margin = margin;
+    reload_length_cb (GTK_WIDGET (widget), NULL, NULL);
+}
+
+/**
+ * gepub_widget_get_margin:
+ * @widget: a #GepubWidget
+ *
+ * Gets the widget left and right margin
+ */
+gint
+gepub_widget_get_margin (GepubWidget *widget)
+{
+    return widget->margin;
 }

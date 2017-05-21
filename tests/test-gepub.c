@@ -91,6 +91,10 @@ button_pressed (GtkButton *button, GepubWidget *widget)
         gepub_widget_page_prev (widget);
     } else if (!strcmp (gtk_button_get_label (button), "page >")) {
         gepub_widget_page_next (widget);
+    } else if (!strcmp (gtk_button_get_label (button), "margin +")) {
+        gepub_widget_set_margin (widget, gepub_widget_get_margin (widget) + 20);
+    } else if (!strcmp (gtk_button_get_label (button), "margin -")) {
+        gepub_widget_set_margin (widget, gepub_widget_get_margin (widget) - 20);
     }
     update_text (doc);
     //print_replaced_text (doc);
@@ -259,11 +263,15 @@ main (int argc, char **argv)
 
     GtkWidget *vbox;
     GtkWidget *hbox;
+    GtkWidget *hbox2;
     GtkWidget *b_next;
     GtkWidget *b_prev;
 
     GtkWidget *p_next;
     GtkWidget *p_prev;
+
+    GtkWidget *margin1;
+    GtkWidget *margin2;
 
     GtkWidget *paginate;
 
@@ -307,6 +315,7 @@ main (int argc, char **argv)
 
     vbox = gtk_box_new (GTK_ORIENTATION_VERTICAL, 5);
     hbox = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
+    hbox2 = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 5);
     b_prev = gtk_button_new_with_label ("< chapter");
     g_signal_connect (b_prev, "clicked", (GCallback)button_pressed, GEPUB_WIDGET (widget));
     b_next = gtk_button_new_with_label ("chapter >");
@@ -316,6 +325,11 @@ main (int argc, char **argv)
     g_signal_connect (p_prev, "clicked", (GCallback)button_pressed, GEPUB_WIDGET (widget));
     p_next = gtk_button_new_with_label ("page >");
     g_signal_connect (p_next, "clicked", (GCallback)button_pressed, GEPUB_WIDGET (widget));
+
+    margin1 = gtk_button_new_with_label ("margin +");
+    g_signal_connect (margin1, "clicked", (GCallback)button_pressed, GEPUB_WIDGET (widget));
+    margin2 = gtk_button_new_with_label ("margin -");
+    g_signal_connect (margin2, "clicked", (GCallback)button_pressed, GEPUB_WIDGET (widget));
 
     PAGE_LABEL = gtk_label_new ("0");
 
@@ -334,7 +348,11 @@ main (int argc, char **argv)
     gtk_container_add (GTK_CONTAINER (hbox), PAGE_LABEL);
     gtk_container_add (GTK_CONTAINER (hbox), paginate);
 
+    gtk_container_add (GTK_CONTAINER (hbox2), margin1);
+    gtk_container_add (GTK_CONTAINER (hbox2), margin2);
+
     gtk_box_pack_start (GTK_BOX (vbox), hbox, FALSE, FALSE, 5);
+    gtk_box_pack_start (GTK_BOX (vbox), hbox2, FALSE, FALSE, 5);
     gtk_box_pack_start (GTK_BOX (vbox), scrolled, TRUE, TRUE, 5);
 
     textview = gtk_text_view_new ();

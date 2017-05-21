@@ -62,6 +62,10 @@ void              gepub_widget_set_pos                         (GepubWidget *wid
 gboolean          gepub_widget_page_next                       (GepubWidget *widget);
 gboolean          gepub_widget_page_prev                       (GepubWidget *widget);
 
+gint              gepub_widget_get_margin                      (GepubWidget *widget);
+void              gepub_widget_set_margin                      (GepubWidget *widget,
+                                                                gint         margin);
+
 G_END_DECLS
 
 #endif /* __GEPUB_WIDGET_H__ */
