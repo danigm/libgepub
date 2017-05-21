@@ -500,6 +500,7 @@ gepub_widget_get_chapter_length (GepubWidget *widget)
 /**
  * gepub_widget_set_chapter:
  * @widget: a #GepubWidget
+ * @index: the new chapter
  *
  * Sets the current chapter in the doc
  */
@@ -604,6 +605,7 @@ gepub_widget_get_pos (GepubWidget *widget)
 /**
  * gepub_widget_set_pos:
  * @widget: a #GepubWidget
+ * @index: the new pos
  *
  * Sets the current position in the chapter
  */
