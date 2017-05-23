@@ -47,6 +47,7 @@ void              gepub_widget_set_doc                         (GepubWidget *wid
                                                                 GepubDoc    *doc);
 
 void              gepub_widget_set_pagination                  (GepubWidget *widget, gboolean p);
+gboolean          gepub_widget_get_pagination                  (GepubWidget *widget);
 
 gint              gepub_widget_get_n_chapters                  (GepubWidget *widget);
 gint              gepub_widget_get_chapter                     (GepubWidget *widget);

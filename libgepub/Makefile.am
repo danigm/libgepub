@@ -4,10 +4,11 @@ NOINST_H_FILES = \
 	gepub-utils.h
 
 INST_H_FILES = \
-	gepub-widget.h		\
-	gepub-archive.h		\
-	gepub-text-chunk.h	\
-	gepub-doc.h		\
+	gepub-widget.h			\
+	gepub-double-widget.h	\
+	gepub-archive.h			\
+	gepub-text-chunk.h		\
+	gepub-doc.h				\
 	gepub.h
 
 libgepubincludedir = $(includedir)/libgepub
@@ -15,6 +16,7 @@ libgepubinclude_HEADERS = $(INST_H_FILES)
 
 libgepub_la_SOURCES = \
 	gepub-widget.c			\
+	gepub-double-widget.c	\
 	gepub-archive.c			\
 	gepub-text-chunk.c		\
 	gepub-doc.c				\

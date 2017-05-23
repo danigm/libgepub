@@ -121,6 +121,8 @@ pagination_initialize_finished (GObject      *object,
         g_warning ("Error running javascript: unexpected return value");
     }
     webkit_javascript_result_unref (js_result);
+
+    g_signal_emit_by_name (widget, "pagination-finished");
 }
 
 static void
@@ -399,6 +401,12 @@ gepub_widget_class_init (GepubWidgetClass *klass)
                             G_PARAM_READWRITE);
 
     g_object_class_install_properties (object_class, NUM_PROPS, properties);
+
+    g_signal_newv ("pagination-finished",
+                   G_TYPE_FROM_CLASS (object_class),
+                   G_SIGNAL_RUN_LAST,
+                   NULL, NULL, NULL, NULL, G_TYPE_NONE,
+                   0, NULL);
 }
 
 /**
@@ -494,6 +502,18 @@ gepub_widget_set_pagination (GepubWidget *widget,
 }
 
 /**
+ * gepub_widget_get_pagination:
+ * @widget: a #GepubWidget
+ *
+ * Return the pagination state
+ */
+gboolean
+gepub_widget_get_pagination (GepubWidget *widget)
+{
+    return widget->paginate;
+}
+
+/**
  * gepub_widget_get_n_chapters:
  * @widget: a #GepubWidget
  *
@@ -544,7 +564,7 @@ gepub_widget_set_chapter (GepubWidget *widget,
                           gint         index)
 {
     g_return_if_fail (GEPUB_IS_DOC (widget->doc));
-    return gepub_doc_set_page (widget->doc, index);
+    gepub_doc_set_page (widget->doc, index);
 }
 
 /**
