@@ -32,8 +32,6 @@ struct _GepubDoubleWidget {
 
     GepubDoc *doc1;
     GepubDoc *doc2;
-
-    gboolean setnext;
 };
 
 struct _GepubDoubleWidgetClass {
@@ -58,19 +56,39 @@ gepub_double_widget_finalize (GObject *object)
 }
 
 static gboolean
-page_next (gpointer data)
+page_next (GtkWidget *w, gboolean ok)
 {
-    GepubWidget *w = GEPUB_WIDGET (data);
-    gepub_widget_page_next (w);
+    gepub_widget_set_pagination_cb (w, NULL);
+
+    if (!ok) {
+        printf ("END\n");
+    } else {
+        gepub_widget_page_next (w);
+    }
+
     return FALSE;
 }
 
 static gboolean
-page_prev (gpointer data)
+page_prev (GtkWidget *w, gboolean ok)
 {
-    GepubWidget *w = GEPUB_WIDGET (data);
-    gepub_widget_page_prev (w);
+    gepub_widget_set_pagination_cb (w, NULL);
+
+    if (!ok) {
+        printf ("begining\n");
+    } else {
+        gepub_widget_page_prev (w);
+    }
+
     return FALSE;
+}
+
+static void
+on_finish_load (GtkWidget *widget,
+                gpointer data)
+{
+    gint page = (int)data;
+    printf ("finish loaded %d\n");
 }
 
 static void
@@ -78,7 +96,6 @@ gepub_double_widget_init (GepubDoubleWidget *widget)
 {
     widget->page1 = GEPUB_WIDGET (gepub_widget_new ());
     widget->page2 = GEPUB_WIDGET (gepub_widget_new ());
-    widget->setnext = FALSE;
 
     widget->doc1 = NULL;
     widget->doc2 = NULL;
@@ -130,12 +147,10 @@ gepub_double_widget_open (GepubDoubleWidget *widget,
     gepub_widget_set_doc (widget->page1, widget->doc1);
     gepub_widget_set_doc (widget->page2, widget->doc2);
 
-    widget->setnext = TRUE;
     gepub_widget_set_pagination (widget->page1, TRUE);
     gepub_widget_set_pagination (widget->page2, TRUE);
 
-    // TODO: don't use timeout, call this on ready
-    g_timeout_add(250, page_next, widget->page2);
+    g_timeout_add(300, page_next, widget->page2);
 }
 
 /**
@@ -185,7 +200,6 @@ void
 gepub_double_widget_set_chapter (GepubDoubleWidget *widget,
                                  gint               index)
 {
-    widget->setnext = TRUE;
     gepub_widget_set_chapter (widget->page1, index);
     gepub_widget_set_chapter (widget->page2, index);
 }
@@ -199,11 +213,12 @@ gepub_double_widget_set_chapter (GepubDoubleWidget *widget,
 gboolean
 gepub_double_widget_page_next (GepubDoubleWidget *widget)
 {
+    gepub_widget_set_pagination_cb (widget->page1, G_CALLBACK (page_next));
+    gepub_widget_set_pagination_cb (widget->page2, G_CALLBACK (page_next));
+
     gepub_widget_page_next (widget->page1);
-    // TODO: don't use timeout, call this on ready
-    g_timeout_add(250, page_next, widget->page1);
     gepub_widget_page_next (widget->page2);
-    g_timeout_add(250, page_next, widget->page2);
+
     return TRUE;
 }
 
@@ -216,11 +231,11 @@ gepub_double_widget_page_next (GepubDoubleWidget *widget)
 gboolean
 gepub_double_widget_page_prev (GepubDoubleWidget *widget)
 {
+    gepub_widget_set_pagination_cb (widget->page1, G_CALLBACK (page_prev));
+    gepub_widget_set_pagination_cb (widget->page2, G_CALLBACK (page_prev));
+
     gepub_widget_page_prev (widget->page1);
-    // TODO: don't use timeout, call this on ready
-    g_timeout_add(250, page_prev, widget->page1);
     gepub_widget_page_prev (widget->page2);
-    g_timeout_add(250, page_prev, widget->page2);
     return TRUE;
 }
 

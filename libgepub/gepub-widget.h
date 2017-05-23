@@ -75,6 +75,9 @@ gfloat            gepub_widget_get_lineheight                  (GepubWidget *wid
 void              gepub_widget_set_lineheight                  (GepubWidget *widget,
                                                                 gfloat       size);
 
+void              gepub_widget_set_pagination_cb               (GepubWidget *widget,
+                                                                GCallback callback);
+
 G_END_DECLS
 
 #endif /* __GEPUB_WIDGET_H__ */

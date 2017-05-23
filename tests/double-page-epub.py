@@ -28,8 +28,11 @@ class MyWindow(Gtk.Window):
         self.p.connect('clicked', self.prevcb)
         self.n.connect('clicked', self.nextcb)
 
+        self.text = Gtk.Label("%")
+
         box2.add(self.p)
         box2.add(self.n)
+        box2.add(self.text)
 
         self.box.add(box2)
         self.box.pack_start(self.w, True, True, 0)
@@ -41,6 +44,7 @@ class MyWindow(Gtk.Window):
 
     def nextcb(self, btn):
         self.w.page_next()
+        self.text.set_text("%5.2f%% / %s / %s" % (self.w.get_pos(), self.w.get_chapter() +  1, self.w.get_n_chapters()))
 
 
 if len(sys.argv) != 2:

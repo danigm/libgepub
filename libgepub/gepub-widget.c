@@ -36,6 +36,8 @@ struct _GepubWidget {
     gint margin; // lateral margin in px
     gint font_size; // font size in pt
     gfloat line_height;
+
+    gulong pagination_cb_handler;
 };
 
 struct _GepubWidgetClass {
@@ -122,7 +124,7 @@ pagination_initialize_finished (GObject      *object,
     }
     webkit_javascript_result_unref (js_result);
 
-    g_signal_emit_by_name (widget, "pagination-finished");
+    g_signal_emit_by_name (widget, "pagination-finished", TRUE);
 }
 
 static void
@@ -335,6 +337,7 @@ gepub_widget_init (GepubWidget *widget)
     widget->margin = 20;
     widget->font_size = 0;
     widget->line_height = 0;
+    widget->pagination_cb_handler = 0;
 
     // locale to avoid '1,2' in line_height string composition
     setlocale(LC_NUMERIC, "C");
@@ -402,11 +405,12 @@ gepub_widget_class_init (GepubWidgetClass *klass)
 
     g_object_class_install_properties (object_class, NUM_PROPS, properties);
 
+    GType signal_params[1] = {G_TYPE_BOOLEAN};
     g_signal_newv ("pagination-finished",
                    G_TYPE_FROM_CLASS (object_class),
                    G_SIGNAL_RUN_LAST,
                    NULL, NULL, NULL, NULL, G_TYPE_NONE,
-                   0, NULL);
+                   1, signal_params);
 }
 
 /**
@@ -602,15 +606,21 @@ gepub_widget_chapter_prev (GepubWidget *widget)
 gboolean
 gepub_widget_page_next (GepubWidget *widget)
 {
+    gboolean ret = TRUE;
+
     g_return_val_if_fail (GEPUB_IS_DOC (widget->doc), FALSE);
     widget->chapter_pos = widget->chapter_pos + widget->length;
 
     if (widget->chapter_pos > (widget->chapter_length - widget->length)) {
         widget->chapter_pos = (widget->chapter_length - widget->length);
-        return gepub_doc_go_next (widget->doc);
+        ret = gepub_doc_go_next (widget->doc);
+        if (!ret)
+            g_signal_emit_by_name (widget, "pagination-finished", FALSE);
+        return ret;
     }
 
     scroll_to_chapter_pos (widget);
+    g_signal_emit_by_name (widget, "pagination-finished", TRUE);
 
     g_object_notify_by_pspec (G_OBJECT (widget), properties[PROP_CHAPTER_POS]);
     return TRUE;
@@ -625,15 +635,21 @@ gepub_widget_page_next (GepubWidget *widget)
 gboolean
 gepub_widget_page_prev (GepubWidget *widget)
 {
+    gboolean ret = TRUE;
+
     g_return_val_if_fail (GEPUB_IS_DOC (widget->doc), FALSE);
     widget->chapter_pos = widget->chapter_pos - widget->length;
 
     if (widget->chapter_pos < 0) {
         widget->init_chapter_pos = 100;
-        return gepub_doc_go_prev (widget->doc);
+        ret = gepub_doc_go_prev (widget->doc);
+        if (!ret)
+            g_signal_emit_by_name (widget, "pagination-finished", FALSE);
+        return ret;
     }
 
     scroll_to_chapter_pos (widget);
+    g_signal_emit_by_name (widget, "pagination-finished", TRUE);
 
     g_object_notify_by_pspec (G_OBJECT (widget), properties[PROP_CHAPTER_POS]);
     return TRUE;
@@ -757,4 +773,23 @@ gepub_widget_set_lineheight (GepubWidget *widget,
 {
     widget->line_height = size;
     reload_length_cb (GTK_WIDGET (widget), NULL, NULL);
+}
+
+/**
+ * gepub_widget_set_pagination_cb:
+ * @widget: a #GepubWidget
+ * @callback: a GCallback function to call after pagination
+ */
+void
+gepub_widget_set_pagination_cb (GepubWidget *widget,
+                                GCallback    callback)
+{
+    if (widget->pagination_cb_handler) {
+        g_signal_handler_disconnect (widget, widget->pagination_cb_handler);
+        widget->pagination_cb_handler = 0;
+    }
+
+    if (callback) {
+        widget->pagination_cb_handler = g_signal_connect (widget, "pagination-finished", callback, NULL);
+    }
 }
