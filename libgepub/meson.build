@@ -1,4 +1,5 @@
 headers = [
+  'gepub-double-widget.h',
   'gepub-widget.h',
   'gepub-archive.h',
   'gepub-text-chunk.h',
@@ -16,6 +17,7 @@ private_headers = [
 ]
 
 sources = [
+  'gepub-double-widget.c',
   'gepub-widget.c',
   'gepub-archive.c',
   'gepub-text-chunk.c',
