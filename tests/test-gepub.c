@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <gtk/gtk.h>
+#include <glib.h>
 #include <libgepub/gepub.h>
 
 gchar *buf = NULL;
@@ -42,7 +43,7 @@ print_replaced_text (GepubDoc *doc)
 }
 
 void
-button_pressed (GtkButton *button, GepubDoc *doc)
+button_pressed (GtkButton *button, GepubWidget *widget)
 {
     GepubDoc *doc = gepub_widget_get_doc (widget);
     printf("CLICKED %s\n",  gtk_button_get_label (button));
@@ -114,6 +115,28 @@ test_doc_name (const char *path)
     g_free (description);
     //g_free (cover);
     //g_free (cover_mime);
+    g_object_unref (G_OBJECT (doc));
+}
+
+void
+print_res (gchar *key, GepubResource *value, gpointer data)
+{
+    PTEST ("%s: %s, %s\n", key, value->mime, value->uri);
+}
+
+void
+test_resources (const char *path)
+{
+    GepubDoc *doc = gepub_doc_new (path);
+    PTEST ("Resources:\n");
+
+    GHashTable *hash = gepub_doc_get_resources (doc);
+
+    g_hash_table_foreach (hash, (GHFunc)print_res, NULL);
+
+    g_hash_table_remove_all (hash);
+    g_hash_table_unref (hash);
+
     g_object_unref (G_OBJECT (doc));
 }
 
@@ -255,6 +278,7 @@ main (int argc, char **argv)
 
     // Testing all
     TEST(test_doc_name, argv[1])
+    TEST(test_resources, argv[1])
 
     // Freeing the mallocs :P
     if (buf2) {

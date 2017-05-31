@@ -9,6 +9,11 @@ use epub::doc::EpubDoc;
 use self::glib::translate::*;
 
 
+pub struct EpubResources {
+    elements: Vec<(String, String, String)>,
+}
+
+
 #[no_mangle]
 pub extern "C" fn epub_new(path: *const libc::c_char) -> *mut EpubDoc {
     let my_path = unsafe { &String::from_glib_none(path) };
@@ -40,6 +45,49 @@ pub unsafe extern "C" fn epub_get_resource(doc: *mut EpubDoc,
     mem::forget(v);
 
     ptr
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn epub_get_resources(doc: *mut EpubDoc)
+                                            -> *mut EpubResources {
+    assert!(!doc.is_null());
+
+    let mut res: EpubResources = EpubResources {
+        elements: vec![],
+    };
+
+    for (k, v) in (*doc).resources.iter() {
+        res.elements.push((k.clone(), v.0.clone(), v.1.clone()));
+    }
+
+    Box::into_raw(Box::new(res))
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn epub_resources_get_length(er: *mut EpubResources)
+                                                   -> usize {
+    (*er).elements.len()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn epub_resources_get_id(er: *mut EpubResources, i: usize)
+                                            -> *const libc::c_char {
+    let ref ret = (*er).elements[i].0;
+    ret.to_glib_full()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn epub_resources_get_path(er: *mut EpubResources, i: usize)
+                                            -> *const libc::c_char {
+    let ref ret = (*er).elements[i].1;
+    ret.to_glib_full()
+}
+
+#[no_mangle]
+pub unsafe extern "C" fn epub_resources_get_mime(er: *mut EpubResources, i: usize)
+                                            -> *const libc::c_char {
+    let ref ret = (*er).elements[i].2;
+    ret.to_glib_full()
 }
 
 #[no_mangle]

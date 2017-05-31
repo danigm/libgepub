@@ -46,6 +46,12 @@ void      *epub_get_cover(void *doc);
 void      *epub_resource_path(void *doc, const char *id);
 void      *epub_current_path(void *doc);
 void      *epub_current_id(void *doc);
+void      *epub_get_resources(void *doc);
+guint     *epub_resources_get_length(void *er);
+
+gchar     *epub_resources_get_id(void *er, gint i);
+gchar     *epub_resources_get_mime(void *er, gint i);
+gchar     *epub_resources_get_path(void *er, gint i);
 
 
 static void gepub_doc_initable_iface_init (GInitableIface *iface);
@@ -72,6 +78,14 @@ static GParamSpec *properties[NUM_PROPS] = { NULL, };
 
 G_DEFINE_TYPE_WITH_CODE (GepubDoc, gepub_doc, G_TYPE_OBJECT,
                          G_IMPLEMENT_INTERFACE (G_TYPE_INITABLE, gepub_doc_initable_iface_init))
+
+static void
+gepub_resource_free (GepubResource *res)
+{
+    g_free (res->mime);
+    g_free (res->uri);
+    g_free (res);
+}
 
 static void
 gepub_doc_finalize (GObject *object)
@@ -216,6 +230,37 @@ gepub_doc_new (const gchar *path)
 }
 
 /**
+ * gepub_doc_get_resources:
+ * @doc: a #GepubDoc
+ *
+ * Returns: (element-type utf8 Gepub.Resource) (transfer full): doc resource table
+ */
+GHashTable *
+gepub_doc_get_resources (GepubDoc *doc)
+{
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
+
+    GHashTable *resources = g_hash_table_new_full (g_str_hash,
+                                                   g_str_equal,
+                                                   (GDestroyNotify)g_free,
+                                                   (GDestroyNotify)gepub_resource_free);
+
+    void *res = epub_get_resources (doc->rust_epub_doc);
+    guint l = epub_resources_get_length (res);
+    gint i = 0;
+
+    for (i=0; i<l; i++) {
+        gchar *key = epub_resources_get_id (res, i);
+        GepubResource *r = g_malloc (sizeof (GepubResource));
+        r->uri = epub_resources_get_path (res, i);
+        r->mime = epub_resources_get_mime (res, i);
+        g_hash_table_insert (resources, key, r);
+    }
+
+    return resources;
+}
+
+/**
  * gepub_doc_get_metadata:
  * @doc: a #GepubDoc
  * @mdata: a metadata name string, GEPUB_META_TITLE for example
@@ -342,6 +387,7 @@ gepub_doc_get_current_with_epub_uris (GepubDoc *doc)
 {
     g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
 
+    int size = 0;
     guint8 *data = epub_get_current_with_epub_uris (doc->rust_epub_doc, &size);
     return g_bytes_new_take (data, size);
 }
