@@ -503,6 +503,8 @@ void
 gepub_widget_set_paginate (GepubWidget *widget,
                            gboolean p)
 {
+    g_return_if_fail (GEPUB_IS_WIDGET (widget));
+
     widget->paginate = p;
     reload_current_chapter (widget);
 }
