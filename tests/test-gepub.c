@@ -86,7 +86,7 @@ button_pressed (GtkButton *button, GepubWidget *widget)
         gepub_doc_go_next (doc);
     } else if (!strcmp (gtk_button_get_label (button), "paginated")) {
         gboolean b = gtk_toggle_button_get_active (GTK_TOGGLE_BUTTON (button));
-        gepub_widget_set_pagination (widget, b);
+        gepub_widget_set_paginate (widget, b);
     } else if (!strcmp (gtk_button_get_label (button), "< page")) {
         gepub_widget_page_prev (widget);
     } else if (!strcmp (gtk_button_get_label (button), "page >")) {

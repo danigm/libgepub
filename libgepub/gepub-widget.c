@@ -268,7 +268,7 @@ gepub_widget_set_property (GObject      *object,
         gepub_widget_set_doc (widget, g_value_get_object (value));
         break;
     case PROP_PAGINATE:
-        gepub_widget_set_pagination (widget, g_value_get_boolean (value));
+        gepub_widget_set_paginate (widget, g_value_get_boolean (value));
         break;
     case PROP_CHAPTER:
         gepub_doc_set_page (widget->doc, g_value_get_int (value));
@@ -479,15 +479,15 @@ gepub_widget_set_doc (GepubWidget *widget,
 }
 
 /**
- * gepub_widget_set_pagination:
+ * gepub_widget_set_paginate:
  * @widget: a #GepubWidget
  * @p: true if the widget should paginate
  *
  * Enable or disable pagination
  */
 void
-gepub_widget_set_pagination (GepubWidget *widget,
-                             gboolean p)
+gepub_widget_set_paginate (GepubWidget *widget,
+                           gboolean p)
 {
     widget->paginate = p;
     reload_current_chapter (widget);
