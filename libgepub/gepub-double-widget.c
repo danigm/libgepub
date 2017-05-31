@@ -147,8 +147,8 @@ gepub_double_widget_open (GepubDoubleWidget *widget,
     gepub_widget_set_doc (widget->page1, widget->doc1);
     gepub_widget_set_doc (widget->page2, widget->doc2);
 
-    gepub_widget_set_pagination (widget->page1, TRUE);
-    gepub_widget_set_pagination (widget->page2, TRUE);
+    gepub_widget_set_paginate (widget->page1, TRUE);
+    gepub_widget_set_paginate (widget->page2, TRUE);
 
     g_timeout_add(300, page_next, widget->page2);
 }
