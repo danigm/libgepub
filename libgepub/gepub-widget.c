@@ -479,6 +479,20 @@ gepub_widget_set_doc (GepubWidget *widget,
 }
 
 /**
+ * gepub_widget_get_paginate:
+ * @widget: a #GepubWidget
+ *
+ * Returns whether pagination is enabled or disabled
+ */
+gboolean
+gepub_widget_get_paginate (GepubWidget *widget)
+{
+    g_return_val_if_fail (GEPUB_IS_WIDGET (widget), FALSE);
+
+    return widget->paginate;
+}
+
+/**
  * gepub_widget_set_paginate:
  * @widget: a #GepubWidget
  * @p: true if the widget should paginate
