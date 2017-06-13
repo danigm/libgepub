@@ -7,7 +7,7 @@ project(
     'c_std=gnu99',
     'warning_level=1'
   ],
-  meson_version: '>= 0.38.1'
+  meson_version: '>= 0.41.0'
 )
 
 gepub_version = meson.project_version()
@@ -21,6 +21,7 @@ gepub_gir_version = '1.0'
 gepub_prefix = get_option('prefix')
 gepub_datadir = join_paths(gepub_prefix, get_option('datadir'))
 gepub_libdir = join_paths(gepub_prefix, get_option('libdir'))
+gepub_libexecdir = join_paths(gepub_prefix, get_option('libexecdir'))
 gepub_includedir = join_paths(gepub_prefix, get_option('includedir'))
 
 gepub_pkgincludedir = join_paths(gepub_includedir, meson.project_name())
@@ -32,30 +33,30 @@ libversion = '@0@.@1@.@2@'.format(soversion, current, revision)
 
 cc = meson.get_compiler('c')
 
-conf = configuration_data()
+config_h = configuration_data()
 
 # package
-conf.set_quoted('PACKAGE', meson.project_name())
-conf.set_quoted('PACKAGE_BUGREPORT', 'danigm@wadobo.com')
-conf.set_quoted('PACKAGE_NAME', meson.project_name())
-conf.set_quoted('PACKAGE_STRING', '@0@ @1@'.format(meson.project_name(), gepub_version))
-conf.set_quoted('PACKAGE_TARNAME', meson.project_name())
-conf.set_quoted('PACKAGE_URL', '')
-conf.set_quoted('PACKAGE_VERSION', gepub_version)
-conf.set_quoted('PACKAGE_API_VERSION', gepub_version)
-conf.set_quoted('VERSION', gepub_version)
+config_h.set_quoted('PACKAGE', meson.project_name())
+config_h.set_quoted('PACKAGE_BUGREPORT', 'danigm@wadobo.com')
+config_h.set_quoted('PACKAGE_NAME', meson.project_name())
+config_h.set_quoted('PACKAGE_STRING', '@0@ @1@'.format(meson.project_name(), gepub_version))
+config_h.set_quoted('PACKAGE_TARNAME', meson.project_name())
+config_h.set_quoted('PACKAGE_URL', '')
+config_h.set_quoted('PACKAGE_VERSION', gepub_version)
+config_h.set_quoted('PACKAGE_API_VERSION', gepub_version)
+config_h.set_quoted('VERSION', gepub_version)
 
 # headers
-conf.set('HAVE_DLFCN_H', cc.has_header('dlfcn.h'))
-conf.set('HAVE_INTTYPES_H', cc.has_header('inttypes.h'))
-conf.set('HAVE_MEMORY_H', cc.has_header('memory.h'))
-conf.set('HAVE_STDINT_H', cc.has_header('stdint.h'))
-conf.set('HAVE_STDLIB_H', cc.has_header('stdlib.h'))
-conf.set('HAVE_STRINGS_H', cc.has_header('strings.h'))
-conf.set('HAVE_STRING_H', cc.has_header('string.h'))
-conf.set('HAVE_SYS_STAT_H', cc.has_header('sys/stat.h'))
-conf.set('HAVE_SYS_TYPES_H', cc.has_header('sys/types.h'))
-conf.set('HAVE_UNISTD_H', cc.has_header('unistd.h'))
+config_h.set('HAVE_DLFCN_H', cc.has_header('dlfcn.h'))
+config_h.set('HAVE_INTTYPES_H', cc.has_header('inttypes.h'))
+config_h.set('HAVE_MEMORY_H', cc.has_header('memory.h'))
+config_h.set('HAVE_STDINT_H', cc.has_header('stdint.h'))
+config_h.set('HAVE_STDLIB_H', cc.has_header('stdlib.h'))
+config_h.set('HAVE_STRINGS_H', cc.has_header('strings.h'))
+config_h.set('HAVE_STRING_H', cc.has_header('string.h'))
+config_h.set('HAVE_SYS_STAT_H', cc.has_header('sys/stat.h'))
+config_h.set('HAVE_SYS_TYPES_H', cc.has_header('sys/types.h'))
+config_h.set('HAVE_UNISTD_H', cc.has_header('unistd.h'))
 
 # Compiler flags
 test_cflags = [
@@ -107,9 +108,9 @@ foreach cflag: test_cflags
   endif
 endforeach
 
-add_global_arguments(common_flags, language: 'c')
+add_project_arguments(common_flags, language: 'c')
 
-gepub_dep = [
+gepub_deps = [
   dependency('webkit2gtk-4.0'),
   dependency('libsoup-2.4'),
   dependency('glib-2.0'),
@@ -120,8 +121,8 @@ gepub_dep = [
 ]
 
 configure_file(
-  output : 'config.h',
-  configuration : conf
+  output: 'config.h',
+  configuration: config_h
 )
 
 gnome = import('gnome')
