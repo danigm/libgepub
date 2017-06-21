@@ -175,7 +175,6 @@ gepub_doc_initable_init (GInitable     *initable,
 {
     GepubDoc *doc = GEPUB_DOC (initable);
     gchar *file;
-    gsize bufsize = 0;
     gint i = 0, len;
 
     g_assert (doc->path != NULL);

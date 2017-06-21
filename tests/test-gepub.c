@@ -61,6 +61,7 @@ update_text (GepubDoc *doc)
     }
 }
 
+#if 0
 static void
 print_replaced_text (GepubDoc *doc)
 {
@@ -73,6 +74,7 @@ print_replaced_text (GepubDoc *doc)
     printf ("\n\nREPLACED:\n%s\n", data);
     g_bytes_unref (content);
 }
+#endif
 
 static void
 button_pressed (GtkButton *button, GepubWidget *widget)
@@ -175,9 +177,6 @@ test_read (const char *path)
 
     bytes = gepub_archive_read_entry (a, file);
     if (bytes) {
-        const char *data;
-        gsize size;
-
         buffer = g_bytes_get_data (bytes, &bufsize);
         PTEST ("doc:%s\n----\n%s\n-----\n", file, buffer);
         g_bytes_unref (bytes);
