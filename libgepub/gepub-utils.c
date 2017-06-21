@@ -75,29 +75,38 @@ gepub_utils_has_parent_tag (xmlNode *node, gchar *name, ...)
     xmlNode *cur_node = NULL;
     GList *tags = NULL;
     GList *l = NULL;
-    gchar *name2 = NULL;
+    const char *name2 = NULL;
+    gboolean ret = FALSE;
 
     va_start (ap, name);
 
     for (name2 = name; name2 != NULL; name2 = va_arg(ap, gchar*)) {
-        tags = g_list_append (tags, name2);
+        tags = g_list_append (tags, g_ascii_strdown (name2, -1));
     }
 
     for (cur_node = node; cur_node; cur_node = cur_node->parent) {
         if (cur_node->type == XML_ELEMENT_NODE) {
             for (l = tags; l; l = l->next) {
-                gchar *nodetag = g_ascii_strup (cur_node->name, strlen (cur_node->name));
-                name2 = g_ascii_strup (l->data, strlen (l->data));
+                gchar *nodetag = g_ascii_strdown ((char *) cur_node->name, -1);
+                name2 = l->data;
 
                 if (!strcmp (nodetag, name2))
-                    return TRUE;
+                    ret = TRUE;
+
+                g_free (nodetag);
+
+                if (ret == TRUE)
+                  goto out;
             }
         }
     }
 
     va_end (ap);
 
-    return FALSE;
+out:
+    g_list_free_full (tags, g_free);
+
+    return ret;
 }
 
 /**
