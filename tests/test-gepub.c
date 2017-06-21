@@ -28,7 +28,7 @@ reload_current_chapter (GepubWidget *widget)
     g_free (txt);
 }
 
-void
+static void
 update_text (GepubDoc *doc)
 {
     GList *l, *chunks;
@@ -61,7 +61,7 @@ update_text (GepubDoc *doc)
     }
 }
 
-void
+static void
 print_replaced_text (GepubDoc *doc)
 {
     GBytes *content;
@@ -74,7 +74,7 @@ print_replaced_text (GepubDoc *doc)
     g_bytes_unref (content);
 }
 
-void
+static void
 button_pressed (GtkButton *button, GepubWidget *widget)
 {
     GepubDoc *doc = gepub_widget_get_doc (widget);
@@ -118,7 +118,7 @@ button_pressed (GtkButton *button, GepubWidget *widget)
     //print_replaced_text (doc);
 }
 
-void
+static void
 test_open (const char *path)
 {
     GepubArchive *a;
@@ -146,7 +146,7 @@ test_open (const char *path)
     g_object_unref (a);
 }
 
-void
+static void
 find_xhtml (gchar *key, GepubResource *value, gpointer data)
 {
     guchar **d = (guchar **)data;
@@ -155,7 +155,7 @@ find_xhtml (gchar *key, GepubResource *value, gpointer data)
     }
 }
 
-void
+static void
 test_read (const char *path)
 {
     GepubArchive *a;
@@ -189,7 +189,7 @@ test_read (const char *path)
     g_object_unref (a);
 }
 
-void
+static void
 test_root_file (const char *path)
 {
     GepubArchive *a;
@@ -205,7 +205,7 @@ test_root_file (const char *path)
     g_object_unref (a);
 }
 
-void
+static void
 test_doc_name (const char *path)
 {
     GepubDoc *doc = gepub_doc_new (path);
@@ -234,13 +234,13 @@ test_doc_name (const char *path)
     g_object_unref (G_OBJECT (doc));
 }
 
-void
+static void
 pk (gchar *key, GepubResource *value, gpointer data)
 {
     PTEST ("%s: %s, %s\n", key, value->mime, value->uri);
 }
 
-void
+static void
 test_doc_resources (const char *path)
 {
     GepubDoc *doc;
@@ -261,7 +261,7 @@ test_doc_resources (const char *path)
     g_object_unref (G_OBJECT (doc));
 }
 
-void
+static void
 test_doc_spine (const char *path)
 {
     GepubDoc *doc = gepub_doc_new (path);
