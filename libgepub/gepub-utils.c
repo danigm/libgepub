@@ -68,7 +68,7 @@ set_epub_uri (xmlNode *node, const gchar *path, const gchar *tagname, const gcha
 }
 
 static gboolean
-gepub_utils_has_parent_tag (xmlNode *node, gchar *name, ...)
+gepub_utils_has_parent_tag (xmlNode *node, const char *name, ...)
 {
     va_list ap;
 
