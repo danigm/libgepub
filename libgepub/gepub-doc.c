@@ -576,7 +576,7 @@ gepub_doc_get_text_by_id (GepubDoc *doc, const gchar *id)
     g_return_val_if_fail (id != NULL, NULL);
 
     contents = gepub_doc_get_resource_by_id (doc, id);
-    if (!res) {
+    if (!contents) {
         return NULL;
     }
 
