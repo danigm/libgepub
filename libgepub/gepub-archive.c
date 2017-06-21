@@ -44,9 +44,10 @@ G_DEFINE_TYPE (GepubArchive, gepub_archive, G_TYPE_OBJECT)
 static gboolean
 gepub_archive_open (GepubArchive *archive)
 {
+    int r;
+
     archive->archive = archive_read_new ();
     archive_read_support_format_zip (archive->archive);
-    int r;
 
     r = archive_read_open_filename (archive->archive, archive->path, 10240);
 

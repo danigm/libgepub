@@ -164,11 +164,13 @@ test_read (const char *path)
     guchar *file = NULL;
     gsize bufsize;
     GBytes *bytes;
+    GepubDoc *doc;
+    GHashTable *ht;
 
     a = gepub_archive_new (path);
 
-    GepubDoc *doc = gepub_doc_new (path);
-    GHashTable *ht = (GHashTable*)gepub_doc_get_resources (doc);
+    doc = gepub_doc_new (path);
+    ht = (GHashTable*)gepub_doc_get_resources (doc);
     g_hash_table_foreach (ht, (GHFunc)find_xhtml, &file);
 
     bytes = gepub_archive_read_entry (a, file);
@@ -241,12 +243,15 @@ pk (gchar *key, GepubResource *value, gpointer data)
 void
 test_doc_resources (const char *path)
 {
-    GepubDoc *doc = gepub_doc_new (path);
-    GHashTable *ht = (GHashTable*)gepub_doc_get_resources (doc);
-    g_hash_table_foreach (ht, (GHFunc)pk, NULL);
+    GepubDoc *doc;
+    GHashTable *ht;
     GBytes *ncx;
     const guchar *data;
     gsize size;
+
+    doc = gepub_doc_new (path);
+    ht = (GHashTable*)gepub_doc_get_resources (doc);
+    g_hash_table_foreach (ht, (GHFunc)pk, NULL);
 
     ncx = gepub_doc_get_resource_by_id (doc, "ncx");
     data = g_bytes_get_data (ncx, &size);
@@ -272,8 +277,6 @@ test_doc_spine (const char *path)
 int
 main (int argc, char **argv)
 {
-    gtk_init (&argc, &argv);
-
     GtkWidget *window;
     GtkWidget *vpaned;
     GtkWidget *textview;
@@ -303,7 +306,12 @@ main (int argc, char **argv)
 
     GepubDoc *doc;
     GtkWidget *textview2;
-    GtkWidget *widget = gepub_widget_new ();
+
+    GtkWidget *widget;
+
+    gtk_init (&argc, &argv);
+
+    widget = gepub_widget_new ();
 
     webkit_settings_set_enable_developer_extras (
         webkit_web_view_get_settings (WEBKIT_WEB_VIEW (widget)), TRUE);

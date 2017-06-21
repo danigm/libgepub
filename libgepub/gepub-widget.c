@@ -161,16 +161,18 @@ reload_length_cb (GtkWidget *widget,
 {
     GepubWidget *gwidget = GEPUB_WIDGET (widget);
     WebKitWebView *web_view = WEBKIT_WEB_VIEW (widget);
+    int m, f;
+    float l;
+    char *script;
 
     webkit_web_view_run_javascript (web_view,
         "window.innerWidth",
         NULL, get_length_finished, (gpointer)widget);
 
-    gint m = GEPUB_WIDGET (widget)->margin;
-    gint f = GEPUB_WIDGET (widget)->font_size;
-    gfloat l = GEPUB_WIDGET (widget)->line_height;
+    m = GEPUB_WIDGET (widget)->margin;
+    f = GEPUB_WIDGET (widget)->font_size;
+    l = GEPUB_WIDGET (widget)->line_height;
 
-    gchar *script;
     script = g_strdup_printf (
         "if (!document.querySelector('#gepubwrap'))"
         "document.body.innerHTML = '<div id=\"gepubwrap\">' + document.body.innerHTML + '</div>';"
