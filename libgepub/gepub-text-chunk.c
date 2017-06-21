@@ -81,6 +81,7 @@ gepub_text_chunk_type_str (GepubTextChunk *chunk)
             return "italic";
         case GEPUBTextHeader:
             return "header";
+        case GEPUBTextNormal:
         default:
             return "normal";
     }
