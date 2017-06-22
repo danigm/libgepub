@@ -161,7 +161,7 @@ gepub_archive_get_root_file (GepubArchive *archive)
     xmlNode *root_element = NULL;
     xmlNode *root_node = NULL;
     GBytes *bytes;
-    const guchar *buffer;
+    const gchar *buffer;
     gsize bufsize;
     gchar *root_file = NULL;
 
