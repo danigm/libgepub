@@ -44,7 +44,7 @@ set_epub_uri (xmlNode *node, const gchar *path, const gchar *tagname, const gcha
 
     for (cur_node = node; cur_node; cur_node = cur_node->next) {
         if (cur_node->type == XML_ELEMENT_NODE ) {
-            text = xmlGetProp (cur_node, attr);
+            text = xmlGetProp (cur_node, BAD_CAST (attr));
             if (!strcmp (cur_node->name, tagname) && text) {
                 SoupURI *uri = soup_uri_new_with_base (baseURI, text);
                 gchar *value = soup_uri_to_string (uri, FALSE);
@@ -152,7 +152,7 @@ gepub_utils_get_element_by_attr (xmlNode *node, const gchar *attr, const gchar *
 
     for (cur_node = node; cur_node; cur_node = cur_node->next) {
         if (cur_node->type == XML_ELEMENT_NODE ) {
-            text = xmlGetProp (cur_node, attr);
+            text = xmlGetProp (cur_node, BAD_CAST (attr));
             if (text && !strcmp (text, value)) {
                 xmlFree (text);
                 return cur_node;
