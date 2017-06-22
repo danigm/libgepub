@@ -23,8 +23,11 @@ sources = files(
   'gepub-widget.c'
 )
 
+symbol_map = 'gepub.map'
+
 ldflags = [
   '-no-undefined',
+  '-Wl,--version-script,@0@/@1@'.format(meson.current_source_dir(), symbol_map)
 ]
 
 gepub_ldflags = []
@@ -45,6 +48,7 @@ libgepub = library(
   include_directories: top_inc,
   dependencies: gepub_deps,
   link_args: gepub_ldflags,
+  link_depends: symbol_map,
   install: true,
   install_dir: gepub_libdir
 )

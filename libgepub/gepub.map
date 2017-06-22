@@ -1,0 +1,63 @@
+LIBGEPUB_0 {
+global:
+	gepub_archive_get_type;
+	gepub_archive_new;
+	gepub_archive_list_files;
+	gepub_archive_read_entry;
+	gepub_archive_get_root_file;
+
+	gepub_text_chunk_get_type;
+	gepub_text_chunk_new;
+	gepub_text_chunk_type_str;
+	gepub_text_chunk_text;
+	gepub_text_chunk_type;
+
+	gepub_doc_get_type;
+	gepub_doc_new;
+	gepub_doc_get_content;
+	gepub_doc_get_metadata;
+	gepub_doc_get_resource;
+	gepub_doc_get_resource_by_id;
+	gepub_doc_get_resources;
+	gepub_doc_get_resource_mime;
+	gepub_doc_get_resource_mime_by_id;
+	gepub_doc_get_current_mime;
+	gepub_doc_get_text;
+	gepub_doc_get_text_by_id;
+	gepub_doc_get_current;
+	gepub_doc_get_current_with_epub_uris;
+	gepub_doc_get_cover;
+	gepub_doc_get_resource_path;
+	gepub_doc_get_current_path;
+	gepub_doc_get_current_id;
+	gepub_doc_go_next;
+	gepub_doc_go_prev;
+	gepub_doc_get_n_pages;
+	gepub_doc_get_page;
+	gepub_doc_set_page;
+
+	gepub_widget_get_type;
+	gepub_widget_new;
+	gepub_widget_get_doc;
+	gepub_widget_set_doc;
+	gepub_widget_get_paginate;
+	gepub_widget_set_paginate;
+	gepub_widget_get_n_chapters;
+	gepub_widget_get_chapter;
+	gepub_widget_get_chapter_length;
+	gepub_widget_set_chapter;
+	gepub_widget_chapter_next;
+	gepub_widget_chapter_prev;
+	gepub_widget_get_pos;
+	gepub_widget_set_pos;
+	gepub_widget_page_next;
+	gepub_widget_page_prev;
+	gepub_widget_get_margin;
+	gepub_widget_set_margin;
+	gepub_widget_get_fontsize;
+	gepub_widget_set_fontsize;
+	gepub_widget_get_lineheight;
+	gepub_widget_set_lineheight;
+local:
+	*;
+};
