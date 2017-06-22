@@ -25,7 +25,6 @@ sources = files(
 
 ldflags = [
   '-no-undefined',
-  '-export-symbols-regex "^gepub_*"'
 ]
 
 gepub_ldflags = []
