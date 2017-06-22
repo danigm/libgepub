@@ -344,7 +344,7 @@ gepub_doc_get_metadata (GepubDoc *doc, const gchar *mdata)
     mdata_node = gepub_utils_get_element_by_tag (mnode, mdata);
 
     text = xmlNodeGetContent (mdata_node);
-    ret = g_strdup (text);
+    ret = g_strdup ((const char *) text);
     xmlFree (text);
 
     xmlFreeDoc (xdoc);
@@ -532,7 +532,7 @@ gepub_doc_get_text (GepubDoc *doc)
     xmlDoc *xdoc = NULL;
     xmlNode *root_element = NULL;
     GBytes *current;
-    const guchar *data;
+    const gchar *data;
     gsize size;
 
     GList *texts = NULL;
@@ -567,7 +567,7 @@ gepub_doc_get_text_by_id (GepubDoc *doc, const gchar *id)
     xmlDoc *xdoc = NULL;
     xmlNode *root_element = NULL;
     gsize size;
-    const guchar *res;
+    const gchar *res;
     GBytes *contents;
 
     GList *texts = NULL;
