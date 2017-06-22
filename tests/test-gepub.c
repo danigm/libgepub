@@ -151,7 +151,7 @@ test_open (const char *path)
 static void
 find_xhtml (gchar *key, GepubResource *value, gpointer data)
 {
-    guchar **d = (guchar **)data;
+    gchar **d = (gchar **)data;
     if (g_strcmp0 (value->mime, "application/xhtml+xml") == 0) {
         *d = value->uri;
     }
@@ -163,7 +163,7 @@ test_read (const char *path)
     GepubArchive *a;
     GList *list_files = NULL;
     const guchar *buffer;
-    guchar *file = NULL;
+    gchar *file = NULL;
     gsize bufsize;
     GBytes *bytes;
     GepubDoc *doc;
