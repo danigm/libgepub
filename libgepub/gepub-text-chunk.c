@@ -54,7 +54,7 @@ gepub_text_chunk_class_init (GepubTextChunkClass *klass)
  * Returns: (transfer none): the chunk text
  */
 GepubTextChunk *
-gepub_text_chunk_new (GepubTextChunkType type, const guchar *text)
+gepub_text_chunk_new (GepubTextChunkType type, const gchar *text)
 {
     GepubTextChunk *t;
 

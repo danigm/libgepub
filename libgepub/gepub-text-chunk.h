@@ -43,7 +43,7 @@ struct _GepubTextChunk {
     GObject parent;
 
     GepubTextChunkType type;
-    guchar *text;
+    gchar *text;
 };
 
 struct _GepubTextChunkClass {
@@ -54,7 +54,7 @@ typedef struct _GepubTextChunk      GepubTextChunk;
 typedef struct _GepubTextChunkClass GepubTextChunkClass;
 
 GType               gepub_text_chunk_get_type     (void) G_GNUC_CONST;
-GepubTextChunk     *gepub_text_chunk_new          (GepubTextChunkType type, const guchar *text);
+GepubTextChunk     *gepub_text_chunk_new          (GepubTextChunkType type, const gchar *text);
 const char         *gepub_text_chunk_type_str     (GepubTextChunk *chunk);
 const char         *gepub_text_chunk_text         (GepubTextChunk *chunk);
 GepubTextChunkType  gepub_text_chunk_type         (GepubTextChunk *chunk);

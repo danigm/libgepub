@@ -192,13 +192,13 @@ gepub_utils_get_text_elements (xmlNode *node)
             GepubTextChunk *text_chunk = NULL;
 
             if (gepub_utils_has_parent_tag (cur_node, "b", "strong", NULL)) {
-                text_chunk = gepub_text_chunk_new (GEPUBTextBold, cur_node->content);
+                text_chunk = gepub_text_chunk_new (GEPUBTextBold, (char *) cur_node->content);
             } else if (gepub_utils_has_parent_tag (cur_node, "i", "em", NULL)) {
-                text_chunk = gepub_text_chunk_new (GEPUBTextItalic, cur_node->content);
+                text_chunk = gepub_text_chunk_new (GEPUBTextItalic, (char *) cur_node->content);
             } else if (gepub_utils_has_parent_tag (cur_node, "h1", "h2", "h3", "h4", "h5", NULL)) {
-                text_chunk = gepub_text_chunk_new (GEPUBTextHeader, cur_node->content);
+                text_chunk = gepub_text_chunk_new (GEPUBTextHeader, (char *) cur_node->content);
             } else if (gepub_utils_has_parent_tag (cur_node, "p", NULL)) {
-                text_chunk = gepub_text_chunk_new (GEPUBTextNormal, cur_node->content);
+                text_chunk = gepub_text_chunk_new (GEPUBTextNormal, (char *) cur_node->content);
             }
 
             if (text_chunk)
