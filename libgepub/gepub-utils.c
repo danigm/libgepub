@@ -45,11 +45,11 @@ set_epub_uri (xmlNode *node, const gchar *path, const gchar *tagname, const gcha
     for (cur_node = node; cur_node; cur_node = cur_node->next) {
         if (cur_node->type == XML_ELEMENT_NODE ) {
             text = xmlGetProp (cur_node, BAD_CAST (attr));
-            if (!strcmp (cur_node->name, tagname) && text) {
-                SoupURI *uri = soup_uri_new_with_base (baseURI, text);
+            if (!strcmp ((const char *) cur_node->name, tagname) && text) {
+                SoupURI *uri = soup_uri_new_with_base (baseURI, (const char *) text);
                 gchar *value = soup_uri_to_string (uri, FALSE);
 
-                xmlSetProp (cur_node, attr, value);
+                xmlSetProp (cur_node, BAD_CAST (attr), BAD_CAST (value));
 
                 soup_uri_free (uri);
                 g_free (value);
@@ -124,7 +124,7 @@ gepub_utils_get_element_by_tag (xmlNode *node, const gchar *name)
 
     for (cur_node = node; cur_node; cur_node = cur_node->next) {
         if (cur_node->type == XML_ELEMENT_NODE ) {
-            if (!strcmp (cur_node->name, name))
+            if (!strcmp ((const char *) cur_node->name, name))
                 return cur_node;
         }
 
@@ -153,7 +153,7 @@ gepub_utils_get_element_by_attr (xmlNode *node, const gchar *attr, const gchar *
     for (cur_node = node; cur_node; cur_node = cur_node->next) {
         if (cur_node->type == XML_ELEMENT_NODE ) {
             text = xmlGetProp (cur_node, BAD_CAST (attr));
-            if (text && !strcmp (text, value)) {
+            if (text && !strcmp ((const char *) text, value)) {
                 xmlFree (text);
                 return cur_node;
             }
@@ -207,7 +207,7 @@ gepub_utils_get_text_elements (xmlNode *node)
 
         if (cur_node->type == XML_ELEMENT_NODE) {
             GepubTextChunk *text_chunk = NULL;
-            gchar *nodetag = g_ascii_strup (cur_node->name, strlen (cur_node->name));
+            gchar *nodetag = g_ascii_strup ((const char *) cur_node->name, -1);
             if (text_list && (!strcmp (nodetag, "P") || !strcmp (nodetag, "BR"))) {
                 gchar *old_text;
                 text_chunk = (GepubTextChunk*)(g_list_last (text_list)->data);
@@ -236,7 +236,7 @@ gepub_utils_replace_resources (GBytes *content, const gchar *path)
     xmlDoc *doc = NULL;
     xmlNode *root_element = NULL;
     guchar *buffer;
-    const guchar *data;
+    const gchar *data;
     gsize bufsize;
 
     data = g_bytes_get_data (content, &bufsize);
