@@ -154,6 +154,7 @@ gepub_utils_get_element_by_attr (xmlNode *node, const gchar *attr, const gchar *
         if (cur_node->type == XML_ELEMENT_NODE ) {
             text = xmlGetProp (cur_node, attr);
             if (text && !strcmp (text, value)) {
+                xmlFree (text);
                 return cur_node;
             }
             if (text) {
@@ -255,4 +256,24 @@ gepub_utils_replace_resources (GBytes *content, const gchar *path)
     xmlFreeDoc (doc);
 
     return g_bytes_new_take (buffer, bufsize);
+}
+
+
+/**
+ * Returns a gchar* with the property with the name prop in the xmlNode
+ * node
+ */
+gchar *
+gepub_utils_get_prop (xmlNode *node, const gchar *prop)
+{
+    xmlChar *p = NULL;
+    gchar *ret = NULL;
+
+    p = xmlGetProp (node, (const xmlChar *) prop);
+    if (p) {
+        ret = g_strdup ((char *) p);
+        xmlFree (p);
+    }
+
+    return ret;
 }

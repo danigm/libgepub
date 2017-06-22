@@ -250,13 +250,13 @@ gepub_doc_fill_resources (GepubDoc *doc)
             continue;
         }
 
-        id = xmlGetProp (item, "id");
-        tmpuri = xmlGetProp (item, "href");
+        id = gepub_utils_get_prop (item, "id");
+        tmpuri = gepub_utils_get_prop (item, "href");
         uri = g_strdup_printf ("%s%s", doc->content_base, tmpuri);
         g_free (tmpuri);
 
         res = g_malloc (sizeof (GepubResource));
-        res->mime = xmlGetProp (item, "media-type");
+        res->mime = gepub_utils_get_prop (item, "media-type");
         res->uri = uri;
         g_hash_table_insert (doc->resources, id, res);
         item = item->next;
@@ -289,7 +289,7 @@ gepub_doc_fill_spine (GepubDoc *doc)
             continue;
         }
 
-        id = xmlGetProp (item, "idref");
+        id = gepub_utils_get_prop (item, "idref");
 
         spine = g_list_prepend (spine, id);
         item = item->next;
@@ -699,7 +699,6 @@ gepub_doc_get_cover (GepubDoc *doc)
     xmlNode *root_element = NULL;
     xmlNode *mnode = NULL;
     gchar *ret;
-    xmlChar *text;
     const char *data;
     gsize size;
 
@@ -710,10 +709,7 @@ gepub_doc_get_cover (GepubDoc *doc)
     xdoc = xmlRecoverMemory (data, size);
     root_element = xmlDocGetRootElement (xdoc);
     mnode = gepub_utils_get_element_by_attr (root_element, "name", "cover");
-    text = xmlGetProp(mnode, "content");
-
-    ret = g_strdup (text);
-    xmlFree (text);
+    ret = gepub_utils_get_prop (mnode, "content");
 
     xmlFreeDoc (xdoc);
 

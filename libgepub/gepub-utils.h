@@ -26,5 +26,6 @@ xmlNode * gepub_utils_get_element_by_tag  (xmlNode *node, const gchar *name);
 xmlNode * gepub_utils_get_element_by_attr (xmlNode *node, const gchar *attr, const gchar *value);
 GList *   gepub_utils_get_text_elements   (xmlNode *node);
 GBytes *  gepub_utils_replace_resources   (GBytes *content, const gchar *path);
+gchar *   gepub_utils_get_prop            (xmlNode *node, const gchar *prop);
 
 #endif

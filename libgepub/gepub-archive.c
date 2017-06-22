@@ -174,7 +174,7 @@ gepub_archive_get_root_file (GepubArchive *archive)
     doc = xmlRecoverMemory (buffer, bufsize);
     root_element = xmlDocGetRootElement (doc);
     root_node = gepub_utils_get_element_by_tag (root_element, "rootfile");
-    root_file = xmlGetProp (root_node, "full-path");
+    root_file = gepub_utils_get_prop (root_node, "full-path");
 
     xmlFreeDoc (doc);
     g_bytes_unref (bytes);
