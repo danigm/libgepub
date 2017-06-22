@@ -228,8 +228,15 @@ gepub_utils_get_text_elements (xmlNode *node)
     return text_list;
 }
 
-/* Replacing epub media paths, for css, image and svg files, to be
- * able to provide these files to webkit from the epub file
+/**
+ * gepub_utils_replace_resources:
+ * @content: a #GBytes containing the XML data
+ * @path: The path to replace
+ *
+ * Replacing epub media paths, for css, image and svg files, to be
+ * able to provide these files to webkit from the epub file.
+ *
+ * Returns: a new #GBytes containing the updated XML data
  */
 GBytes *
 gepub_utils_replace_resources (GBytes *content, const gchar *path)
@@ -261,8 +268,11 @@ gepub_utils_replace_resources (GBytes *content, const gchar *path)
 
 
 /**
- * Returns a gchar* with the property with the name prop in the xmlNode
- * node
+ * gepub_utils_get_prop:
+ * @node: an #xmlNode
+ * @prop: a property
+ *
+ * Returns: a string with the property contained in @prop
  */
 gchar *
 gepub_utils_get_prop (xmlNode *node, const gchar *prop)
