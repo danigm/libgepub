@@ -215,6 +215,7 @@ gepub_utils_get_text_elements (xmlNode *node)
                 text_chunk->text = g_strdup_printf ("%s\n", old_text);
                 g_free (old_text);
             }
+            g_free (nodetag);
         }
 
         // TODO add images to this list of objects
