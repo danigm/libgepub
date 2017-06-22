@@ -58,57 +58,48 @@ config_h.set('HAVE_SYS_STAT_H', cc.has_header('sys/stat.h'))
 config_h.set('HAVE_SYS_TYPES_H', cc.has_header('sys/types.h'))
 config_h.set('HAVE_UNISTD_H', cc.has_header('unistd.h'))
 
-# Compiler flags
-test_cflags = [
-  '-fno-strict-aliasing',
-  '-Wall',
-  '-Warray-bounds',
-  '-Wcast-align',
-  '-Wdeclaration-after-statement',
-  '-Wextra',
-  '-Wformat-nonliteral',
-  '-Wformat-security',
-  '-Wformat=2',
-  '-Wimplicit-function-declaration',
-  '-Winit-self',
-  '-Winline',
-  '-Wmissing-declarations',
-  '-Wmissing-format-attribute',
-  '-Wmissing-include-dirs',
-  '-Wmissing-noreturn',
-  '-Wmissing-prototypes',
-  '-Wnested-externs',
-  '-Wno-error=missing-field-initializers',
-  '-Wno-error=unused-parameter',
-  '-Wno-missing-field-initializers',
-  '-Wno-unused-parameter',
-  '-Wold-style-definition',
-  '-Wpacked',
-  '-Wpointer-arith',
-  '-Wredundant-decls',
-  '-Wreturn-type',
-  '-Wshadow',
-  '-Wsign-compare',
-  '-Wstrict-aliasing',
-  '-Wstrict-prototypes',
-  '-Wswitch-default',
-  '-Wswitch-enum',
-  '-Wundef',
-  '-Wunused-but-set-variable',
-  '-Wwrite-strings'
-]
+# compiler flags
+common_flags = ['-DHAVE_CONFIG_H']
 
-common_flags = [
-  '-DHAVE_CONFIG_H'
-]
+buildtype = get_option('buildtype')
+if buildtype == 'debug' or buildtype == 'debugoptimized'
+  test_cflags = [
+    '-fno-strict-aliasing',
+    '-Wcast-align',
+    '-Wdeclaration-after-statement',
+    '-Wformat-nonliteral',
+    '-Wformat=2',
+    '-Winit-self',
+    '-Winline',
+    '-Wmissing-declarations',
+    '-Wmissing-format-attribute',
+    '-Wmissing-include-dirs',
+    '-Wmissing-noreturn',
+    '-Wmissing-prototypes',
+    '-Wnested-externs',
+    '-Wno-error=missing-field-initializers',
+    '-Wno-error=unused-parameter',
+    '-Wno-missing-field-initializers',
+    '-Wno-unused-parameter',
+    '-Wold-style-definition',
+    '-Wpacked',
+    '-Wredundant-decls',
+    '-Wshadow',
+    '-Wstrict-prototypes',
+    '-Wswitch-enum',
+    '-Wundef',
+    '-Wunused-but-set-variable',
+    '-Wwrite-strings'
+  ]
 
-foreach cflag: test_cflags
-  if cc.has_argument(cflag)
-    common_flags += [cflag]
-  endif
-endforeach
+  foreach cflag: test_cflags
+    if cc.has_argument(cflag)
+      common_flags += [cflag]
+    endif
+  endforeach
 
-add_project_arguments(common_flags, language: 'c')
+  add_project_arguments(common_flags, language: 'c')
+endif
 
 gepub_deps = [
   dependency('webkit2gtk-4.0'),

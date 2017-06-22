@@ -26,7 +26,6 @@ sources = files(
 symbol_map = 'gepub.map'
 
 ldflags = [
-  '-no-undefined',
   '-Wl,--version-script,@0@/@1@'.format(meson.current_source_dir(), symbol_map)
 ]
 
