@@ -97,9 +97,9 @@ if buildtype == 'debug' or buildtype == 'debugoptimized'
       common_flags += [cflag]
     endif
   endforeach
-
-  add_project_arguments(common_flags, language: 'c')
 endif
+
+add_project_arguments(common_flags, language: 'c')
 
 gepub_deps = [
   dependency('webkit2gtk-4.0'),
