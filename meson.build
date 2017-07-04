@@ -24,8 +24,6 @@ gepub_libdir = join_paths(gepub_prefix, get_option('libdir'))
 gepub_libexecdir = join_paths(gepub_prefix, get_option('libexecdir'))
 gepub_includedir = join_paths(gepub_prefix, get_option('includedir'))
 
-gepub_pkgincludedir = join_paths(gepub_includedir, meson.project_name())
-
 soversion = 0
 current = 0
 revision = 0

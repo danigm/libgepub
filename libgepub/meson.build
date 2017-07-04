@@ -8,7 +8,7 @@ headers = files(
 
 install_headers(
   headers,
-  subdir: gepub_pkgincludedir
+  subdir: meson.project_name()
 )
 
 private_headers = files(
