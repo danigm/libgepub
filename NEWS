@@ -1,3 +1,15 @@
+Version 0.5
+===========
+
+ - Fixed page next and page prev signals
+ - Added file property to support GFile initialization
+ - Fixed some memory leaks
+ - Removed all compilation warnings
+ - Added pagination to the GepubWidget
+ - Added Simple text style modification in the widget
+ - Ported to meson build system
+ - Fixed epub:// SoupURI creation and concatenation
+
 Version 0.4
 ===========
 
