@@ -27,7 +27,7 @@
 #include "gepub-text-chunk.h"
 
 
-/* Replaces the attr value with epub:// prefix for the tagname. This
+/* Replaces the attr value with epub:/// prefix for the tagname. This
  * function also makes the resource absolute based on the epub root
  */
 static void
@@ -37,7 +37,7 @@ set_epub_uri (xmlNode *node, const gchar *path, const gchar *tagname, const gcha
     xmlChar *text = NULL;
 
     SoupURI *baseURI;
-    gchar *basepath = g_strdup_printf ("epub://%s/", path);
+    gchar *basepath = g_strdup_printf ("epub:///%s/", path);
 
     baseURI = soup_uri_new (basepath);
     g_free (basepath);

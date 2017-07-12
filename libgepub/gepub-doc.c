@@ -496,7 +496,7 @@ gepub_doc_get_current (GepubDoc *doc)
  * @doc: a #GepubDoc
  *
  * Returns: (transfer full): the current chapter
- * data, with resource uris renamed so they have the epub:// prefix and all
+ * data, with resource uris renamed so they have the epub:/// prefix and all
  * are relative to the root file
  */
 GBytes *
