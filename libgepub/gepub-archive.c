@@ -52,7 +52,6 @@ gepub_archive_open (GepubArchive *archive)
     r = archive_read_open_filename (archive->archive, archive->path, 10240);
 
     if (r != ARCHIVE_OK) {
-        archive_read_free (archive->archive);
         return FALSE;
     }
 
