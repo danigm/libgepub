@@ -27,6 +27,28 @@
 #include "gepub-archive.h"
 #include "gepub-text-chunk.h"
 
+
+static GQuark
+gepub_error_quark (void)
+{
+    static GQuark q = 0;
+    if (q == 0)
+        q = g_quark_from_string ("gepub-quark");
+    return q;
+}
+
+/**
+ * GepubDocError:
+ * @GEPUB_ERROR_INVALID: Invalid file
+ *
+ * Common errors that may be reported by GepubDoc.
+ */
+typedef enum {
+    GEPUB_ERROR_INVALID = 0,  /*< nick=Invalid >*/
+} GepubDocError;
+
+
+
 static void gepub_doc_fill_resources (GepubDoc *doc);
 static void gepub_doc_fill_spine (GepubDoc *doc);
 static void gepub_doc_initable_iface_init (GInitableIface *iface);
@@ -181,11 +203,21 @@ gepub_doc_initable_init (GInitable     *initable,
 
     doc->archive = gepub_archive_new (doc->path);
     file = gepub_archive_get_root_file (doc->archive);
-    if (!file)
+    if (!file) {
+        if (error != NULL) {
+            g_set_error (error, gepub_error_quark (), GEPUB_ERROR_INVALID,
+                         "Invalid epub file: %s", doc->path);
+        }
         return FALSE;
+    }
     doc->content = gepub_archive_read_entry (doc->archive, file);
-    if (!doc->content)
+    if (!doc->content) {
+        if (error != NULL) {
+            g_set_error (error, gepub_error_quark (), GEPUB_ERROR_INVALID,
+                         "Invalid epub file: %s", doc->path);
+        }
         return FALSE;
+    }
 
     len = strlen (file);
     doc->content_base = g_strdup ("");
@@ -214,14 +246,15 @@ gepub_doc_initable_iface_init (GInitableIface *iface)
 /**
  * gepub_doc_new:
  * @path: the epub doc path
+ * @error: (nullable): Error
  *
  * Returns: (transfer full): the new GepubDoc created
  */
 GepubDoc *
-gepub_doc_new (const gchar *path)
+gepub_doc_new (const gchar *path, GError **error)
 {
     return g_initable_new (GEPUB_TYPE_DOC,
-                           NULL, NULL,
+                           NULL, error,
                            "path", path,
                            NULL);
 }

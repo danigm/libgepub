@@ -171,7 +171,7 @@ test_read (const char *path)
 
     a = gepub_archive_new (path);
 
-    doc = gepub_doc_new (path);
+    doc = gepub_doc_new (path, NULL);
     ht = (GHashTable*)gepub_doc_get_resources (doc);
     g_hash_table_foreach (ht, (GHFunc)find_xhtml, &file);
 
@@ -207,7 +207,7 @@ test_root_file (const char *path)
 static void
 test_doc_name (const char *path)
 {
-    GepubDoc *doc = gepub_doc_new (path);
+    GepubDoc *doc = gepub_doc_new (path, NULL);
     gchar *title = gepub_doc_get_metadata (doc, GEPUB_META_TITLE);
     gchar *lang = gepub_doc_get_metadata (doc, GEPUB_META_LANG);
     gchar *id = gepub_doc_get_metadata (doc, GEPUB_META_ID);
@@ -248,7 +248,7 @@ test_doc_resources (const char *path)
     const guchar *data;
     gsize size;
 
-    doc = gepub_doc_new (path);
+    doc = gepub_doc_new (path, NULL);
     ht = (GHashTable*)gepub_doc_get_resources (doc);
     g_hash_table_foreach (ht, (GHFunc)pk, NULL);
 
@@ -263,7 +263,7 @@ test_doc_resources (const char *path)
 static void
 test_doc_spine (const char *path)
 {
-    GepubDoc *doc = gepub_doc_new (path);
+    GepubDoc *doc = gepub_doc_new (path, NULL);
     int id = 0;
 
     do {
@@ -327,7 +327,7 @@ main (int argc, char **argv)
     gtk_container_add (GTK_CONTAINER (window), vpaned);
 
     // gepub widget
-    doc = gepub_doc_new (argv[1]);
+    doc = gepub_doc_new (argv[1], NULL);
     if (!doc) {
         perror ("BAD epub FILE");
         return -1;

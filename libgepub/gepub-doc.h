@@ -44,7 +44,7 @@ typedef struct _GepubResource GepubResource;
 
 GType             gepub_doc_get_type                        (void) G_GNUC_CONST;
 
-GepubDoc         *gepub_doc_new                             (const gchar *path);
+GepubDoc         *gepub_doc_new                             (const gchar *path, GError **error);
 GBytes           *gepub_doc_get_content                     (GepubDoc *doc);
 gchar            *gepub_doc_get_metadata                    (GepubDoc *doc, const gchar *mdata);
 GBytes           *gepub_doc_get_resource                    (GepubDoc *doc, const gchar *path);
