@@ -4,7 +4,6 @@ project(
   license: 'LGPL2+',
   default_options: [
     'buildtype=debugoptimized',
-    'c_std=gnu99',
     'warning_level=1'
   ],
   meson_version: '>= 0.41.0'
@@ -58,44 +57,6 @@ config_h.set('HAVE_UNISTD_H', cc.has_header('unistd.h'))
 
 # compiler flags
 common_flags = ['-DHAVE_CONFIG_H']
-
-buildtype = get_option('buildtype')
-if buildtype == 'debug' or buildtype == 'debugoptimized'
-  test_cflags = [
-    '-fno-strict-aliasing',
-    '-Wcast-align',
-    '-Wdeclaration-after-statement',
-    '-Wformat-nonliteral',
-    '-Wformat=2',
-    '-Winit-self',
-    '-Winline',
-    '-Wmissing-declarations',
-    '-Wmissing-format-attribute',
-    '-Wmissing-include-dirs',
-    '-Wmissing-noreturn',
-    '-Wmissing-prototypes',
-    '-Wnested-externs',
-    '-Wno-error=missing-field-initializers',
-    '-Wno-error=unused-parameter',
-    '-Wno-missing-field-initializers',
-    '-Wno-unused-parameter',
-    '-Wold-style-definition',
-    '-Wpacked',
-    '-Wredundant-decls',
-    '-Wshadow',
-    '-Wstrict-prototypes',
-    '-Wswitch-enum',
-    '-Wundef',
-    '-Wunused-but-set-variable',
-    '-Wwrite-strings'
-  ]
-
-  foreach cflag: test_cflags
-    if cc.has_argument(cflag)
-      common_flags += [cflag]
-    endif
-  endforeach
-endif
 
 add_project_arguments(common_flags, language: 'c')
 
