@@ -4,7 +4,6 @@ project(
   license: 'LGPL2+',
   default_options: [
     'buildtype=debugoptimized',
-    'c_std=gnu99',
     'warning_level=1'
   ],
   meson_version: '>= 0.41.0'
@@ -33,69 +32,44 @@ cc = meson.get_compiler('c')
 
 config_h = configuration_data()
 
-# package
-config_h.set_quoted('PACKAGE', meson.project_name())
-config_h.set_quoted('PACKAGE_BUGREPORT', 'danigm@wadobo.com')
-config_h.set_quoted('PACKAGE_NAME', meson.project_name())
-config_h.set_quoted('PACKAGE_STRING', '@0@ @1@'.format(meson.project_name(), gepub_version))
-config_h.set_quoted('PACKAGE_TARNAME', meson.project_name())
-config_h.set_quoted('PACKAGE_URL', '')
-config_h.set_quoted('PACKAGE_VERSION', gepub_version)
-config_h.set_quoted('PACKAGE_API_VERSION', gepub_version)
-config_h.set_quoted('VERSION', gepub_version)
+# defines
+set_defines = [
+  # package
+  ['PACKAGE', meson.project_name()],
+  ['PACKAGE_API_VERSION', gepub_version],
+  ['PACKAGE_BUGREPORT', 'danigm@wadobo.com'],
+  ['PACKAGE_NAME', meson.project_name()],
+  ['PACKAGE_STRING', '@0@ @1@'.format(meson.project_name(), gepub_version)],
+  ['PACKAGE_TARNAME', meson.project_name()],
+  ['PACKAGE_URL', ''],
+  ['PACKAGE_VERSION', gepub_version],
+  ['VERSION', gepub_version]
+]
+
+foreach define: set_defines
+  config_h.set_quoted(define[0], define[1])
+endforeach
 
 # headers
-config_h.set('HAVE_DLFCN_H', cc.has_header('dlfcn.h'))
-config_h.set('HAVE_INTTYPES_H', cc.has_header('inttypes.h'))
-config_h.set('HAVE_MEMORY_H', cc.has_header('memory.h'))
-config_h.set('HAVE_STDINT_H', cc.has_header('stdint.h'))
-config_h.set('HAVE_STDLIB_H', cc.has_header('stdlib.h'))
-config_h.set('HAVE_STRINGS_H', cc.has_header('strings.h'))
-config_h.set('HAVE_STRING_H', cc.has_header('string.h'))
-config_h.set('HAVE_SYS_STAT_H', cc.has_header('sys/stat.h'))
-config_h.set('HAVE_SYS_TYPES_H', cc.has_header('sys/types.h'))
-config_h.set('HAVE_UNISTD_H', cc.has_header('unistd.h'))
+check_headers = [
+  ['HAVE_DLFCN_H', 'dlfcn.h'],
+  ['HAVE_INTTYPES_H', 'inttypes.h'],
+  ['HAVE_MEMORY_H', 'memory.h'],
+  ['HAVE_STDINT_H', 'stdint.h'],
+  ['HAVE_STDLIB_H', 'stdlib.h'],
+  ['HAVE_STRINGS_H', 'strings.h'],
+  ['HAVE_STRING_H', 'string.h'],
+  ['HAVE_SYS_STAT_H', 'sys/stat.h'],
+  ['HAVE_SYS_TYPES_H', 'sys/types.h'],
+  ['HAVE_UNISTD_H', 'unistd.h']
+]
+
+foreach header: check_headers
+  config_h.set(header[0], cc.has_header(header[1]))
+endforeach
 
 # compiler flags
 common_flags = ['-DHAVE_CONFIG_H']
-
-buildtype = get_option('buildtype')
-if buildtype == 'debug' or buildtype == 'debugoptimized'
-  test_cflags = [
-    '-fno-strict-aliasing',
-    '-Wcast-align',
-    '-Wdeclaration-after-statement',
-    '-Wformat-nonliteral',
-    '-Wformat=2',
-    '-Winit-self',
-    '-Winline',
-    '-Wmissing-declarations',
-    '-Wmissing-format-attribute',
-    '-Wmissing-include-dirs',
-    '-Wmissing-noreturn',
-    '-Wmissing-prototypes',
-    '-Wnested-externs',
-    '-Wno-error=missing-field-initializers',
-    '-Wno-error=unused-parameter',
-    '-Wno-missing-field-initializers',
-    '-Wno-unused-parameter',
-    '-Wold-style-definition',
-    '-Wpacked',
-    '-Wredundant-decls',
-    '-Wshadow',
-    '-Wstrict-prototypes',
-    '-Wswitch-enum',
-    '-Wundef',
-    '-Wunused-but-set-variable',
-    '-Wwrite-strings'
-  ]
-
-  foreach cflag: test_cflags
-    if cc.has_argument(cflag)
-      common_flags += [cflag]
-    endif
-  endforeach
-endif
 
 add_project_arguments(common_flags, language: 'c')
 

@@ -15,3 +15,5 @@ test_gepub_LDADD = \
 	$(top_builddir)/libgepub/libgepub.la \
 	$(GEPUB_TESTS_LIBS) \
 	$(GTK_LIBS)
+
+EXTRA_DIST = meson.build
