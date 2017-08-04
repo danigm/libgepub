@@ -11,9 +11,7 @@ install_headers(
   subdir: meson.project_name()
 )
 
-private_headers = files(
-  'gepub-utils.h'
-)
+private_headers = files('gepub-utils.h')
 
 sources = files(
   'gepub-archive.c',
@@ -25,18 +23,11 @@ sources = files(
 
 symbol_map = 'gepub.map'
 
-ldflags = [
-  '-Wl,--version-script,@0@/@1@'.format(meson.current_source_dir(), symbol_map)
-]
+ldflag = '-Wl,--version-script,@0@/@1@'.format(meson.current_source_dir(), symbol_map)
+ldflags = []
 
-gepub_ldflags = []
-
-if host_machine.system().contains('linux')
-  foreach ldflag: ldflags
-    if cc.has_argument(ldflag)
-      gepub_ldflags += ldflag
-    endif
-  endforeach
+if host_machine.system().contains('linux') and cc.has_argument(ldflag)
+  ldflags += ldflag
 endif
 
 libgepub = library(
@@ -46,7 +37,7 @@ libgepub = library(
   soversion: soversion,
   include_directories: top_inc,
   dependencies: gepub_deps,
-  link_args: gepub_ldflags,
+  link_args: ldflags,
   link_depends: symbol_map,
   install: true,
   install_dir: gepub_libdir
@@ -70,22 +61,18 @@ pkg.generate(
     'libxml-2.0',
     'libarchive'
   ],
-  variables: [
-    'exec_prefix=' + gepub_libexecdir
-  ],
+  variables: 'exec_prefix=' + gepub_libexecdir,
   install_dir: join_paths(gepub_libdir, 'pkgconfig')
 )
 
 if get_option('enable-introspection') and get_option('default_library') == 'shared'
-  gir_inc = [
+  gir_incs = [
     'GObject-2.0',
     'libxml2-2.0',
     'WebKit2-4.0'
   ]
 
-  gir_extra_args = [
-    '--warn-all'
-  ]
+  gir_extra_args = '--warn-all'
 
   gir_dir = join_paths(gepub_datadir, '@0@-@1@'.format('gir', gepub_gir_version))
   typelib_dir = join_paths(gepub_libdir, '@0@-@1@'.format('girepository', gepub_gir_version))
@@ -95,13 +82,10 @@ if get_option('enable-introspection') and get_option('default_library') == 'shar
     sources: sources + headers + private_headers,
     namespace: gepub_gir_ns,
     nsversion: gepub_version,
-    identifier_prefix: gepub_gir_ns,
-    symbol_prefix: gepub_gir_ns.to_lower(),
-    includes: gir_inc,
-    include_directories: top_inc,
+    includes: gir_incs,
+    extra_args: gir_extra_args,
     install: true,
     install_dir_gir: gir_dir,
-    install_dir_typelib: typelib_dir,
-    extra_args: gir_extra_args
+    install_dir_typelib: typelib_dir
   )
 endif
