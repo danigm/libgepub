@@ -1,6 +1,6 @@
 project(
   'libgepub', 'c',
-  version: '0.5.1',
+  version: '0.5.2',
   license: 'LGPL2+',
   default_options: [
     'buildtype=debugoptimized',
@@ -13,6 +13,8 @@ gepub_version = meson.project_version()
 version_array = gepub_version.split('.')
 gepub_major_version = version_array[0].to_int()
 gepub_minor_version = version_array[1].to_int()
+gepub_version_micro = version_array[2].to_int()
+gepub_api_version = '@0@.@1@'.format(gepub_major_version, gepub_minor_version)
 
 gepub_gir_ns = 'Gepub'
 gepub_gir_version = '1.0'
@@ -36,7 +38,7 @@ config_h = configuration_data()
 set_defines = [
   # package
   ['PACKAGE', meson.project_name()],
-  ['PACKAGE_API_VERSION', gepub_version],
+  ['PACKAGE_API_VERSION', gepub_api_version],
   ['PACKAGE_BUGREPORT', 'danigm@wadobo.com'],
   ['PACKAGE_NAME', meson.project_name()],
   ['PACKAGE_STRING', '@0@ @1@'.format(meson.project_name(), gepub_version)],

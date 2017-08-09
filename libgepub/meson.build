@@ -81,7 +81,7 @@ if get_option('enable-introspection') and get_option('default_library') == 'shar
     libgepub,
     sources: sources + headers + private_headers,
     namespace: gepub_gir_ns,
-    nsversion: gepub_version,
+    nsversion: gepub_api_version,
     includes: gir_incs,
     extra_args: gir_extra_args,
     install: true,
