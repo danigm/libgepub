@@ -1,3 +1,9 @@
+Version 0.5.1
+=============
+
+ - Added GError to gepub_doc_new new method
+ - Fixed meson build scripts
+
 Version 0.5
 ===========
 

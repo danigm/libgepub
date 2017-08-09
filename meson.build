@@ -1,6 +1,6 @@
 project(
   'libgepub', 'c',
-  version: '0.5',
+  version: '0.5.1',
   license: 'LGPL2+',
   default_options: [
     'buildtype=debugoptimized',
