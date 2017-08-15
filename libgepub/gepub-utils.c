@@ -31,10 +31,16 @@
  * function also makes the resource absolute based on the epub root
  */
 static void
-set_epub_uri (xmlNode *node, const gchar *path, const gchar *tagname, const gchar *attr)
+set_epub_uri (xmlNode *node,
+              const gchar *path,
+              const gchar *tagname,
+              const gchar *attr,
+              const gchar *ns)
 {
     xmlNode *cur_node = NULL;
     xmlChar *text = NULL;
+
+    gchar *attrname = NULL;
 
     SoupURI *baseURI;
     gchar *basepath = g_strdup_printf ("epub:///%s/", path);
@@ -42,14 +48,21 @@ set_epub_uri (xmlNode *node, const gchar *path, const gchar *tagname, const gcha
     baseURI = soup_uri_new (basepath);
     g_free (basepath);
 
+    if (ns) {
+        attrname = g_strdup_printf ("%s:%s", ns, attr);
+    } else {
+        attrname = g_strdup (attr);
+    }
+
     for (cur_node = node; cur_node; cur_node = cur_node->next) {
         if (cur_node->type == XML_ELEMENT_NODE ) {
             text = xmlGetProp (cur_node, BAD_CAST (attr));
+
             if (!strcmp ((const char *) cur_node->name, tagname) && text) {
                 SoupURI *uri = soup_uri_new_with_base (baseURI, (const char *) text);
                 gchar *value = soup_uri_to_string (uri, FALSE);
 
-                xmlSetProp (cur_node, BAD_CAST (attr), BAD_CAST (value));
+                xmlSetProp (cur_node, BAD_CAST (attrname), BAD_CAST (value));
 
                 soup_uri_free (uri);
                 g_free (value);
@@ -61,8 +74,10 @@ set_epub_uri (xmlNode *node, const gchar *path, const gchar *tagname, const gcha
         }
 
         if (cur_node->children)
-            set_epub_uri (cur_node->children, path, tagname, attr);
+            set_epub_uri (cur_node->children, path, tagname, attr, ns);
     }
+
+    g_free (attrname);
 
     soup_uri_free (baseURI);
 }
@@ -252,13 +267,13 @@ gepub_utils_replace_resources (GBytes *content, const gchar *path)
     root_element = xmlDocGetRootElement (doc);
 
     // replacing css resources
-    set_epub_uri (root_element, path, "link", "href");
+    set_epub_uri (root_element, path, "link", "href", NULL);
     // replacing images resources
-    set_epub_uri (root_element, path, "img", "src");
+    set_epub_uri (root_element, path, "img", "src", NULL);
     // replacing svg images resources
-    set_epub_uri (root_element, path, "image", "xlink:href");
+    set_epub_uri (root_element, path, "image", "href", "xlink");
     // replacing crosslinks
-    set_epub_uri (root_element, path, "a", "href");
+    set_epub_uri (root_element, path, "a", "href", NULL);
 
     xmlDocDumpFormatMemory (doc, (xmlChar**)&buffer, (int*)&bufsize, 1);
     xmlFreeDoc (doc);
