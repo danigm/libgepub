@@ -65,7 +65,7 @@ pkg.generate(
   install_dir: join_paths(gepub_libdir, 'pkgconfig')
 )
 
-if get_option('enable-introspection') and get_option('default_library') == 'shared'
+if get_option('introspection') and get_option('default_library') == 'shared'
   gir_incs = [
     'GObject-2.0',
     'libxml2-2.0',
