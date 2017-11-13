@@ -21,13 +21,13 @@ sources = files(
   'gepub-widget.c'
 )
 
-symbol_map = 'gepub.map'
+symbol_map = join_paths(meson.current_souce_dir(), 'gepub.map')
 
-ldflag = '-Wl,--version-script,@0@/@1@'.format(meson.current_source_dir(), symbol_map)
+test_ldflag = '-Wl,--version-script,' + symbol_map
 ldflags = []
 
-if host_machine.system().contains('linux') and cc.has_argument(ldflag)
-  ldflags += ldflag
+if cc.has_argument(test_ldflag)
+  ldflags += test_ldflag
 endif
 
 libgepub = library(
@@ -62,7 +62,7 @@ pkg.generate(
     'libarchive'
   ],
   variables: 'exec_prefix=' + gepub_libexecdir,
-  install_dir: join_paths(gepub_libdir, 'pkgconfig')
+  install_dir: join_paths(get_option('libdir'), 'pkgconfig')
 )
 
 if get_option('introspection') and get_option('default_library') == 'shared'
