@@ -62,7 +62,7 @@ pkg.generate(
     'libarchive'
   ],
   variables: 'exec_prefix=' + gepub_libexecdir,
-  install_dir: join_paths(gepub_libdir, 'pkgconfig')
+  install_dir: join_paths(get_option('libdir'), 'pkgconfig')
 )
 
 if get_option('introspection') and get_option('default_library') == 'shared'
