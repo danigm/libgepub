@@ -21,7 +21,7 @@ sources = files(
   'gepub-widget.c'
 )
 
-symbol_map = join_paths(meson.current_souce_dir(), 'gepub.map')
+symbol_map = join_paths(meson.current_source_dir(), 'gepub.map')
 
 test_ldflag = '-Wl,--version-script,' + symbol_map
 ldflags = []
