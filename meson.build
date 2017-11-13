@@ -2,10 +2,7 @@ project(
   'libgepub', 'c',
   version: '0.5.2',
   license: 'LGPL2+',
-  default_options: [
-    'buildtype=debugoptimized',
-    'warning_level=1'
-  ],
+  default_options: 'buildtype=debugoptimized',
   meson_version: '>= 0.41.0'
 )
 
