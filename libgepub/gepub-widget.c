@@ -194,9 +194,15 @@ reload_length_cb (GtkWidget *widget,
     }
 
     if (l) {
+        char line_height[G_ASCII_DTOSTR_BUF_SIZE];
+
+        g_ascii_formatd (line_height,
+                         G_ASCII_DTOSTR_BUF_SIZE,
+                         "%f",
+                         l);
         script = g_strdup_printf (
-            "document.querySelector('#gepubwrap').style.lineHeight = %f;"
-            , l);
+            "document.querySelector('#gepubwrap').style.lineHeight = %s;"
+            , line_height);
         webkit_web_view_run_javascript (web_view, script, NULL, NULL, NULL);
         g_free (script);
     }
@@ -337,9 +343,6 @@ gepub_widget_init (GepubWidget *widget)
     widget->margin = 20;
     widget->font_size = 0;
     widget->line_height = 0;
-
-    // locale to avoid '1,2' in line_height string composition
-    setlocale(LC_NUMERIC, "C");
 }
 
 static void
