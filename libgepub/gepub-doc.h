@@ -64,9 +64,9 @@ const gchar      *gepub_doc_get_current_id                  (GepubDoc *doc);
 
 gboolean          gepub_doc_go_next                         (GepubDoc *doc);
 gboolean          gepub_doc_go_prev                         (GepubDoc *doc);
-gint              gepub_doc_get_n_pages                     (GepubDoc *doc);
-gint              gepub_doc_get_page                        (GepubDoc *doc);
-void              gepub_doc_set_page                        (GepubDoc *doc,
+gint              gepub_doc_get_n_chapters                  (GepubDoc *doc);
+gint              gepub_doc_get_chapter                     (GepubDoc *doc);
+void              gepub_doc_set_chapter                     (GepubDoc *doc,
                                                              gint      index);
 
 G_END_DECLS

@@ -273,7 +273,7 @@ gepub_widget_set_property (GObject      *object,
         gepub_widget_set_paginate (widget, g_value_get_boolean (value));
         break;
     case PROP_CHAPTER:
-        gepub_doc_set_page (widget->doc, g_value_get_int (value));
+        gepub_doc_set_chapter (widget->doc, g_value_get_int (value));
         break;
     case PROP_CHAPTER_POS:
         gepub_widget_set_pos (widget, g_value_get_float (value));
@@ -300,10 +300,10 @@ gepub_widget_get_property (GObject    *object,
         g_value_set_boolean (value, widget->paginate);
         break;
     case PROP_CHAPTER:
-        g_value_set_int (value, gepub_doc_get_page (widget->doc));
+        g_value_set_int (value, gepub_doc_get_chapter (widget->doc));
         break;
     case PROP_N_CHAPTERS:
-        g_value_set_int (value, gepub_doc_get_n_pages (widget->doc));
+        g_value_set_int (value, gepub_doc_get_n_chapters (widget->doc));
         break;
     case PROP_CHAPTER_POS:
         g_value_set_float (value, gepub_widget_get_pos (widget));
@@ -521,7 +521,7 @@ gint
 gepub_widget_get_n_chapters (GepubWidget *widget)
 {
     g_return_val_if_fail (GEPUB_IS_DOC (widget->doc), 0);
-    return gepub_doc_get_n_pages (widget->doc);
+    return gepub_doc_get_n_chapters (widget->doc);
 }
 
 /**
@@ -534,7 +534,7 @@ gint
 gepub_widget_get_chapter (GepubWidget *widget)
 {
     g_return_val_if_fail (GEPUB_IS_DOC (widget->doc), 0);
-    return gepub_doc_get_page (widget->doc);
+    return gepub_doc_get_chapter (widget->doc);
 }
 
 /**
@@ -562,7 +562,7 @@ gepub_widget_set_chapter (GepubWidget *widget,
                           gint         index)
 {
     g_return_if_fail (GEPUB_IS_DOC (widget->doc));
-    return gepub_doc_set_page (widget->doc, index);
+    return gepub_doc_set_chapter (widget->doc, index);
 }
 
 /**
