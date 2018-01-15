@@ -273,6 +273,16 @@ test_doc_spine (const char *path)
     g_object_unref (G_OBJECT (doc));
 }
 
+static void
+destroy_cb (GtkWidget *window,
+            GtkWidget *view)
+{
+    g_signal_handlers_disconnect_by_func (G_OBJECT (view),
+                                          reload_current_chapter,
+                                          view);
+    gtk_main_quit ();
+}
+
 int
 main (int argc, char **argv)
 {
@@ -321,7 +331,7 @@ main (int argc, char **argv)
     }
 
     window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-    g_signal_connect (window, "destroy", (GCallback)gtk_main_quit, NULL);
+    g_signal_connect (window, "destroy", G_CALLBACK(destroy_cb), widget);
     gtk_widget_set_size_request (GTK_WIDGET (window), 1200, 800);
     vpaned = gtk_paned_new (GTK_ORIENTATION_HORIZONTAL);
     gtk_container_add (GTK_CONTAINER (window), vpaned);
