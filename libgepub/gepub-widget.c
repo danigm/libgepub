@@ -56,6 +56,8 @@ static GParamSpec *properties[NUM_PROPS] = { NULL, };
 
 G_DEFINE_TYPE (GepubWidget, gepub_widget, WEBKIT_TYPE_WEB_VIEW)
 
+#define HUNDRED_PERCENT 100.0
+
 static void
 scroll_to_chapter_pos (GepubWidget *widget) {
     gchar *script = g_strdup_printf("document.querySelector('body').scrollTo(%d, 0)", widget->chapter_pos);
@@ -107,7 +109,7 @@ pagination_initialize_finished (GObject      *object,
         widget->chapter_length = (int)n;
 
         if (widget->init_chapter_pos) {
-            widget->chapter_pos = widget->init_chapter_pos * widget->chapter_length / 100;
+            widget->chapter_pos = widget->init_chapter_pos * widget->chapter_length / HUNDRED_PERCENT;
             if (widget->chapter_pos > (widget->chapter_length - widget->length)) {
                 widget->chapter_pos = (widget->chapter_length - widget->length);
             }
@@ -396,8 +398,8 @@ gepub_widget_class_init (GepubWidgetClass *klass)
     properties[PROP_CHAPTER_POS] =
         g_param_spec_float ("chapter_pos",
                             "Current position in chapter",
-                            "Current position in chapter",
-                            0, 100, 0,
+                            "Current position in chapter as a percentage",
+                            0.0, HUNDRED_PERCENT, 0.0,
                             G_PARAM_READWRITE);
 
     g_object_class_install_properties (object_class, NUM_PROPS, properties);
@@ -627,7 +629,7 @@ gepub_widget_page_prev (GepubWidget *widget)
     widget->chapter_pos = widget->chapter_pos - widget->length;
 
     if (widget->chapter_pos < 0) {
-        widget->init_chapter_pos = 100;
+        widget->init_chapter_pos = HUNDRED_PERCENT;
         return gepub_doc_go_prev (widget->doc);
     }
 
@@ -652,7 +654,7 @@ gepub_widget_get_pos (GepubWidget *widget)
         return 0;
     }
 
-    return widget->chapter_pos * 100 / (float)(widget->chapter_length);
+    return widget->chapter_pos * HUNDRED_PERCENT / (float)(widget->chapter_length);
 }
 
 /**
@@ -667,7 +669,7 @@ gepub_widget_set_pos (GepubWidget *widget,
                       gfloat       index)
 {
     g_return_if_fail (GEPUB_IS_DOC (widget->doc));
-    widget->chapter_pos = index * widget->chapter_length / 100;
+    widget->chapter_pos = index * widget->chapter_length / HUNDRED_PERCENT;
     adjust_chapter_pos (widget);
 
     g_object_notify_by_pspec (G_OBJECT (widget), properties[PROP_CHAPTER_POS]);
