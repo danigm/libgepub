@@ -63,7 +63,7 @@ struct _GepubDoc {
     GHashTable *resources;
 
     GList *spine;
-    GList *page;
+    GList *chapter;
 };
 
 struct _GepubDocClass {
@@ -73,7 +73,7 @@ struct _GepubDocClass {
 enum {
     PROP_0,
     PROP_PATH,
-    PROP_PAGE,
+    PROP_CHAPTER,
     NUM_PROPS
 };
 
@@ -120,8 +120,8 @@ gepub_doc_set_property (GObject      *object,
     case PROP_PATH:
         doc->path = g_value_dup_string (value);
         break;
-    case PROP_PAGE:
-        gepub_doc_set_page (doc, g_value_get_int (value));
+    case PROP_CHAPTER:
+        gepub_doc_set_chapter (doc, g_value_get_int (value));
         break;
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -141,8 +141,8 @@ gepub_doc_get_property (GObject    *object,
     case PROP_PATH:
         g_value_set_string (value, doc->path);
         break;
-    case PROP_PAGE:
-        g_value_set_int (value, gepub_doc_get_page (doc));
+    case PROP_CHAPTER:
+        g_value_set_int (value, gepub_doc_get_chapter (doc));
         break;
     default:
         G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -179,10 +179,10 @@ gepub_doc_class_init (GepubDocClass *klass)
                              G_PARAM_READWRITE |
                              G_PARAM_CONSTRUCT_ONLY |
                              G_PARAM_STATIC_STRINGS);
-    properties[PROP_PAGE] =
-        g_param_spec_int ("page",
-                          "Current page",
-                          "The current page index",
+    properties[PROP_CHAPTER] =
+        g_param_spec_int ("chapter",
+                          "Current chapter",
+                          "The current chapter index",
                           -1, G_MAXINT, 0,
                           G_PARAM_READWRITE |
                           G_PARAM_STATIC_STRINGS);
@@ -329,7 +329,7 @@ gepub_doc_fill_spine (GepubDoc *doc)
     }
 
     doc->spine = g_list_reverse (spine);
-    doc->page = doc->spine;
+    doc->chapter = doc->spine;
 
     xmlFreeDoc (xdoc);
 }
@@ -504,9 +504,9 @@ gchar *
 gepub_doc_get_current_mime (GepubDoc *doc)
 {
     g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
-    g_return_val_if_fail (doc->page != NULL, NULL);
+    g_return_val_if_fail (doc->chapter != NULL, NULL);
 
-    return gepub_doc_get_resource_mime_by_id (doc, doc->page->data);
+    return gepub_doc_get_resource_mime_by_id (doc, doc->chapter->data);
 }
 
 /**
@@ -519,9 +519,9 @@ GBytes *
 gepub_doc_get_current (GepubDoc *doc)
 {
     g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
-    g_return_val_if_fail (doc->page != NULL, NULL);
+    g_return_val_if_fail (doc->chapter != NULL, NULL);
 
-    return gepub_doc_get_resource_by_id (doc, doc->page->data);
+    return gepub_doc_get_resource_by_id (doc, doc->chapter->data);
 }
 
 /**
@@ -625,14 +625,14 @@ gepub_doc_get_text_by_id (GepubDoc *doc, const gchar *id)
 }
 
 static gboolean
-gepub_doc_set_page_internal (GepubDoc *doc,
-                             GList    *page)
+gepub_doc_set_chapter_internal (GepubDoc *doc,
+                                GList    *chapter)
 {
-    if (!page || doc->page == page)
+    if (!chapter || doc->chapter == chapter)
         return FALSE;
 
-    doc->page = page;
-    g_object_notify_by_pspec (G_OBJECT (doc), properties[PROP_PAGE]);
+    doc->chapter = chapter;
+    g_object_notify_by_pspec (G_OBJECT (doc), properties[PROP_CHAPTER]);
 
     return TRUE;
 }
@@ -641,40 +641,40 @@ gepub_doc_set_page_internal (GepubDoc *doc,
  * gepub_doc_go_next:
  * @doc: a #GepubDoc
  *
- * Returns: TRUE on success, FALSE if there's no next pages
+ * Returns: TRUE on success, FALSE if there's no next chapter
  */
 gboolean
 gepub_doc_go_next (GepubDoc *doc)
 {
     g_return_val_if_fail (GEPUB_IS_DOC (doc), FALSE);
-    g_return_val_if_fail (doc->page != NULL, FALSE);
+    g_return_val_if_fail (doc->chapter != NULL, FALSE);
 
-    return gepub_doc_set_page_internal (doc, doc->page->next);
+    return gepub_doc_set_chapter_internal (doc, doc->chapter->next);
 }
 
 /**
  * gepub_doc_go_prev:
  * @doc: a #GepubDoc
  *
- * Returns: TRUE on success, FALSE if there's no prev pages
+ * Returns: TRUE on success, FALSE if there's no previous chapter
  */
 gboolean
 gepub_doc_go_prev (GepubDoc *doc)
 {
     g_return_val_if_fail (GEPUB_IS_DOC (doc), FALSE);
-    g_return_val_if_fail (doc->page != NULL, FALSE);
+    g_return_val_if_fail (doc->chapter != NULL, FALSE);
 
-    return gepub_doc_set_page_internal (doc, doc->page->prev);
+    return gepub_doc_set_chapter_internal (doc, doc->chapter->prev);
 }
 
 /**
- * gepub_doc_get_n_pages:
+ * gepub_doc_get_n_chapters:
  * @doc: a #GepubDoc
  *
- * Returns: the number of pages in the document
+ * Returns: the number of chapters in the document
  */
 int
-gepub_doc_get_n_pages (GepubDoc *doc)
+gepub_doc_get_n_chapters (GepubDoc *doc)
 {
     g_return_val_if_fail (GEPUB_IS_DOC (doc), 0);
 
@@ -682,40 +682,40 @@ gepub_doc_get_n_pages (GepubDoc *doc)
 }
 
 /**
- * gepub_doc_get_page:
+ * gepub_doc_get_chapter:
  * @doc: a #GepubDoc
  *
- * Returns: the current page index, starting from 0
+ * Returns: the current chapter index, starting from 0
  */
 int
-gepub_doc_get_page (GepubDoc *doc)
+gepub_doc_get_chapter (GepubDoc *doc)
 {
     g_return_val_if_fail (GEPUB_IS_DOC (doc), 0);
     g_return_val_if_fail (doc->spine != NULL, 0);
-    g_return_val_if_fail (doc->page != NULL, 0);
+    g_return_val_if_fail (doc->chapter != NULL, 0);
 
-    return g_list_position (doc->spine, doc->page);
+    return g_list_position (doc->spine, doc->chapter);
 }
 
 /**
- * gepub_doc_set_page:
+ * gepub_doc_set_chapter:
  * @doc: a #GepubDoc
- * @index: the index of the new page
+ * @index: the index of the new chapter
  *
- * Sets the document current page to @index.
+ * Sets the document current chapter to @index.
  */
 void
-gepub_doc_set_page (GepubDoc *doc,
+gepub_doc_set_chapter (GepubDoc *doc,
                     gint      index)
 {
-    GList *page;
+    GList *chapter;
 
     g_return_if_fail (GEPUB_IS_DOC (doc));
 
-    g_return_if_fail (index >= 0 && index <= gepub_doc_get_n_pages (doc));
+    g_return_if_fail (index >= 0 && index <= gepub_doc_get_n_chapters (doc));
 
-    page = g_list_nth (doc->spine, index);
-    gepub_doc_set_page_internal (doc, page);
+    chapter = g_list_nth (doc->spine, index);
+    gepub_doc_set_chapter_internal (doc, chapter);
 }
 
 /**
@@ -783,9 +783,9 @@ gchar *
 gepub_doc_get_current_path (GepubDoc *doc)
 {
     g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
-    g_return_val_if_fail (doc->page != NULL, NULL);
+    g_return_val_if_fail (doc->chapter != NULL, NULL);
 
-    return gepub_doc_get_resource_path (doc, doc->page->data);
+    return gepub_doc_get_resource_path (doc, doc->chapter->data);
 }
 
 /**
@@ -799,7 +799,7 @@ const gchar *
 gepub_doc_get_current_id (GepubDoc *doc)
 {
     g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
-    g_return_val_if_fail (doc->page != NULL, NULL);
+    g_return_val_if_fail (doc->chapter != NULL, NULL);
 
-    return doc->page->data;
+    return doc->chapter->data;
 }
