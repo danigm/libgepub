@@ -443,6 +443,9 @@ reload_current_chapter (GepubWidget *widget)
     widget->chapter_pos = 0;
     widget->length = 0;
 
+    if (widget->doc == NULL)
+        return;
+
     current = gepub_doc_get_current_with_epub_uris (widget->doc);
     webkit_web_view_load_bytes (WEBKIT_WEB_VIEW (widget),
                                 current,
