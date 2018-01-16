@@ -1,3 +1,19 @@
+Version 0.5.3
+=============
+
+ - Fixed SVG image resource replacement
+ - Rename introspection build option
+ - Removed autotools
+ - build: Conform to build-api expectations
+ - build: Remove default warning level
+ - build: Remove unused defines
+ - build: Improved linker script handling
+ - build: Set prefix-relative install_dir for libgepub
+ - build: Fix typo in symbol path creation
+ - tests: Fix crash on exit
+ - widget: Replace "100" with a constant
+ - widget: Don't change LC_NUMERIC at runtime
+
 Version 0.5.2
 =============
 
