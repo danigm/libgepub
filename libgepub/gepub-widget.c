@@ -478,7 +478,7 @@ gepub_widget_set_doc (GepubWidget *widget,
     if (widget->doc != NULL) {
         g_object_ref (widget->doc);
         reload_current_chapter (widget);
-        g_signal_connect_swapped (widget->doc, "notify::page",
+        g_signal_connect_swapped (widget->doc, "notify::chapter",
                                   G_CALLBACK (reload_current_chapter), widget);
     }
 
