@@ -1,6 +1,6 @@
 project(
   'libgepub', 'c',
-  version: '0.5.3',
+  version: '0.6.0',
   license: 'LGPL2+',
   default_options: 'buildtype=debugoptimized',
   meson_version: '>= 0.41.0'
@@ -12,6 +12,7 @@ gepub_major_version = version_array[0].to_int()
 gepub_minor_version = version_array[1].to_int()
 gepub_version_micro = version_array[2].to_int()
 gepub_api_version = '@0@.@1@'.format(gepub_major_version, gepub_minor_version)
+gepub_lib_name = '@0@-@1@'.format(meson.project_name(), gepub_api_version)
 
 gepub_gir_ns = 'Gepub'
 gepub_gir_version = '1.0'

@@ -8,7 +8,7 @@ headers = files(
 
 install_headers(
   headers,
-  subdir: meson.project_name()
+  subdir: gepub_lib_name
 )
 
 private_headers = files('gepub-utils.h')
@@ -31,7 +31,7 @@ if cc.has_argument(test_ldflag)
 endif
 
 libgepub = library(
-  'gepub',
+  'gepub-'+gepub_api_version,
   sources: sources,
   version: libversion,
   soversion: soversion,
@@ -52,10 +52,10 @@ libgepub_dep = declare_dependency(
 pkg.generate(
   libraries: libgepub,
   version: gepub_version,
-  name: meson.project_name(),
+  name: gepub_lib_name,
   description: 'epub Documents library',
-  filebase: meson.project_name(),
-  subdirs: meson.project_name(),
+  filebase: gepub_lib_name,
+  subdirs: gepub_lib_name,
   requires: 'gio-2.0',
   requires_private: [
     'libxml-2.0',
