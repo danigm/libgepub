@@ -77,8 +77,9 @@ if get_option('introspection') and get_option('default_library') == 'shared'
   gir_dir = join_paths(gepub_datadir, '@0@-@1@'.format('gir', gepub_gir_version))
   typelib_dir = join_paths(gepub_libdir, '@0@-@1@'.format('girepository', gepub_gir_version))
 
-  gnome.generate_gir(
+  libgepub_gir = gnome.generate_gir(
     libgepub,
+    header: 'gepub.h',
     sources: sources + headers + private_headers,
     namespace: gepub_gir_ns,
     nsversion: gepub_api_version,
