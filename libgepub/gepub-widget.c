@@ -35,6 +35,7 @@ struct _GepubWidget {
     gint init_chapter_pos;
     gint margin; // lateral margin in px
     gint font_size; // font size in pt
+    gchar *font_family;
     gfloat line_height;
 };
 
@@ -163,17 +164,18 @@ reload_length_cb (GtkWidget *widget,
 {
     GepubWidget *gwidget = GEPUB_WIDGET (widget);
     WebKitWebView *web_view = WEBKIT_WEB_VIEW (widget);
-    int m, f;
-    float l;
-    char *script;
+    int margin, font_size;
+    float line_height;
+    gchar *script, *font_family;
 
     webkit_web_view_run_javascript (web_view,
         "window.innerWidth",
         NULL, get_length_finished, (gpointer)widget);
 
-    m = GEPUB_WIDGET (widget)->margin;
-    f = GEPUB_WIDGET (widget)->font_size;
-    l = GEPUB_WIDGET (widget)->line_height;
+    margin = gwidget->margin;
+    font_size = gwidget->font_size;
+    font_family = gwidget->font_family;
+    line_height = gwidget->line_height;
 
     script = g_strdup_printf (
         "if (!document.querySelector('#gepubwrap'))"
@@ -181,28 +183,36 @@ reload_length_cb (GtkWidget *widget,
 
         "document.querySelector('#gepubwrap').style.marginLeft = '%dpx';"
         "document.querySelector('#gepubwrap').style.marginRight = '%dpx';"
-        , m, m);
+        , margin, margin);
     webkit_web_view_run_javascript (web_view, script, NULL, NULL, NULL);
     g_free (script);
 
-    if (f) {
+    if (font_size) {
         script = g_strdup_printf (
             "document.querySelector('#gepubwrap').style.fontSize = '%dpt';"
-            , f);
+            , font_size);
         webkit_web_view_run_javascript (web_view, script, NULL, NULL, NULL);
         g_free (script);
     }
 
-    if (l) {
-        char line_height[G_ASCII_DTOSTR_BUF_SIZE];
+    if (font_family) {
+        script = g_strdup_printf (
+            "document.querySelector('#gepubwrap').style.fontFamily = '%s';"
+            , font_family);
+        webkit_web_view_run_javascript (web_view, script, NULL, NULL, NULL);
+        g_free (script);
+    }
 
-        g_ascii_formatd (line_height,
+    if (line_height) {
+        gchar line_height_buffer[G_ASCII_DTOSTR_BUF_SIZE];
+
+        g_ascii_formatd (line_height_buffer,
                          G_ASCII_DTOSTR_BUF_SIZE,
                          "%f",
-                         l);
+                         line_height);
         script = g_strdup_printf (
             "document.querySelector('#gepubwrap').style.lineHeight = %s;"
-            , line_height);
+            , line_height_buffer);
         webkit_web_view_run_javascript (web_view, script, NULL, NULL, NULL);
         g_free (script);
     }
@@ -342,6 +352,7 @@ gepub_widget_init (GepubWidget *widget)
     widget->init_chapter_pos = 0;
     widget->margin = 20;
     widget->font_size = 0;
+    widget->font_family = NULL;
     widget->line_height = 0;
 }
 
@@ -733,6 +744,33 @@ gepub_widget_set_fontsize (GepubWidget *widget,
                            gint         size)
 {
     widget->font_size = size;
+    reload_length_cb (GTK_WIDGET (widget), NULL, NULL);
+}
+
+/**
+ * gepub_widget_get_fontfamily:
+ * @widget: a #GepubWidget
+ *
+ * Gets the widget custom font family
+ */
+gchar *
+gepub_widget_get_fontfamily (GepubWidget *widget)
+{
+    return widget->font_family;
+}
+
+/**
+ * gepub_widget_set_fontfamily:
+ * @widget: a #GepubWidget
+ * @family: the custom font family name
+ *
+ * Sets the widget custom font family
+ */
+void
+gepub_widget_set_fontfamily (GepubWidget *widget,
+                             gchar       *family)
+{
+    widget->font_family = g_strdup (family);
     reload_length_cb (GTK_WIDGET (widget), NULL, NULL);
 }
 

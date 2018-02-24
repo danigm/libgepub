@@ -71,6 +71,10 @@ gint              gepub_widget_get_fontsize                    (GepubWidget *wid
 void              gepub_widget_set_fontsize                    (GepubWidget *widget,
                                                                 gint         size);
 
+gchar            *gepub_widget_get_fontfamily                  (GepubWidget *widget);
+void              gepub_widget_set_fontfamily                  (GepubWidget *widget,
+                                                                gchar       *family);
+
 gfloat            gepub_widget_get_lineheight                  (GepubWidget *widget);
 void              gepub_widget_set_lineheight                  (GepubWidget *widget,
                                                                 gfloat       size);
