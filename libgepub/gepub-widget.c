@@ -337,6 +337,7 @@ gepub_widget_finalize (GObject *object)
 {
     GepubWidget *widget = GEPUB_WIDGET (object);
 
+    g_clear_pointer (&widget->font_family, g_free);
     g_clear_object (&widget->doc);
 
     G_OBJECT_CLASS (gepub_widget_parent_class)->finalize (object);
@@ -770,6 +771,8 @@ void
 gepub_widget_set_fontfamily (GepubWidget *widget,
                              gchar       *family)
 {
+    g_clear_pointer (&widget->font_family, g_free);
+
     widget->font_family = g_strdup (family);
     reload_length_cb (GTK_WIDGET (widget), NULL, NULL);
 }
