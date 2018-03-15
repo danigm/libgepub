@@ -261,9 +261,16 @@ resource_callback (WebKitURISchemeRequest *request, gpointer user_data)
     contents = gepub_doc_get_resource (widget->doc, path);
     mime = gepub_doc_get_resource_mime (widget->doc, path);
 
+    // if the resource requested doesn't exist, we should serve an
+    // empty document instead of nothing at all (otherwise some
+    // poorly-structured ebooks will fail to render).
+    if (!contents) {
+        contents = g_byte_array_free_to_bytes(g_byte_array_sized_new(0));
+        mime = g_strdup("application/octet-stream");
+    }
+
     if (!mime) {
-        g_free (uri);
-        return;
+        mime = g_strdup("application/octet-stream");
     }
 
     stream = g_memory_input_stream_new_from_bytes (contents);
