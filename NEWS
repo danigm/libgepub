@@ -1,3 +1,11 @@
+Version 0.6.0
+=============
+
+ - Support setting font-family in GepubWidget
+ - Fix the gir generation
+ - widget: Fix warning at run-time
+ - lib: Fix gepub-widget chapter change signal
+
 Version 0.5.3
 =============
 
