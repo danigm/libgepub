@@ -40,7 +40,14 @@ struct _GepubResource {
     gchar *uri;
 };
 
+struct _GepubNavPoint {
+    gchar *label;
+    gchar *content;
+    guint64 playorder;
+};
+
 typedef struct _GepubResource GepubResource;
+typedef struct _GepubNavPoint GepubNavPoint;
 
 GType             gepub_doc_get_type                        (void) G_GNUC_CONST;
 
@@ -68,6 +75,8 @@ gint              gepub_doc_get_n_chapters                  (GepubDoc *doc);
 gint              gepub_doc_get_chapter                     (GepubDoc *doc);
 void              gepub_doc_set_chapter                     (GepubDoc *doc,
                                                              gint      index);
+
+GList            *gepub_doc_get_toc                         (GepubDoc *doc);
 
 G_END_DECLS
 

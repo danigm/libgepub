@@ -51,7 +51,9 @@ typedef enum {
 
 static void gepub_doc_fill_resources (GepubDoc *doc);
 static void gepub_doc_fill_spine (GepubDoc *doc);
+static void gepub_doc_fill_toc (GepubDoc *doc, gchar *toc_id);
 static void gepub_doc_initable_iface_init (GInitableIface *iface);
+static gint navpoint_compare (GepubNavPoint *a, GepubNavPoint *b);
 
 struct _GepubDoc {
     GObject parent;
@@ -64,6 +66,7 @@ struct _GepubDoc {
 
     GList *spine;
     GList *chapter;
+    GList *toc;
 };
 
 struct _GepubDocClass {
@@ -103,6 +106,8 @@ gepub_doc_finalize (GObject *object)
     if (doc->spine) {
         g_list_foreach (doc->spine, (GFunc)g_free, NULL);
         g_clear_pointer (&doc->spine, g_list_free);
+        g_list_foreach (doc->toc, (GFunc)g_free, NULL);
+        g_clear_pointer (&doc->toc, g_list_free);
     }
 
     G_OBJECT_CLASS (gepub_doc_parent_class)->finalize (object);
@@ -309,11 +314,18 @@ gepub_doc_fill_spine (GepubDoc *doc)
     const char *data;
     gsize size;
     GList *spine = NULL;
+    gchar *toc = NULL;
 
     data = g_bytes_get_data (doc->content, &size);
     xdoc = xmlRecoverMemory (data, size);
     root_element = xmlDocGetRootElement (xdoc);
     snode = gepub_utils_get_element_by_tag (root_element, "spine");
+
+    toc = gepub_utils_get_prop (snode, "toc");
+    if (toc) {
+        gepub_doc_fill_toc (doc, toc);
+        g_free (toc);
+    }
 
     item = snode->children;
     while (item) {
@@ -332,6 +344,97 @@ gepub_doc_fill_spine (GepubDoc *doc)
     doc->chapter = doc->spine;
 
     xmlFreeDoc (xdoc);
+}
+
+static gint
+navpoint_compare (GepubNavPoint *a, GepubNavPoint *b)
+{
+    return a->playorder - b->playorder;
+}
+
+
+static void
+gepub_doc_fill_toc (GepubDoc *doc, gchar *toc_id)
+{
+    xmlDoc *xdoc = NULL;
+    xmlNode *root_element = NULL;
+    xmlNode *mapnode = NULL;
+    xmlNode *item = NULL;
+    const char *data;
+    gsize size;
+    GList *toc = NULL;
+    GBytes *toc_data = NULL;
+
+    doc->toc = toc;
+
+    toc_data = gepub_doc_get_resource_by_id (doc, toc_id);
+    if (!toc_data) {
+        return;
+    }
+
+    data = g_bytes_get_data (toc_data, &size);
+    xdoc = xmlRecoverMemory (data, size);
+    root_element = xmlDocGetRootElement (xdoc);
+    mapnode = gepub_utils_get_element_by_tag (root_element, "navMap");
+
+    // TODO: get docTitle
+    // TODO: parse metadata (dtb:totalPageCount, dtb:depth, dtb:maxPageNumber)
+
+    item = mapnode->children;
+    while (item) {
+        GepubNavPoint *navpoint = NULL;
+        gchar *order;
+        xmlNode *navchilds = NULL;
+
+        if (item->type != XML_ELEMENT_NODE ||
+            g_strcmp0 ((const gchar *)item->name, "navPoint")) {
+            item = item->next;
+            continue;
+        }
+
+        navpoint = g_malloc0 (sizeof (GepubNavPoint));
+
+        order = gepub_utils_get_prop (item, "playOrder");
+        if (order) {
+            g_ascii_string_to_unsigned (order, 10, 0, INT_MAX,
+                                        &navpoint->playorder, NULL);
+            g_free (order);
+        }
+
+        // parsing navPoint->navLabel->text and navPoint->content
+        navchilds = item->children;
+        while (navchilds) {
+            if (item->type != XML_ELEMENT_NODE) {
+                navchilds = navchilds->next;
+                continue;
+            }
+
+            if (!g_strcmp0 ((const gchar *)navchilds->name, "content")) {
+                gchar *uri, *tmpuri;
+                tmpuri = gepub_utils_get_prop (navchilds, "src");
+                uri = g_strdup_printf ("%s%s", doc->content_base, tmpuri);
+                navpoint->content = uri;
+                g_free (tmpuri);
+            }
+
+            if (!g_strcmp0 ((const gchar *)navchilds->name, "navLabel")) {
+                xmlNode *text = gepub_utils_get_element_by_tag (navchilds, "text");
+                if (text->children && text->children->type == XML_TEXT_NODE) {
+                  navpoint->label = g_strdup ((gchar *)text->children->content);
+                }
+            }
+
+            navchilds = navchilds->next;
+        }
+
+        toc = g_list_prepend (toc, navpoint);
+        item = item->next;
+    }
+
+    doc->toc = g_list_sort (toc, (GCompareFunc) navpoint_compare);
+
+    xmlFreeDoc (xdoc);
+    g_bytes_unref (toc_data);
 }
 
 /**
@@ -803,3 +906,18 @@ gepub_doc_get_current_id (GepubDoc *doc)
 
     return doc->chapter->data;
 }
+
+/**
+ * gepub_doc_get_toc:
+ * @doc: a #GepubDoc
+ *
+
+ * Returns: (element-type Gepub.NavPoint) (transfer none): the navigation list in order
+ */
+GList *
+gepub_doc_get_toc (GepubDoc *doc)
+{
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
+    return doc->toc;
+}
+

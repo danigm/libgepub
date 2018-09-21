@@ -274,6 +274,21 @@ test_doc_spine (const char *path)
 }
 
 static void
+test_doc_toc (const char *path)
+{
+    GepubDoc *doc = gepub_doc_new (path, NULL);
+
+    GList *nav = gepub_doc_get_toc (doc);
+    while (nav && nav->data) {
+        GepubNavPoint *point = (GepubNavPoint*)nav->data;
+        PTEST ("%02d: %s -> %s\n", (gint)point->playorder, point->label, point->content);
+        nav = nav->next;
+    }
+
+    g_object_unref (G_OBJECT (doc));
+}
+
+static void
 destroy_cb (GtkWidget *window,
             GtkWidget *view)
 {
@@ -435,6 +450,7 @@ main (int argc, char **argv)
     TEST(test_doc_name, argv[1])
     TEST(test_doc_resources, argv[1])
     TEST(test_doc_spine, argv[1])
+    TEST(test_doc_toc, argv[1])
 
     // Freeing the mallocs :P
     if (buf2) {
