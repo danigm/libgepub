@@ -282,6 +282,7 @@ test_doc_toc (const char *path)
     while (nav && nav->data) {
         GepubNavPoint *point = (GepubNavPoint*)nav->data;
         PTEST ("%02d: %s -> %s\n", (gint)point->playorder, point->label, point->content);
+        PTEST (" -> Chapter: %d\n", gepub_doc_resource_uri_to_chapter (doc, point->content));
         nav = nav->next;
     }
 

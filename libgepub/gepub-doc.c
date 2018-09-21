@@ -410,10 +410,18 @@ gepub_doc_fill_toc (GepubDoc *doc, gchar *toc_id)
             }
 
             if (!g_strcmp0 ((const gchar *)navchilds->name, "content")) {
-                gchar *uri, *tmpuri;
+                gchar **split;
+                gchar *tmpuri;
                 tmpuri = gepub_utils_get_prop (navchilds, "src");
-                uri = g_strdup_printf ("%s%s", doc->content_base, tmpuri);
-                navpoint->content = uri;
+                // removing # params. Maybe we should store the # params in the
+                // navpoint to use in the future if the doc references to a position
+                // inside the chapter
+                split = g_strsplit (tmpuri, "#", -1);
+
+                // adding the base path
+                navpoint->content = g_strdup_printf ("%s%s", doc->content_base, split[0]);
+
+                g_strfreev (split);
                 g_free (tmpuri);
             }
 
@@ -919,5 +927,78 @@ gepub_doc_get_toc (GepubDoc *doc)
 {
     g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
     return doc->toc;
+}
+
+/**
+ * gepub_doc_resource_uri_to_chapter:
+ * @doc: a #GepubDoc
+ * @uri: The resource path
+ *
+ * This method tries to find the resource by path in the doc spine and
+ * will return the index in that list. If the resourse isn't there this method
+ * will return -1.
+
+ * Returns: the chapter index to use with gepub_doc_set_chapter or -1 if the
+ * resource isn't found
+ */
+gint
+gepub_doc_resource_uri_to_chapter (GepubDoc *doc,
+                                   const gchar *uri)
+{
+    GHashTableIter iter;
+    gchar *key;
+    GepubResource *res;
+    gchar *id = NULL;
+
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), -1);
+    g_return_val_if_fail (doc->spine != NULL, -1);
+
+    g_hash_table_iter_init (&iter, doc->resources);
+    while (g_hash_table_iter_next (&iter, (gpointer *)&key, (gpointer *)&res)) {
+        if (!g_strcmp0 (res->uri, uri)) {
+            id = key;
+            break;
+        }
+    }
+
+    if (!id) {
+        return -1;
+    }
+
+    return gepub_doc_resource_id_to_chapter (doc, id);
+}
+
+/**
+ * gepub_doc_resource_id_to_chapter:
+ * @doc: a #GepubDoc
+ * @id: The resource id
+ *
+ * This method tries to find the resource by id in the doc spine and
+ * will return the index in that list. If the resourse isn't there this method
+ * will return -1.
+
+ * Returns: the chapter index to use with gepub_doc_set_chapter or -1 if the
+ * resource isn't found
+ */
+gint
+gepub_doc_resource_id_to_chapter (GepubDoc *doc,
+                                  const gchar *id)
+{
+    GList *spine;
+    gint chapter = 0;
+
+    g_return_val_if_fail (GEPUB_IS_DOC (doc), -1);
+    g_return_val_if_fail (doc->spine != NULL, -1);
+
+    spine = g_list_first (doc->spine);
+    while (spine && spine->data) {
+        if (!g_strcmp0 (spine->data, id)) {
+            return chapter;
+        }
+        chapter++;
+        spine = spine->next;
+    }
+
+    return -1;
 }
 

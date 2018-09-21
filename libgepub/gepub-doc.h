@@ -77,6 +77,10 @@ void              gepub_doc_set_chapter                     (GepubDoc *doc,
                                                              gint      index);
 
 GList            *gepub_doc_get_toc                         (GepubDoc *doc);
+gint              gepub_doc_resource_uri_to_chapter         (GepubDoc *doc,
+                                                             const gchar *uri);
+gint              gepub_doc_resource_id_to_chapter          (GepubDoc *doc,
+                                                             const gchar *id);
 
 G_END_DECLS
 
