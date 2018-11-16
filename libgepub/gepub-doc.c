@@ -203,6 +203,7 @@ gepub_doc_initable_init (GInitable     *initable,
     GepubDoc *doc = GEPUB_DOC (initable);
     gchar *file;
     gint i = 0, len;
+    g_autofree gchar *unescaped = NULL;
 
     g_assert (doc->path != NULL);
 
@@ -215,7 +216,8 @@ gepub_doc_initable_init (GInitable     *initable,
         }
         return FALSE;
     }
-    doc->content = gepub_archive_read_entry (doc->archive, file);
+    unescaped = g_uri_unescape_string (file, NULL);
+    doc->content = gepub_archive_read_entry (doc->archive, unescaped);
     if (!doc->content) {
         if (error != NULL) {
             g_set_error (error, gepub_error_quark (), GEPUB_ERROR_INVALID,
@@ -351,7 +353,6 @@ navpoint_compare (GepubNavPoint *a, GepubNavPoint *b)
 {
     return a->playorder - b->playorder;
 }
-
 
 static void
 gepub_doc_fill_toc (GepubDoc *doc, gchar *toc_id)
@@ -521,6 +522,7 @@ GBytes *
 gepub_doc_get_resource_by_id (GepubDoc *doc, const gchar *id)
 {
     GepubResource *gres;
+    g_autofree gchar *unescaped = NULL;
 
     g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
     g_return_val_if_fail (id != NULL, NULL);
@@ -531,7 +533,8 @@ gepub_doc_get_resource_by_id (GepubDoc *doc, const gchar *id)
         return NULL;
     }
 
-    return gepub_archive_read_entry (doc->archive, gres->uri);
+    unescaped = g_uri_unescape_string (gres->uri, NULL);
+    return gepub_archive_read_entry (doc->archive, unescaped);
 }
 
 /**
@@ -544,10 +547,16 @@ gepub_doc_get_resource_by_id (GepubDoc *doc, const gchar *id)
 GBytes *
 gepub_doc_get_resource (GepubDoc *doc, const gchar *path)
 {
+    g_autofree gchar *unescaped = NULL;
+
     g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
     g_return_val_if_fail (path != NULL, NULL);
 
-    return gepub_archive_read_entry (doc->archive, path);
+    // we need to decode the path because we can get URL encoded paths
+    // like "some%20text.jpg"
+    unescaped = g_uri_unescape_string (path, NULL);
+
+    return gepub_archive_read_entry (doc->archive, unescaped);
 }
 
 /**
