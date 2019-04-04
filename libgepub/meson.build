@@ -26,7 +26,7 @@ symbol_map = join_paths(meson.current_source_dir(), 'gepub.map')
 test_ldflag = '-Wl,--version-script,' + symbol_map
 ldflags = []
 
-if cc.has_argument(test_ldflag)
+if cc.has_link_argument(test_ldflag)
   ldflags += test_ldflag
 endif
 
