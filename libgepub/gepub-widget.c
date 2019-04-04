@@ -89,8 +89,7 @@ pagination_initialize_finished (GObject      *object,
                                 gpointer     user_data)
 {
     WebKitJavascriptResult *js_result;
-    JSValueRef              value;
-    JSGlobalContextRef      context;
+    JSCValue               *value;
     GError                 *error = NULL;
     GepubWidget            *widget = GEPUB_WIDGET (user_data);
 
@@ -101,12 +100,11 @@ pagination_initialize_finished (GObject      *object,
         return;
     }
 
-    context = webkit_javascript_result_get_global_context (js_result);
-    value = webkit_javascript_result_get_value (js_result);
-    if (JSValueIsNumber (context, value)) {
+    value = webkit_javascript_result_get_js_value (js_result);
+    if (jsc_value_is_number (value)) {
         double n;
 
-        n = JSValueToNumber (context, value, NULL);
+        n = jsc_value_to_double (value);
         widget->chapter_length = (int)n;
 
         if (widget->init_chapter_pos) {
@@ -132,8 +130,7 @@ get_length_finished (GObject      *object,
                      gpointer     user_data)
 {
     WebKitJavascriptResult *js_result;
-    JSValueRef              value;
-    JSGlobalContextRef      context;
+    JSCValue               *value;
     GError                 *error = NULL;
     GepubWidget            *widget = GEPUB_WIDGET (user_data);
 
@@ -144,12 +141,11 @@ get_length_finished (GObject      *object,
         return;
     }
 
-    context = webkit_javascript_result_get_global_context (js_result);
-    value = webkit_javascript_result_get_value (js_result);
-    if (JSValueIsNumber (context, value)) {
+    value = webkit_javascript_result_get_js_value (js_result);
+    if (jsc_value_is_number (value)) {
         double n;
 
-        n = JSValueToNumber (context, value, NULL);
+        n = jsc_value_to_double (value);
         widget->length = (int)n;
     } else {
         g_warning ("Error running javascript: unexpected return value");
