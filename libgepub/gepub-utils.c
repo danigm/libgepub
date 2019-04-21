@@ -58,7 +58,7 @@ set_epub_uri (xmlNode *node,
         if (cur_node->type == XML_ELEMENT_NODE ) {
             text = xmlGetProp (cur_node, BAD_CAST (attr));
 
-            if (!strcmp ((const char *) cur_node->name, tagname) && text) {
+            if (!strcmp ((const char *) cur_node->name, tagname) && text && text[0] != '#') {
                 SoupURI *uri = soup_uri_new_with_base (baseURI, (const char *) text);
                 gchar *value = soup_uri_to_string (uri, FALSE);
 
