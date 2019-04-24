@@ -243,7 +243,6 @@ resource_callback (WebKitURISchemeRequest *request, gpointer user_data)
 {
     GInputStream *stream;
     gchar *path;
-    gchar *uri;
     gchar *mime;
     GepubWidget *widget = user_data;
     GBytes *contents;
@@ -251,9 +250,7 @@ resource_callback (WebKitURISchemeRequest *request, gpointer user_data)
     if (!widget->doc)
       return;
 
-    uri = g_strdup (webkit_uri_scheme_request_get_uri (request));
-    // removing "epub:///"
-    path = uri + 8;
+    path = g_strdup (webkit_uri_scheme_request_get_path (request));
     contents = gepub_doc_get_resource (widget->doc, path);
     mime = gepub_doc_get_resource_mime (widget->doc, path);
 
@@ -275,7 +272,7 @@ resource_callback (WebKitURISchemeRequest *request, gpointer user_data)
     g_object_unref (stream);
     g_bytes_unref (contents);
     g_free (mime);
-    g_free (uri);
+    g_free (path);
 }
 
 static void

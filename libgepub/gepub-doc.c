@@ -595,15 +595,23 @@ gepub_doc_get_resource_mime (GepubDoc *doc, const gchar *path)
 {
     GepubResource *gres;
     GList *keys;
+    const gchar *_path;
 
     g_return_val_if_fail (GEPUB_IS_DOC (doc), NULL);
     g_return_val_if_fail (path != NULL, NULL);
+
+    if (path[0] == '/') {
+        _path = path + 1;
+    }
+    else {
+        _path = path;
+    }
 
     keys = g_hash_table_get_keys (doc->resources);
 
     while (keys) {
         gres = ((GepubResource*)g_hash_table_lookup (doc->resources, keys->data));
-        if (!strcmp (gres->uri, path))
+        if (!strcmp (gres->uri, _path))
             break;
         keys = keys->next;
     }

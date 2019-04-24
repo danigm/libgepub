@@ -135,12 +135,20 @@ gepub_archive_read_entry (GepubArchive *archive,
     struct archive_entry *entry;
     guchar *buffer;
     gint size;
+    const gchar *_path;
+
+    if (path[0] == '/') {
+        _path = path + 1;
+    }
+    else {
+        _path = path;
+    }
 
     if (!gepub_archive_open (archive))
         return NULL;
 
     while (archive_read_next_header (archive->archive, &entry) == ARCHIVE_OK) {
-        if (g_ascii_strcasecmp (path, archive_entry_pathname (entry)) == 0)
+        if (g_ascii_strcasecmp (_path, archive_entry_pathname (entry)) == 0)
             break;
         archive_read_data_skip (archive->archive);
     }
