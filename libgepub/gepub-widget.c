@@ -227,6 +227,29 @@ reload_length_cb (GtkWidget *widget,
 }
 
 static void
+set_current_chapter_by_uri (WebKitWebView  *web_view)
+{
+    GepubWidget *widget = GEPUB_WIDGET (web_view);
+    const gchar *uri_string;
+    SoupURI *uri;
+    const gchar *path;
+    gint chapter;
+
+    uri_string = webkit_web_view_get_uri (web_view);
+
+    if (g_strcmp0 ("about:blank", uri_string)) {
+        uri = soup_uri_new (uri_string);
+        path = soup_uri_get_path (uri);
+        chapter = gepub_doc_resource_uri_to_chapter (widget->doc, path);
+        gepub_doc_set_chapter (widget->doc, chapter);
+        soup_uri_free (uri);
+    }
+    // Else we're on the cover or table of contents (and can't tell which)
+    // but we can only get there through setting the chapter number
+    // so we don't need to do anything here
+}
+
+static void
 docready_cb (WebKitWebView  *web_view,
              WebKitLoadEvent load_event,
              gpointer        user_data)
@@ -235,6 +258,7 @@ docready_cb (WebKitWebView  *web_view,
 
     if (load_event == WEBKIT_LOAD_FINISHED) {
         reload_length_cb (GTK_WIDGET (widget), NULL, NULL);
+        set_current_chapter_by_uri (web_view);
     }
 }
 

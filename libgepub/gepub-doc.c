@@ -966,13 +966,21 @@ gepub_doc_resource_uri_to_chapter (GepubDoc *doc,
     gchar *key;
     GepubResource *res;
     gchar *id = NULL;
+    const gchar *_uri;
+
+    if (uri[0] == '/') {
+        _uri = uri + 1;
+    }
+    else {
+        _uri = uri;
+    }
 
     g_return_val_if_fail (GEPUB_IS_DOC (doc), -1);
     g_return_val_if_fail (doc->spine != NULL, -1);
 
     g_hash_table_iter_init (&iter, doc->resources);
     while (g_hash_table_iter_next (&iter, (gpointer *)&key, (gpointer *)&res)) {
-        if (!g_strcmp0 (res->uri, uri)) {
+        if (!g_strcmp0 (res->uri, _uri)) {
             id = key;
             break;
         }
