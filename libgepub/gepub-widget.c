@@ -250,6 +250,9 @@ set_current_chapter_by_uri (WebKitWebView  *web_view)
 }
 
 static void
+reload_current_chapter (GepubWidget *widget);
+
+static void
 docready_cb (WebKitWebView  *web_view,
              WebKitLoadEvent load_event,
              gpointer        user_data)
@@ -258,7 +261,11 @@ docready_cb (WebKitWebView  *web_view,
 
     if (load_event == WEBKIT_LOAD_FINISHED) {
         reload_length_cb (GTK_WIDGET (widget), NULL, NULL);
+        g_signal_handlers_disconnect_by_func (widget->doc,
+                                              reload_current_chapter, widget);
         set_current_chapter_by_uri (web_view);
+        g_signal_connect_swapped (widget->doc, "notify::chapter",
+                                  G_CALLBACK (reload_current_chapter), widget);
     }
 }
 
