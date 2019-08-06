@@ -254,7 +254,7 @@ test_doc_resources (const char *path)
 
     ncx = gepub_doc_get_resource_by_id (doc, "ncx");
     data = g_bytes_get_data (ncx, &size);
-    PTEST ("ncx:\n%s\n", data);
+    PTEST ("ncx:\n%.*s\n", size, data);
     g_bytes_unref (ncx);
 
     g_object_unref (G_OBJECT (doc));
