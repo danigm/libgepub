@@ -388,6 +388,25 @@ gepub_widget_init (GepubWidget *widget)
     widget->line_height = 0;
 }
 
+static GObject *
+gepub_widget_constructor (GType                  gtype,
+                          guint                  n_properties,
+                          GObjectConstructParam *properties)
+{
+  GObject *object;
+  GObjectClass *parent_class;
+
+  parent_class = G_OBJECT_CLASS (gepub_widget_parent_class);
+  object = parent_class->constructor (gtype, n_properties, properties);
+
+  g_object_set (object,
+                "web-context", g_object_new (WEBKIT_TYPE_WEB_CONTEXT, NULL),
+                NULL);
+
+  return object;
+}
+
+
 static void
 gepub_widget_constructed (GObject *object)
 {
@@ -407,6 +426,7 @@ gepub_widget_class_init (GepubWidgetClass *klass)
 {
     GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
+    object_class->constructor = gepub_widget_constructor;
     object_class->constructed = gepub_widget_constructed;
     object_class->finalize = gepub_widget_finalize;
     object_class->set_property = gepub_widget_set_property;
