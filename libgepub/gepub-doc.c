@@ -675,6 +675,7 @@ gepub_doc_get_current_with_epub_uris (GepubDoc *doc)
 
     replaced = gepub_utils_replace_resources (content, base);
 
+    g_free (base);
     g_free (path);
     g_bytes_unref (content);
 
