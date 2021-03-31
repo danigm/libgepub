@@ -411,12 +411,22 @@ static void
 gepub_widget_constructed (GObject *object)
 {
     WebKitWebContext *ctx;
+    WebKitSettings *settings;
     GepubWidget *widget = GEPUB_WIDGET (object);
 
     G_OBJECT_CLASS (gepub_widget_parent_class)->constructed (object);
 
     ctx = webkit_web_view_get_context (WEBKIT_WEB_VIEW (widget));
     webkit_web_context_register_uri_scheme (ctx, "epub", resource_callback, widget, NULL);
+
+    settings = webkit_web_view_get_settings (WEBKIT_WEB_VIEW (widget));
+    g_object_set (G_OBJECT (settings),
+                  "enable-javascript-markup", FALSE,
+                  "enable-java", FALSE,
+                  "javascript-can-access-clipboard", FALSE,
+                  "javascript-can-open-windows-automatically", FALSE,
+                  NULL);
+
     g_signal_connect (widget, "load-changed", G_CALLBACK (docready_cb), NULL);
     g_signal_connect (widget, "size-allocate", G_CALLBACK (reload_length_cb), NULL);
 }
