@@ -10,12 +10,13 @@ gchar *tmpbuf;
 GtkTextBuffer *page_buffer;
 GtkWidget *PAGE_LABEL;
 
-#define PTEST1(...) printf (__VA_ARGS__)
-#define PTEST2(...) buf = g_strdup_printf (__VA_ARGS__);\
-                    tmpbuf = buf2;\
-                    buf2 = g_strdup_printf ("%s%s", buf2, buf);\
-                    g_free (buf);\
-                    g_free (tmpbuf)
+#define PTEST1(...) { printf (__VA_ARGS__); }
+#define PTEST2(...) { buf = g_strdup_printf (__VA_ARGS__);\
+                      tmpbuf = buf2;\
+                      buf2 = g_strdup_printf ("%s%s", buf2, buf);\
+                      g_free (buf);\
+                      g_free (tmpbuf);\
+                    }
 #define PTEST PTEST2
 
 #define TEST(f,arg...) PTEST ("\n### TESTING " #f " ###\n\n"); f (arg); PTEST ("\n\n");
@@ -214,15 +215,20 @@ test_doc_name (const char *path)
     gchar *author = gepub_doc_get_metadata (doc, GEPUB_META_AUTHOR);
     gchar *description = gepub_doc_get_metadata (doc, GEPUB_META_DESC);
     gchar *cover = gepub_doc_get_cover (doc);
-    gchar *cover_mime = gepub_doc_get_resource_mime_by_id (doc, cover);
+    gchar *cover_mime = NULL;
+
+    if (cover)
+        cover_mime = gepub_doc_get_resource_mime_by_id (doc, cover);
 
     PTEST ("title: %s\n", title);
     PTEST ("author: %s\n", author);
     PTEST ("id: %s\n", id);
     PTEST ("lang: %s\n", lang);
     PTEST ("desc: %s\n", description);
-    PTEST ("cover: %s\n", cover);
-    PTEST ("cover mime: %s\n", cover_mime);
+    if (cover)
+        PTEST ("cover: %s\n", cover);
+    if (cover_mime)
+        PTEST ("cover mime: %s\n", cover_mime);
 
     g_free (title);
     g_free (lang);
